@@ -11,4 +11,6 @@ userRouter.post('/log-out/:id', logout)
 
 userRouter.delete('/delete/:id', deleteUser)
 
+// TODO: add route to update a user information and softdelete(deactivate) and recover an accoutn
+
 export default userRouter

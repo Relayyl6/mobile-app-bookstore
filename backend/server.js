@@ -5,13 +5,16 @@ import userRouter from "./routes/user.routes.js";
 import bookRouter from "./routes/book.routes.js";
 import { connectToDatabse } from "./db/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
-import authMiddleware from "./middleware/auth.middleware.js";
+import { authMiddleware } from "./middleware/auth.middleware.js";
+import cors from "cors"
+import recommendationRouter from "./routes/recommendation.routes.js";
+import { startPreferenceCleanupJob } from "./lib/cron.js";
 
 const app = express()
 
 app.use(cookieParser());
 app.use(express.json());
-// app.use(mongoose);
+app.use(cors);
 
 app.use(errorMiddleware);
 app.use(authMiddleware);
@@ -19,6 +22,7 @@ app.use(authMiddleware);
 app.use('/api/v1/store', userRouter);
 app.use('/api/v1/books', bookRouter);
 // app.use('/api/v1/user', appRouter);
+app.use('/api/v1/recommendation', recommendationRouter)
 
 app.post("/api/health", (req, res) => {
     res.status.json({
@@ -28,6 +32,7 @@ app.post("/api/health", (req, res) => {
 
 connectToDatabse().then(() => {
     app.listen(PORT, (req, res) => {
+        startPreferenceCleanupJob()
         console.log(`Server is running on port: localhost:${PORT}`)
     })
 })

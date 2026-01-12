@@ -8,7 +8,7 @@ export const register = async (req, res, next) => {
     session.startTransaction()
 
     try {
-        const { email, username, password } = req.body;
+        const { email, username, password, preferredGenres, favoriteAuthors } = req.body;
 
         if (!email || !username || !password) {
             const missing = [
@@ -70,7 +70,9 @@ export const register = async (req, res, next) => {
             email,
             password,
             username,
-            profileImage
+            profileImage,
+            preferredGenres: preferredGenres || [],
+            favoriteAuthors: favoriteAuthors || []
         })
 
         await user.save()
@@ -281,3 +283,4 @@ export const softDeleteUser = async (req, res, next) => {
     next(error);
   }
 };
+

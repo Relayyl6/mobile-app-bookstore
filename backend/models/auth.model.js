@@ -24,6 +24,16 @@ const userSchema = mongoose.Schema({
         type: String,
         default: ""
     },
+    preferredGenres: {
+      type: [String],
+      default: [],
+      index: true
+    },
+    favoriteAuthors: {
+      type: [String],
+      default: [],
+      index: true
+    },
     isDeleted: {
         type: Boolean,
         default: false
