@@ -1,53 +1,117 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
+// Light Themes
+export const lightThemes = {
+  forest: {
+    primary: "#4CAF50",
+    textPrimary: "#2e5a2e",
+    textSecondary: "#688f68",
+    textDark: "#1b361b",
+    placeholderText: "#767676",
+    background: "#e8f5e9",
+    cardBackground: "#f1f8f2",
+    inputBackground: "#f4faf5",
+    border: "#c8e6c9",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+  
+  retro: {
+    primary: "#e17055",
+    textPrimary: "#784e2d",
+    textSecondary: "#a58e7c",
+    textDark: "#50372a",
+    placeholderText: "#767676",
+    background: "#ede1d1",
+    cardBackground: "#faf5eb",
+    inputBackground: "#f7f2ea",
+    border: "#e2d6c1",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+  
+  ocean: {
+    primary: "#1976D2",
+    textPrimary: "#1a4971",
+    textSecondary: "#6d93b8",
+    textDark: "#0d2b43",
+    placeholderText: "#767676",
+    background: "#e3f2fd",
+    cardBackground: "#f5f9ff",
+    inputBackground: "#f0f8ff",
+    border: "#bbdefb",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+  
+  blossom: {
+    primary: "#EC407A",
+    textPrimary: "#7d2150",
+    textSecondary: "#b06a8f",
+    textDark: "#5a1836",
+    placeholderText: "#767676",
+    background: "#fce4ec",
+    cardBackground: "#fff5f8",
+    inputBackground: "#fef8fa",
+    border: "#f8bbd0",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+// Dark Themes
+export const darkThemes = {
+  forest: {
+    primary: "#66BB6A",
+    textPrimary: "#a8d5a8",
+    textSecondary: "#81c784",
+    textDark: "#c8e6c9",
+    placeholderText: "#999999",
+    background: "#1b3a1b",
+    cardBackground: "#243a24",
+    inputBackground: "#2d4a2d",
+    border: "#4caf50",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+  
+  retro: {
+    primary: "#ff7875",
+    textPrimary: "#ffb3a8",
+    textSecondary: "#d4a89e",
+    textDark: "#ffe5dd",
+    placeholderText: "#999999",
+    background: "#3d2a20",
+    cardBackground: "#523530",
+    inputBackground: "#6a4a3a",
+    border: "#e17055",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+  
+  ocean: {
+    primary: "#42A5F5",
+    textPrimary: "#90CAF9",
+    textSecondary: "#64B5F6",
+    textDark: "#BBDEFB",
+    placeholderText: "#999999",
+    background: "#0d2b43",
+    cardBackground: "#1a3a52",
+    inputBackground: "#254766",
+    border: "#1976D2",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+  
+  blossom: {
+    primary: "#EC407A",
+    textPrimary: "#F06292",
+    textSecondary: "#F48FB1",
+    textDark: "#F8BBD0",
+    placeholderText: "#999999",
+    background: "#4a1530",
+    cardBackground: "#6a2050",
+    inputBackground: "#8a3070",
+    border: "#EC407A",
+    white: "#ffffff",
+    black: "#000000",
+  } as ColorScheme,
+};
