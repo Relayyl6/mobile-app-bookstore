@@ -16,8 +16,17 @@ declare interface ColorScheme {
 declare type ThemeType = 'forest' | 'retro' | 'ocean' | 'blossom';
 declare type ThemeMode = 'light' | 'dark';
 
+
+declare interface IconTheme {
+    library: any;
+    home: any;
+    profile: any;
+    settings: any;
+    themeIcon?: any;
+  }
 declare interface AppContextType {
   colors: ColorScheme;
+  iconsuse: IconTheme;
   themeMode: ThemeMode;
   currentTheme: ThemeType;
   setThemeMode: (mode: ThemeMode) => void;

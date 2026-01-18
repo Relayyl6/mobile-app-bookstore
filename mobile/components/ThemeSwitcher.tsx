@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { useAppContext } from '@/context/useAppContext';
 
 const themes: ThemeType[] = ['forest', 'retro', 'ocean', 'blossom'];
@@ -45,6 +45,7 @@ export const ThemeSwitcher: React.FC = () => {
                   backgroundColor: colors.cardBackground,
                   borderColor: currentTheme === theme ? colors.primary : colors.border,
                   borderWidth: currentTheme === theme ? 3 : 1,
+
                 },
               ]}
               onPress={() => setCurrentTheme(theme)}
@@ -87,6 +88,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     gap: 20,
+    flex: 0,
   },
   section: {
     gap: 12,

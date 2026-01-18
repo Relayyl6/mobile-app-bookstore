@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightThemes, darkThemes } from '@/constants/theme';
+import icons from '@/constants/data';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -47,8 +48,27 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     ? lightThemes[currentTheme]
     : darkThemes[currentTheme];
 
+  // Theme-based icon mapping
+  const getThemeIcon = (): any => {
+    const themeIconMap: { [key in ThemeType]: any } = {
+      ocean: icons.library,
+      retro: icons.home,
+      forest: icons.profile,
+      blossom: icons.settings,
+    };
+
+    return themeIconMap[currentTheme];
+  };
+
+  const iconsuse: IconTheme = {
+    ...icons,
+    themeIcon: getThemeIcon(), // Dynamic icon based on current theme
+  };
+
+
   const value: AppContextType = {
     colors,
+    iconsuse,
     themeMode,
     currentTheme,
     setThemeMode,
