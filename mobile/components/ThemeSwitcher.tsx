@@ -31,10 +31,9 @@ export const ThemeSwitcher: React.FC = () => {
       {/* Theme Selector */}
       <View style={styles.section}>
         <Text style={[styles.label, { color: colors.textPrimary }]}>Color Theme</Text>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.themeScroll}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={[ styles.themeScroll, { gap: 10 } ]}
         >
           {themes.map((theme) => (
             <TouchableOpacity
@@ -45,7 +44,7 @@ export const ThemeSwitcher: React.FC = () => {
                   backgroundColor: colors.cardBackground,
                   borderColor: currentTheme === theme ? colors.primary : colors.border,
                   borderWidth: currentTheme === theme ? 3 : 1,
-
+                  height: 100
                 },
               ]}
               onPress={() => setCurrentTheme(theme)}

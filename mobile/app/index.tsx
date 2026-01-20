@@ -17,6 +17,8 @@ export default function Index() {
       <Link href="/(auth)/signup">Go to Settings</Link>
 
       <Link href="/(auth)">Go to signup</Link>
+
+      <Link href="/setting">Go to settins</Link>
       {/* <ThemeSwitcher /> */}
       {/* <Link href="/(auth)/signup">Go to sign up page</Link> */}
     </View>
