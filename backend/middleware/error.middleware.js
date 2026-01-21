@@ -1,6 +1,11 @@
 const errorMiddleware = (err, req, res, next) => {
     try {
-        console.error(err); // log full error for debugging
+        // console.error(err); // log full error for debugging
+        console.log("====== RAW ERROR START ======");
+        console.log(err);
+        console.log("err.message:", err.message);
+        console.log("typeof err.message:", typeof err.message);
+        console.log("====== RAW ERROR END ======");
 
         let statusCode = err.statusCode || 500;
         let message = err.message || "Server Error";
@@ -9,6 +14,10 @@ const errorMiddleware = (err, req, res, next) => {
         if (err.name === "CastError") {
             statusCode = 404;
             message = "Resource not found";
+        }
+
+        if (typeof err.message === "object") {
+          message = JSON.stringify(err.message);
         }
 
         // Mongoose duplicate key

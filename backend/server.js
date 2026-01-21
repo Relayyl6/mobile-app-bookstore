@@ -9,15 +9,17 @@ import { authMiddleware } from "./middleware/auth.middleware.js";
 import cors from "cors"
 import recommendationRouter from "./routes/recommendation.routes.js";
 import { startPreferenceCleanupJob } from "./lib/cron.js";
+import {setupDNS} from "./dns-resolver.js"
 
 const app = express()
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(cors);
+app.use(express.urlencoded({ extended: true }));
+// app.use(cors);
 
 app.use(errorMiddleware);
-app.use(authMiddleware);
+// app.use(authMiddleware);
 
 app.use('/api/v1/store', userRouter);
 app.use('/api/v1/books', bookRouter);
@@ -30,6 +32,9 @@ app.post("/api/health", (req, res) => {
     })
 })
 
+console.log("1️⃣ Starting server");
+setupDNS()
+console.log("2️⃣ DNS setup done");
 connectToDatabse().then(() => {
     app.listen(PORT, (req, res) => {
         startPreferenceCleanupJob()

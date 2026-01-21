@@ -1,9 +1,10 @@
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useAppContext } from '@/context/useAppContext'
 import signupStyles from '@/constants/signup.styles';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
+import { useAuthStore } from '../../store/authStore.js'
 
 const SignUp = () => {
   const { colors } = useAppContext();
@@ -32,9 +33,17 @@ const SignUp = () => {
     // Cleanup function to clear the interval when the component unmounts
     return () => clearInterval(interval);
   }, []);
-  
-  const handleSignUp = () => {
 
+  const { user, isLoading: loadingState, register } = useAuthStore()
+  
+  const handleSignUp = async () => {
+    const result = await register(username, email, password);
+
+    if (!result.success) {
+      Alert.alert("Error", result.error)
+    }
+
+    router.push('/(auth)')
   }
   
   return (

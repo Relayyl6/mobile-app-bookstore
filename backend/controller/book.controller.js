@@ -6,6 +6,7 @@ import RatingModel from "../models/rating.model.js";
 import recommendationService from "../services/recommendation.service.js";
 
 export const createBook = async (req, res, next) => {
+  // console.log("Trying to create book")
   try {
     const userId = req.user?._id;
 
@@ -63,7 +64,10 @@ export const createBook = async (req, res, next) => {
     }
 
     /* -------- IMAGE UPLOAD -------- */
-    const uploadResponse = await cloudinary.uploader.upload(image);
+    const uploadResponse = await cloudinary.uploader.upload(image, {
+      resource_type: "image",
+    });
+
     const imageUrl = uploadResponse.secure_url;
 
     /* -------- CREATE BOOK -------- */
@@ -92,8 +96,16 @@ export const createBook = async (req, res, next) => {
       book,
     });
   } catch (error) {
-    next(error);
+    // Cloudinary error normalization
+    if (typeof error === "object" && error.message && typeof error.message === "object") {
+      const err = new Error(error.message.message || "Image upload failed");
+      err.statusCode = error.http_code || 400;
+      return next(err);
+    }
+  
+    return next(error);
   }
+
 };
 
 

@@ -4,8 +4,11 @@ import userModel from "../models/auth.model.js";
 import { NODE_ENV } from "../config/env.js";
 
 export const register = async (req, res, next) => {
-    const session = await mongoose.startSession();
-    session.startTransaction()
+    // const session = await mongoose.startSession();
+    // session.startTransaction()
+    console.log("👉 HIT /register", req.body);
+
+    console.log("Registration started")
 
     try {
         const { email, username, password, preferredGenres, favoriteAuthors } = req.body;
@@ -86,8 +89,8 @@ export const register = async (req, res, next) => {
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
         
-        await session.commitTransaction()
-        session.endSession();
+        // await session.commitTransaction()
+        // session.endSession();
 
         res.status(201).json({
             message: "User successfully registered",
@@ -102,8 +105,8 @@ export const register = async (req, res, next) => {
             }
         })
     } catch (error) {
-        await session.abortTransaction();
-        session.endSession();
+        // await session.abortTransaction();
+        // session.endSession();
         console.error("Error in regsitering route", error)
         res.status(500).json({
             message: "Internal Server Error"

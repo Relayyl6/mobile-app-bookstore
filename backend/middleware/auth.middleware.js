@@ -6,7 +6,7 @@ export const authMiddleware = async (req, res, next) => {
     try {
       let token;
 
-      let header = req.headers.authorizaton;
+      let header = req.headers.authorization;
 
       if (header && header.startsWith("Bearer")) {
         token = header.split(' ')[1]
@@ -40,7 +40,7 @@ export const authMiddleware = async (req, res, next) => {
           })
         }
 
-      let user = await userModel.findbyId(decoded.userId).select('-password') 
+      let user = await userModel.findById(decoded.userId).select('-password') 
 
       if (!user) {
         const error = new Error("User not found, Invalid Token");
