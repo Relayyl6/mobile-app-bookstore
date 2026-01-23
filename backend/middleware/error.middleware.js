@@ -1,11 +1,11 @@
 const errorMiddleware = (err, req, res, next) => {
     try {
         // console.error(err); // log full error for debugging
-        console.log("====== RAW ERROR START ======");
-        console.log(err);
-        console.log("err.message:", err.message);
-        console.log("typeof err.message:", typeof err.message);
-        console.log("====== RAW ERROR END ======");
+        // console.log("====== RAW ERROR START ======");
+        // console.log(err);
+        // console.log("err.message:", err.message);
+        // console.log("typeof err.message:", typeof err.message);
+        // console.log("====== RAW ERROR END ======");
 
         let statusCode = err.statusCode || 500;
         let message = err.message || "Server Error";
@@ -29,7 +29,7 @@ const errorMiddleware = (err, req, res, next) => {
 
         // Mongoose validation error
         else if (err.name === "ValidationError") {
-            statusCode = 400;
+            statusCode = 422;
             message = Object.values(err.errors)
                 .map(value => value.message)
                 .join(", ");

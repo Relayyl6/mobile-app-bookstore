@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useAppContext } from '@/context/useAppContext'
 // import createStyles from '@/constants/create.styles';
@@ -7,6 +7,7 @@ import { Image } from 'expo-image';
 // import icons from '@/constants/data'
 import {Ionicons} from '@expo/vector-icons'
 import { Link } from 'expo-router';
+import { useAuthStore } from '@/store/authStore';
 
 const SignIn = () => {
   const { colors, iconsuse } = useAppContext();
@@ -15,9 +16,15 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { isLoading, login } = useAuthStore()
 
-  const handleLogin = () => {}
+  const handleLogin = async () => {
+    const result = await login(email, password);
+    if (!result.success) {
+      Alert.alert("Error", result.error);
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -103,7 +110,7 @@ const SignIn = () => {
               <Text style={styles.footerText}>Don't have an Account?</Text>
               <Link href="/signup" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.link}>Sign Up</Text>
+                  {!isLoading ? <Text style={styles.link}>Log In</Text> : <View><Text>Loading </Text><ActivityIndicator color={colors.primary } size='small'/></View>}
                 </TouchableOpacity>
               </Link>
             </View>

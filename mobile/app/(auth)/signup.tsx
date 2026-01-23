@@ -13,7 +13,7 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const router = useRouter()
   // useEffect(() => setInterval() => )
@@ -34,11 +34,12 @@ const SignUp = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const { user, isLoading: loadingState, register } = useAuthStore()
+  const { user, isLoading, register } = useAuthStore()
   
   const handleSignUp = async () => {
     const result = await register(username, email, password);
 
+    console.log(result)
     if (!result.success) {
       Alert.alert("Error", result.error)
     }
@@ -153,7 +154,7 @@ const SignUp = () => {
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an Account?</Text>     
               <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.link}>Sign In</Text>
+                {!isLoading ? <Text style={styles.link}>Log In</Text> : <View><Text>Loading </Text><ActivityIndicator color={colors.primary } size='small'/></View>}
               </TouchableOpacity>
             </View>
         </View>

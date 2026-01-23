@@ -6,7 +6,7 @@ import { NODE_ENV } from "../config/env.js";
 export const register = async (req, res, next) => {
     // const session = await mongoose.startSession();
     // session.startTransaction()
-    console.log("👉 HIT /register", req.body);
+    // console.log("HIT /register", req.body);
 
     console.log("Registration started")
 
@@ -56,7 +56,7 @@ export const register = async (req, res, next) => {
         if (existingUser) {
             if (existingUser.email === email) {
                 const error = new Error("Email already exists");
-                error.statusCode = 400
+                error.statusCode = 409
                 return next(error)
             }
 

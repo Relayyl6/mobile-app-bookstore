@@ -1,12 +1,36 @@
 import { AppContextProvider } from "@/context/useAppContext";
-import { SplashScreen, Stack } from "expo-router";
+import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import { useFonts } from "expo-font";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Safescreen from "@/components/Safescreen";
 import { StatusBar } from "expo-status-bar";
+import { useAuthStore } from "@/store/authStore";
 
 export default function RootLayout() {
+  const router = useRouter();
+  const segments = useSegments();
+  const { checkAuth, user, token } = useAuthStore()
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  // handle navigation based on auth state
+  useEffect(() => {
+    if (!isReady) return;
+    
+    const inAuthScreen = segments[0] === "(auth)";
+    const isSignedIn = user && token
+
+    if (!isSignedIn && !inAuthScreen) {
+      router.replace("/(auth)")
+    } else if (isSignedIn && inAuthScreen) {
+      router.replace("/(tabs)")
+    }
+  }, [isReady, user, token, segments, router])
+  
   const [fontLoaded, error] = useFonts({
     // JetBrains Mono
     "JetBrainsMono-Thin": require("../assets/fonts/ttf/JetBrainsMono-Thin.ttf"),
@@ -48,6 +72,7 @@ export default function RootLayout() {
     if (error) throw error;
     if (fontLoaded) {
       SplashScreen.hideAsync();
+      setIsReady(true);
     }
   }, [fontLoaded, error]);
 

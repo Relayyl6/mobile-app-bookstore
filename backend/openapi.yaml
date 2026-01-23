@@ -1,0 +1,378 @@
+openapi: 3.0.0
+info:
+  title: Book Store & Recommendation API
+  description: Backend API for authentication, book management, ratings, interactions, and personalized recommendations.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        profileImage:
+          type: string
+
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        subTitle:
+          type: string
+        author:
+          type: string
+        caption:
+          type: string
+        description:
+          type: string
+        genres:
+          type: array
+          items:
+            type: string
+        image:
+          type: string
+        price:
+          type: number
+        isbn:
+          type: string
+        publishedYear:
+          type: number
+        averageRating:
+          type: number
+        totalRatings:
+          type: number
+        totalViews:
+          type: number
+        totalPurchases:
+          type: number
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: Invalid request
+        hint:
+          type: string
+          example: Check the API documentation for the correct endpoint
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Validation failed
+        fields:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            email: Invalid email format
+            password: Must be at least 8 characters
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  /store/register:
+    post:
+      summary: Register a new user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, username, password]
+              properties:
+                email:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+                preferredGenres:
+                  type: array
+                  items:
+                    type: string
+                favoriteAuthors:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+
+        400:
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        404:
+          description: Endpoint not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Endpoint not found
+                hint: Did you mean POST /store/register?
+
+        409:
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+        422:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+
+
+  /store/log-in:
+    post:
+      summary: Login user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        201:
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+        400:
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /books:
+    post:
+      summary: Create a book
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+      responses:
+        201:
+          description: Book created
+
+    get:
+      summary: Get all books (paginated)
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of books
+
+  /books/{id}:
+    get:
+      summary: Get a single book
+      tags: [Books]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Book retrieved
+
+    put:
+      summary: Update a book
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Book updated
+
+    delete:
+      summary: Delete a book
+      tags: [Books]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Book deleted
+
+  /books/views/{id}:
+    post:
+      summary: Increment book views
+      tags: [Interactions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: View recorded
+
+  /books/purchase/{id}:
+    post:
+      summary: Increment book purchases
+      tags: [Interactions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Purchase recorded
+
+  /books/rating:
+    post:
+      summary: Add or update a rating
+      tags: [Ratings]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookId, rating]
+              properties:
+                bookId:
+                  type: string
+                rating:
+                  type: number
+                review:
+                  type: string
+      responses:
+        200:
+          description: Rating saved
+
+  /recommendations:
+    get:
+      summary: Get personalized recommendations
+      tags: [Recommendations]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Recommended books
+
+  /recommendations/similar/{bookId}:
+    get:
+      summary: Get similar books
+      tags: [Recommendations]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Similar books
+
+  /recommendations/popular:
+    get:
+      summary: Get popular books
+      tags: [Recommendations]
+      responses:
+        200:
+          description: Popular books
+
+  /recommendations/new:
+    get:
+      summary: Get new releases
+      tags: [Recommendations]
+      responses:
+        200:
+          description: New books

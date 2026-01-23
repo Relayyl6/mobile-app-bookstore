@@ -33,7 +33,7 @@ export const ThemeSwitcher: React.FC = () => {
         <Text style={[styles.label, { color: colors.textPrimary }]}>Color Theme</Text>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          style={[ styles.themeScroll, { gap: 10 } ]}
+          style={[ styles.themeScroll, { gap: 20 } ]}
         >
           {themes.map((theme) => (
             <TouchableOpacity

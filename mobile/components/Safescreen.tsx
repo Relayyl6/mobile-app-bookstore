@@ -8,7 +8,13 @@ const Safescreen: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { colors } = useAppContext()
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+    <View style={[
+      styles.container,
+        {
+          paddingTop: insets.top,
+          backgroundColor: colors.background
+        }
+      ]}>
       {children}
     </View>
   )
