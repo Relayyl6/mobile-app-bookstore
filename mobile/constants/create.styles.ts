@@ -35,7 +35,7 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 14  ,
     color: COLORS.textSecondary,
     textAlign: "center",
   },
@@ -50,7 +50,7 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
     marginBottom: 8,
     color: COLORS.textPrimary,
     fontWeight: "500",
-  },
+  },    
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
