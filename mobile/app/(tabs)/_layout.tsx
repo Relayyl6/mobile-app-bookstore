@@ -23,7 +23,7 @@ export default function TabLayout() {
         borderTopWidth: 1,
         elevation: 8,
         paddingBottom: insets.bottom,
-        height: 60 + insets.bottom,
+        height: 70 + insets.bottom,
         paddingTop: 5
       },
       tabBarItemStyle: {

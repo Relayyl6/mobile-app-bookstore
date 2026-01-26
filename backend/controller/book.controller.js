@@ -1,9 +1,12 @@
+import { GEMINI_API_KEY } from "../config/env.js";
 import cloudinary from "../lib/cloudinary.js";
 import { autoUpdatePreferences } from "../lib/utils.js";
 import bookModel from "../models/book.model.js";
 import interactionModel from "../models/interaction.model.js";
 import RatingModel from "../models/rating.model.js";
 import recommendationService from "../services/recommendation.service.js";
+import { GoogleGenerativeAI } from "@google/genai/node";
+
 
 export const createBook = async (req, res, next) => {
   // console.log("Trying to create book")
@@ -106,6 +109,28 @@ export const createBook = async (req, res, next) => {
     return next(error);
   }
 
+};
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+
+export const describeImage = async (req, res) => {
+  const { imageBase64 } = req.body;
+
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+  });
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        mimeType: "image/jpeg",
+        data: imageBase64,
+      },
+    },
+    "Describe this image in a clear, structured way.",
+  ]);
+
+  res.json({ description: result.response.text() });
 };
 
 

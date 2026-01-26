@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 
 const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
   container: {
-    flexGrow: 1,
+    // flexGrow: 1,
     backgroundColor: COLORS.background,
     padding: 16,
   },
@@ -74,7 +74,8 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: 12,
-    height: 100,
+    height: 120,
+    textAlignVertical: "top",
     color: COLORS.textDark,
   },
   ratingContainer: {
@@ -134,6 +135,106 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
   },
   buttonIcon: {
     marginRight: 8,
+  },
+  categoryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  categoryItem : {
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.inputBackground,
+  },
+  categoryButton: {
+    fontWeight: '600',
+    fontSize: 12
+  },
+  categoryButtonActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  generateButton: {
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+
+  generateButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+
+  modalCard: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 6,
+  },
+
+  modalSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+
+  isbnBox: {
+    width: "100%",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 20,
+  },
+
+  isbnText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+
+  modalButton: {
+    width: "100%",
+    backgroundColor: COLORS.primary,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
 
