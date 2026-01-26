@@ -61,7 +61,7 @@ const Create = () => {
       //@ts-ignore  
       autoFillTimer.current = setTimeout(() => {
         setPublishedYear(CURRENT_YEAR);
-      }, 10000); // ⏱️ 3 seconds (change if you want)
+      }, 10000); // ⏱ 10 seconds
     }
   
     return () => {
@@ -116,8 +116,19 @@ const Create = () => {
     try {
       setIsLoading(true)
 
+      // const res = await fetch("https://your-api.com/describe-image", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ imageBase64 }),
+      //   });
+
+
+      // const data = await res.json();
+      // setDescription(data.description);
+
       const uriParts = image?.split(".");
-      const fileType = uriParts?.[0]?.[uriParts?.length - 1]
+      const fileType = uriParts?.[uriParts?.length - 1]
+      const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg"
     } catch (error) {
       console.error("an error occured", error)
     } finally {

@@ -114,20 +114,28 @@ export const createBook = async (req, res, next) => {
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export const describeImage = async (req, res) => {
-  const { imageBase64 } = req.body;
+  const { imageBase64, title, caption, author } = req.body;
 
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
   });
 
+  const prompt = `
+    You are an expert book cataloguer.
+    Describe the image visually and include the following information:
+    - Title: ${title || "N/A"}
+    - Caption: ${caption || "N/A"}
+    - Author: ${author || "N/A"}
+  `;
+
   const result = await model.generateContent([
     {
       inlineData: {
         mimeType: "image/jpeg",
-        data: imageBase64,
+        data: [imageBase64, title, caption, author].join(", "),
       },
     },
-    "Describe this image in a clear, structured way.",
+    prompt,
   ]);
 
   res.json({ description: result.response.text() });
