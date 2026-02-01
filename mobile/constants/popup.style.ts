@@ -1,0 +1,177 @@
+import { StyleSheet } from "react-native";
+
+const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  popupContainer: {
+    maxWidth: 400,
+    borderRadius: 12,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+    maxHeight: '70%',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  fileTypesRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    gap: 8,
+    paddingBottom: 12,
+  },
+  fileTypeButton: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    gap: 4,
+    position: 'relative',
+  },
+  fileTypeLabel: {
+    fontSize: 11,
+  },
+  checkBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  divider: {
+    height: 1,
+    marginHorizontal: 12,
+    marginBottom: 10,
+  },
+  selectedItemsContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  selectedItemsWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  selectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  selectedBadgeText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  contextScrollView: {
+    maxHeight: 240,
+    paddingHorizontal: 12,
+  },
+  contextItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 6,
+  },
+  contextLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  contextIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  contextTextContainer: {
+    flex: 1,
+  },
+  contextLabel: {
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  contextDescription: {
+    fontSize: 11,
+    lineHeight: 14,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    gap: 8,
+  },
+  selectionSummary: {
+    flexDirection: 'row',
+    gap: 6,
+    flex: 1,
+    flexWrap: 'wrap',
+  },
+  summaryBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  summaryText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  confirmButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  confirmText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  pointer: {
+    position: 'absolute',
+    bottom: -8,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+})
+
+export default styles

@@ -5,7 +5,7 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
   container: {
     // flexGrow: 1,
     backgroundColor: COLORS.background,
-    padding: 16,
+    padding: 8,
   },
   scrollViewStyle: {
     flex: 1,
@@ -13,9 +13,9 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.cardBackground,
-    borderRadius: 16,
-    padding: 20,
-    marginVertical: 16,
+    borderRadius: 8,
+    padding: 5,
+    marginVertical: 8,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -27,15 +27,17 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
   header: {
     alignItems: "center",
     marginBottom: 24,
+    padding: 12
   },
   title: {
     fontSize: 24,
     fontWeight: "700",
     color: COLORS.textPrimary,
     marginBottom: 8,
+    
   },
   subtitle: {
-    fontSize: 14  ,
+    fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: "center",
   },
@@ -235,6 +237,31 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+
+  segmentContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    borderRadius: 5,
+    borderWidth: 1,
+    padding: 2,
+    gap: 4,
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentText: {
+    fontSize: 14,
+    letterSpacing: 0.2,
   },
 });
 

@@ -5,8 +5,9 @@ import bookModel from "../models/book.model.js";
 import interactionModel from "../models/interaction.model.js";
 import RatingModel from "../models/rating.model.js";
 import recommendationService from "../services/recommendation.service.js";
-import { GoogleGenerativeAI } from "@google/genai/node";
+import { GoogleGenAI } from "@google/genai";
 
+const ai = new GoogleGenAI({});
 
 export const createBook = async (req, res, next) => {
   // console.log("Trying to create book")
@@ -111,14 +112,8 @@ export const createBook = async (req, res, next) => {
 
 };
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
 export const describeImage = async (req, res) => {
   const { imageBase64, title, caption, author } = req.body;
-
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-  });
 
   const prompt = `
     You are an expert book cataloguer.
@@ -128,15 +123,18 @@ export const describeImage = async (req, res) => {
     - Author: ${author || "N/A"}
   `;
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: "image/jpeg",
-        data: [imageBase64, title, caption, author].join(", "),
-      },
-    },
-    prompt,
-  ]);
+  const result = await model.generateContent({
+      model: "gemini-1.5-flash",
+      contents: [
+        {
+          inlineData: {
+          mimeType: "image/jpeg",
+            data: [imageBase64, title, caption, author].join(", "),
+          },
+        },
+        prompt,
+      ]
+    });
 
   res.json({ description: result.response.text() });
 };

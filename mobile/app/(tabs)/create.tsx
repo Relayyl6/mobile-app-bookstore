@@ -22,6 +22,9 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { formatISBN13, generateISBN13, GENRES } from '@/constants/data';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuthStore } from '@/store/authStore';
+import { API_URL } from '@/store/api';
+import ISBNModal from '@/components/IsbnModal';
+import SuccessModal from '@/components/SuccessModal';
 // import { GoogleGenAI } from "@google/genai";
 
 
@@ -44,6 +47,8 @@ const Create = () => {
   const [ displayedGenresCount, setDisplayedGenresCount ] = useState(5);
   const [ showPicker, setShowPicker ] = useState(false);
   const [ showIsbnModal, setShowIsbnModal ] = useState(false);
+  const [ showSuccessModal, setShowSuccessModal ] = useState(false);
+  const [ mode, setMode ] = useState<"Recommendation" | "Upload">("Recommendation")
 
   const router = useRouter();
   const { token } = useAuthStore()
@@ -116,19 +121,68 @@ const Create = () => {
     try {
       setIsLoading(true)
 
-      // const res = await fetch("https://your-api.com/describe-image", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ imageBase64 }),
-      //   });
-
-
-      // const data = await res.json();
-      // setDescription(data.description);
-
       const uriParts = image?.split(".");
       const fileType = uriParts?.[uriParts?.length - 1]
-      const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg"
+      const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg";
+
+      const imageDataUrl = `data:${imageType};base64,${imageBase64}`
+
+      const res = await fetch(`${API_URL}/api/v1/books/describe-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ imageBase64, title, caption, author }),
+        });
+      const data = await res.json();
+      setDescription(data.description);
+      console.log(data.description)
+
+      
+      const bookRes = await fetch(`${API_URL}/api/v1/books`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title, subTitle, author, caption, description, genres, image: imageDataUrl, price, isbn, publishedYear
+        })
+      })
+      
+      const createdBook = await bookRes.json()
+
+      if (!bookRes.ok) {
+        throw new Error(createdBook.message || "Something went wrong")
+      }
+
+      await fetch(`${API_URL}/api/v1/books/rating`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          bookId: createdBook.data.user.id,
+          rating,
+          review: caption
+        })          
+      })
+
+      setShowSuccessModal(true)
+
+      setTitle("");
+      setSubTitle("");
+      setAuthor("");
+      setCaption("");
+      setDescription("");
+      setGenres([]);
+      setPrice("");
+      setImage(null);
+      setRating(3);
+      setIsbn("");
+      setPublishedYear("");
+      setImageBase64(null);
+
+      router.push("/")
     } catch (error) {
       console.error("an error occured", error)
     } finally {
@@ -163,8 +217,72 @@ const Create = () => {
         <View style={styles.card}>
           {/* // header */}
           <View style={styles.header}>
-            <Text style={[styles.title, { textAlign: "center" }]}>Add Book Recommendation</Text>
+            <Text style={[styles.title, { textAlign: "center", width: '100%' }]}>
+              Add Book{"\n"}{mode}
+            </Text>
             <Text style={styles.subtitle}>Share your favorite reads with others</Text>
+          </View>
+
+          <View style={styles.segmentContainer}>
+            {/* Segmented control wrapper */}
+            <View
+              style={[
+                styles.segmentedControl,
+                {
+                  backgroundColor: colors.border + '30', // subtle background tint
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              {/* Recommendation button */}
+              <TouchableOpacity
+                onPress={() => setMode('Recommendation')}
+                activeOpacity={0.7}
+                style={[
+                  styles.segment,
+                  {
+                    backgroundColor:
+                      mode === 'Recommendation' ? colors.primary : 'transparent',
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.segmentText,
+                    {
+                      color: mode === 'Recommendation' ? '#FFFFFF' : colors.textPrimary,
+                      fontWeight: mode === 'Recommendation' ? '600' : '400',
+                    },
+                  ]}
+                >
+                  Recommend
+                </Text>
+              </TouchableOpacity>
+
+              {/* Upload button */}
+              <TouchableOpacity
+                onPress={() => setMode('Upload')}
+                activeOpacity={0.7}
+                style={[
+                  styles.segment,
+                  {
+                    backgroundColor: mode === 'Upload' ? colors.primary : 'transparent',
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.segmentText,
+                    {
+                      color: mode === 'Upload' ? '#FFFFFF' : colors.textPrimary,
+                      fontWeight: mode === 'Upload' ? '600' : '400',
+                    },
+                  ]}
+                >
+                  Upload
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
             {/* // body  */}
@@ -394,48 +512,17 @@ const Create = () => {
           )}
         </TouchableOpacity>
 
- 
-        <Modal
-          transparent
-          animationType="fade"
-          visible={showIsbnModal}
-          onRequestClose={() => setShowIsbnModal(false)}
-        >
-          <View style={styles.modalBackdrop}>
-            <View style={styles.modalCard}>
-
-              {/* Title */}
-              <Text style={styles.modalTitle}>
-                ISBN Registered
-              </Text>
-
-              {/* Subtitle */}
-              <Text style={styles.modalSubtitle}>
-                This book has been assigned the following ISBN
-              </Text>
-
-              {/* ISBN */}
-              <View style={styles.isbnBox}>
-                <Text
-                  style={styles.isbnText}
-                  numberOfLines={1}
-                  ellipsizeMode="middle"
-                >
-                  {formatISBN13(isbn)}
-                </Text>
-              </View>
-
-              {/* Actions */}
-              <Pressable
-                style={styles.modalButton}
-                onPress={() => setShowIsbnModal(false)}
-              >
-                <Text style={styles.modalButtonText}>Done</Text>
-              </Pressable>
-
-            </View>
-          </View>
-        </Modal>
+        <ISBNModal
+          isbn={isbn}
+          showIsbnModal={showIsbnModal}
+          setShowIsbnModal={setShowIsbnModal}
+        />
+        
+        <SuccessModal
+          showSuccessModal={showSuccessModal}
+          setShowSuccessModal={setShowSuccessModal}
+        />
+        
       </ScrollView>
     </KeyboardAvoidingView>
   )

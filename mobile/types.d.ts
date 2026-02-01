@@ -64,3 +64,19 @@ declare module '*.svg' {
   const content: string;
   export default content;
 }
+
+declare type FileType = 'photo' | 'video' | 'document' | 'audio'
+declare type AIContext = 'deep-research' | 'web-search' | 'book-depth' | 'quick-answer' | 'summarize'
+
+declare interface FileTypeOption {
+  id: FileType
+  icon: keyof typeof Ionicons.glyphMap
+  label: string
+}
+
+declare interface ContextOption {
+  id: AIContext
+  label: string
+  icon: keyof typeof Ionicons.glyphMap
+  description: string
+}

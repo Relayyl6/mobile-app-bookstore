@@ -72,5 +72,46 @@ export const GENRES = [
     "Children's",
     "Graphic Novel",
     "Comedy",
-    "Education"
+    "Education",
+    "others"
 ]
+
+export const fileTypes: FileTypeOption[] = [
+    { id: 'photo', icon: 'image-outline', label: 'Photo' },
+    { id: 'video', icon: 'videocam-outline', label: 'Video' },
+    { id: 'document', icon: 'document-text-outline', label: 'File' },
+    { id: 'audio', icon: 'musical-notes-outline', label: 'Audio' },
+  ]
+
+export const contextOptions: ContextOption[] = [
+    {
+      id: 'quick-answer',
+      label: 'Quick Answer',
+      icon: 'flash-outline',
+      description: 'Fast, concise response',
+    },
+    {
+      id: 'deep-research',
+      label: 'Deep Research',
+      icon: 'search-outline',
+      description: 'Comprehensive analysis',
+    },
+    {
+      id: 'web-search',
+      label: 'Web Search',
+      icon: 'globe-outline',
+      description: 'Search the web for context',
+    },
+    {
+      id: 'book-depth',
+      label: 'Book Depth',
+      icon: 'book-outline',
+      description: 'Analyze entire book context',
+    },
+    {
+      id: 'summarize',
+      label: 'Summarize',
+      icon: 'list-outline',
+      description: 'Extract key points',
+    },
+  ]

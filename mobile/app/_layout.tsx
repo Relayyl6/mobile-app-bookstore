@@ -9,27 +9,29 @@ import { useAuthStore } from "@/store/authStore";
 
 export default function RootLayout() {
   const router = useRouter();
-  const segments = useSegments();
-  const { checkAuth, user, token } = useAuthStore()
-  const [isReady, setIsReady] = useState(false);
+  // const segments = useSegments();
+  // const { checkAuth, user, token } = useAuthStore()
+  // const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
+  // useEffect(() => {
+  //   checkAuth()
+  // }, [])
 
-  // handle navigation based on auth state
-  useEffect(() => {
-    if (!isReady) return;
+  // // handle navigation based on auth state
+  // useEffect(() => {
+  //   // if (!isReady) return;
     
-    const inAuthScreen = segments[0] === "(auth)";
-    const isSignedIn = user && token
+  //   // const inAuthScreen = segments[0] === "(auth)";
+  //   // const isSignedIn = user && token
 
-    if (!isSignedIn && !inAuthScreen) {
-      router.replace("/(auth)")
-    } else if (isSignedIn && inAuthScreen) {
-      router.replace("/(tabs)")
-    }
-  }, [isReady, user, token, segments, router])
+  //   // if (!isSignedIn && !inAuthScreen) {
+  //   //   router.replace("/(auth)")
+  //   // } else if (isSignedIn && inAuthScreen) {
+  //   //   router.replace("/(tabs)")
+  //   // }
+    
+  // }, [isReady, user, token, segments, router])
+  // router.replace("/(tabs)")
   
   const [fontLoaded, error] = useFonts({
     // JetBrains Mono
@@ -68,28 +70,27 @@ export default function RootLayout() {
     "JetBrainsMonoNL-ExtraBoldItalic": require("../assets/fonts/ttf/JetBrainsMonoNL-ExtraBoldItalic.ttf"),
   })
 
-  useEffect(() => {   
-    if (error) throw error;
-    if (fontLoaded) {
-      SplashScreen.hideAsync();
-      setIsReady(true);
-    }
-  }, [fontLoaded, error]);
+  // useEffect(() => {   
+  //   if (error) throw error;
+  //   if (fontLoaded) {
+  //     SplashScreen.hideAsync();
+  //     setIsReady(true);
+  //   }
+  // }, [fontLoaded, error]);
 
-  if (!fontLoaded) {
-    return null;
-  }
+  // if (!fontLoaded) {
+  //   return null;
+  // }
 
-  if (!fontLoaded && !error) return null;
+  // if (!fontLoaded && !error) return null;
 
   return (
     <AppContextProvider>
       <Safescreen>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+          {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="setting" />
+          {/* <Stack.Screen name="(auth)" /> */}
         </Stack>
       </Safescreen> 
 

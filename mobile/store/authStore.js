@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { API_URL } from './api.ts'
 
 export const useAuthStore = create((set) => ({
 //   bears: 0,
@@ -10,7 +11,7 @@ export const useAuthStore = create((set) => ({
     register: async (username, email, password) => {
         set({isLoading: true})
         try {
-            const response = await fetch(`https://store-backend-api-tj22.onrender.com/api/v1/store/register`, {
+            const response = await fetch(`${API_URL}/api/v1/store/register`, {
                 method: "POST",
                 headers: {
                     'Content-Type': "application/json"
@@ -56,7 +57,7 @@ export const useAuthStore = create((set) => ({
 
             if (userJson) {
                 set({
-                    token: JSON.parse(token) || "null",
+                    token: JSON.parse(token) || null,
                     user: userJson ? JSON.parse(userJson) : null
                 })
             }
@@ -110,7 +111,7 @@ export const useAuthStore = create((set) => ({
     logout: async() => {
         try {
             await AsyncStorage.removeItem('token')
-            awaitAsyncStorage.removeItem('user')
+            await AsyncStorage.removeItem('user')
             set({
                 user: null,
                 token: null

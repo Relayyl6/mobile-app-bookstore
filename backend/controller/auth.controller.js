@@ -91,6 +91,7 @@ export const register = async (req, res, next) => {
         
         // await session.commitTransaction()
         // session.endSession();
+        console.log(JSON.stringify(user))
 
         res.status(201).json({
             message: "User successfully registered",

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from "../middleware/auth.middleware.js";
-import { createBook, getBooks, deleteBook, updateBook, incrementBookViews, incrementBookPurchases, addOrUpdateRating, deleteRating, getSingleBook } from '../controller/book.controller.js'
+import { createBook, getBooks, deleteBook, updateBook, incrementBookViews, incrementBookPurchases, addOrUpdateRating, deleteRating, getSingleBook, describeImage } from '../controller/book.controller.js'
 import { manualCleanup } from '../lib/cron.js';
 
 const bookRouter = Router()
@@ -19,6 +19,9 @@ bookRouter.put("/:id", authMiddleware, updateBook)
 
 // get a single book
 bookRouter.get("/:id", authMiddleware, getSingleBook)
+
+// describe image using generative AI
+bookRouter.post("/describe-image", authMiddleware, describeImage)
 
 
 

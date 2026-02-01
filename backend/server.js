@@ -6,7 +6,7 @@ import bookRouter from "./routes/book.routes.js";
 import { connectToDatabse } from "./db/db.js";
 import errorMiddleware from "./middleware/error.middleware.js";
 import { authMiddleware } from "./middleware/auth.middleware.js";
-import cors from "cors"
+// import cors from "cors"
 import recommendationRouter from "./routes/recommendation.routes.js";
 import { startHealthCheckJob, startPreferenceCleanupJob } from "./lib/cron.js";
 import {setupDNS} from "./dns-resolver.js"
