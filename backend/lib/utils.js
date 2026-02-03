@@ -5,7 +5,6 @@ import bookModel from '../models/book.model.js';
 import interactionModel from '../models/interaction.model.js';
 import AuthorExpiryModel from '../models/authorExpiry.model.js';
 
-
 export const  generateToken = (userId) => {
     return jwt.sign(
         {userId: userId},
@@ -16,20 +15,37 @@ export const  generateToken = (userId) => {
 
 // Valid genres - single source of truth
 export const VALID_GENRES = [
-  "Fiction", 
-  "Non-Fiction", 
-  "Fantasy", 
-  "Science Fiction", 
-  "Mystery", 
+  "Fiction",
+  "Mystery",
   "Thriller",
-  "Romance", 
-  "Horror", 
-  "Biography", 
-  "History", 
-  "Self-Help", 
-  "Poetry", 
-  "Drama", 
-  "Adventure" 
+  "Romance",
+  "Science Fiction",
+  "Fantasy",
+  "Horror",
+  "Historical Fiction",
+  "Non-Fiction",
+  "Biography",
+  "Memoir",
+  "Self-Help",
+  "Business",
+  "Psychology",
+  "Philosophy",
+  "History",
+  "Science",
+  "Technology",
+  "Travel",
+  "Cooking",
+  "Art & Photography",
+  "Poetry",
+  "Drama",
+  "Crime",
+  "Adventure",
+  "Young Adult",
+  "Children's",
+  "Graphic Novel",
+  "Comedy",
+  "Education",
+  "others" 
 ];
 
 /**

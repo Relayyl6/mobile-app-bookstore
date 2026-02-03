@@ -11,6 +11,9 @@ import recommendationRouter from "./routes/recommendation.routes.js";
 import { startHealthCheckJob, startPreferenceCleanupJob } from "./lib/cron.js";
 import {setupDNS} from "./dns-resolver.js"
 import { swaggerDocs } from "./docs/swagger.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express()
 

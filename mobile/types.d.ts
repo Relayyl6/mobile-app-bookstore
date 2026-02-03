@@ -32,6 +32,10 @@ declare interface AppContextType {
   setThemeMode: (mode: ThemeMode) => void;
   setCurrentTheme: (theme: ThemeType) => void;
   toggleThemeMode: () => void;
+  userId: string | null;
+  setUserId: React.Dispatch<React.SetStateAction<string | null>>;
+  bookId: string | null;
+  setBookId:  React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 // Image Module Declarations
@@ -79,4 +83,18 @@ declare interface ContextOption {
   label: string
   icon: keyof typeof Ionicons.glyphMap
   description: string
+}
+
+declare type MessageRole = 'user' | 'assistant'
+
+declare type FileType = 'photo' | 'video' | 'document' | 'audio'
+declare type AIContext = 'deep-research' | 'web-search' | 'book-depth' | 'quick-answer' | 'summarize'
+
+declare interface ChatMessage {
+  id: string
+  role: MessageRole
+  text: string
+  timestamp: Date
+  fileType?: FileType
+  aiContext?: AIContext
 }

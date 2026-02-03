@@ -34,9 +34,9 @@ const homeStyles = (COLORS: ColorScheme) => StyleSheet.create({
   },
   bookCard: {
     backgroundColor: COLORS.cardBackground,
-    borderRadius: 16,
-    marginBottom: 20,
-    padding: 16,
+    borderRadius: 8,
+    marginBottom: 10,
+    padding: 8,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -49,7 +49,7 @@ const homeStyles = (COLORS: ColorScheme) => StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 6,
   },
   userInfo: {
     flexDirection: "row",
@@ -69,9 +69,9 @@ const homeStyles = (COLORS: ColorScheme) => StyleSheet.create({
   bookImageContainer: {
     width: "100%",
     height: 200,
-    borderRadius: 12,
+    borderRadius: 6,
     overflow: "hidden",
-    marginBottom: 12,
+    marginBottom: 6,
     backgroundColor: COLORS.border,
   },
   bookImage: {

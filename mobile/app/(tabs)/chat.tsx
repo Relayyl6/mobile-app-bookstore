@@ -9,27 +9,16 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native'
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import createStyles from '@/constants/create.styles'
 import { useAppContext } from '@/context/useAppContext'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import AttachmentPopup from '@/components/PopUp'
+import { pickFile, pickImage, uploadFile } from '@/constants/utils'
 import * as DocumentPicker from 'expo-document-picker'
+import { useAuthStore } from '@/store/authStore'
 
-type MessageRole = 'user' | 'assistant'
-
-type FileType = 'photo' | 'video' | 'document' | 'audio'
-type AIContext = 'deep-research' | 'web-search' | 'book-depth' | 'quick-answer' | 'summarize'
-
-interface ChatMessage {
-  id: string
-  role: MessageRole
-  text: string
-  timestamp: Date
-  fileType?: FileType
-  aiContext?: AIContext
-}
 
 const Chat = () => {
   const { colors } = useAppContext()
@@ -44,7 +33,15 @@ const Chat = () => {
     fileTypes: FileType[]
     contexts: AIContext[]
   } | null>(null)
+  const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null)
+  const [image, setImage] = useState<string | null>(null)
+  const { userId: contextUserId, bookId: contextBookId, setUserId } = useAppContext()
+  const { user } = useAuthStore()
 
+  useEffect(() => {
+    setUserId(user.id)
+  }, [])
 
   const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 
@@ -69,6 +66,10 @@ const Chat = () => {
     })
   }
 
+  const hanbleFileUpload = async () => {
+    
+  }
+
   const handleAttachmentConfirm = async (selectedItems: {
     fileTypes: FileType[]
     contexts: AIContext[]
@@ -82,23 +83,15 @@ const Chat = () => {
     // Now trigger the appropriate pickers based on selected file types
     try {
       if (selectedItems.fileTypes.includes('photo')) {
-        // Uncomment when ready to implement:
-        // const result = await ImagePicker.launchImageLibraryAsync({
-        //   mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        //   allowsMultipleSelection: true,
-        //   quality: 0.8,
-        // })
-        // if (!result.canceled) {
-        //   // Handle the selected images - upload to your backend/MCP
-        //   console.log('Selected images:', result.assets)
-        // }
-        Alert.alert('Photo picker', `Wire up expo-image-picker here`)
+        await pickImage(imageBase64, setImage, setImageBase64)
       }
       if (selectedItems.fileTypes.includes('video')) {
-        Alert.alert('Video picker', 'Wire up expo-image-picker for videos here')
+        // Alert.alert('Video picker', 'Wire up expo-image-picker for videos here')
+        await pickImage(imageBase64, setImage, setImageBase64)
       }
       if (selectedItems.fileTypes.includes('document')) {
-        Alert.alert('Document picker', 'Wire up expo-document-picker here')
+        // Alert.alert('Document picker', 'Wire up expo-document-picker here')
+        await pickFile(setFile);
       }
       if (selectedItems.fileTypes.includes('audio')) {
         Alert.alert('Audio picker', 'Wire up expo-document-picker for audio here')
@@ -137,7 +130,34 @@ const Chat = () => {
 
     try {
       // 2. Get AI response
-      const aiText = await simulateAIResponse(trimmed)
+      // @ts-ignore
+      let finalUserId = contextUserId;
+      let finalBookId = contextBookId;
+          
+      if (pendingAttachments?.fileTypes.length !== 0) {
+        const result = await uploadFile(file, userMsg, image);
+        console.log(result)
+        // 2. Only override if result exists (isn't null/void)
+        if (result) {
+          finalUserId = result.userId;
+          finalBookId = result.bookId;
+        }
+      }
+      
+      // 3. Use the "final" variables in your next request
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/books/chat`, { 
+        method: 'POST', 
+        body: JSON.stringify({ 
+          userId: finalUserId, 
+          bookId: finalBookId, 
+          message: userMsg?.text  
+        }) 
+      });
+      if (!response.ok) {
+        console.error("An error occured while getting the cht result")
+      }
+      const { result: aiText } = await response.json()
+      // const aiText = await simulateAIResponse(trimmed)
 
       const aiMsg: ChatMessage = {
         id: generateId(),
@@ -157,6 +177,9 @@ const Chat = () => {
     } finally {
       setIsLoading(false)
       scrollToBottom()
+      setFile(null)
+      setImage(null)
+      setImageBase64(null)
     }
   }
 

@@ -49,6 +49,7 @@ const Create = () => {
   const [ showIsbnModal, setShowIsbnModal ] = useState(false);
   const [ showSuccessModal, setShowSuccessModal ] = useState(false);
   const [ mode, setMode ] = useState<"Recommendation" | "Upload">("Recommendation")
+  const { setBookId } = useAppContext()
 
   const router = useRouter();
   const { token } = useAuthStore()
@@ -136,7 +137,6 @@ const Create = () => {
       setDescription(data.description);
       console.log(data.description)
 
-      
       const bookRes = await fetch(`${API_URL}/api/v1/books`, {
         method: 'POST',
         headers: {
@@ -147,12 +147,14 @@ const Create = () => {
           title, subTitle, author, caption, description, genres, image: imageDataUrl, price, isbn, publishedYear
         })
       })
-      
+
       const createdBook = await bookRes.json()
 
       if (!bookRes.ok) {
         throw new Error(createdBook.message || "Something went wrong")
       }
+
+      setBookId(createdBook.fullBook.id)
 
       await fetch(`${API_URL}/api/v1/books/rating`, {
         method: 'POST',
