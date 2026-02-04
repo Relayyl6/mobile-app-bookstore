@@ -22,7 +22,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { formatISBN13, generateISBN13, GENRES } from '@/constants/data';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuthStore } from '@/store/authStore';
-import { API_URL } from '@/store/api';
+import { EXPO_PUBLIC_API_URL } from '@/store/api';
 import ISBNModal from '@/components/IsbnModal';
 import SuccessModal from '@/components/SuccessModal';
 // import { GoogleGenAI } from "@google/genai";
@@ -114,83 +114,249 @@ const Create = () => {
     }
   }
 
+  // const handleSubmit = async () => {
+  //   if (!title || !author || !caption || !genres || !image || !price || !rating) {
+  //     Alert.alert("Error", "Please fill in teh empty fields")
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsLoading(true)
+
+  //     const uriParts = image?.split(".");
+  //     const fileType = uriParts?.[uriParts?.length - 1]
+  //     const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg";
+
+  //     const imageDataUrl = `data:${imageType};base64,${imageBase64}`
+
+  //     const res = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books/describe-image`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+  //       body: JSON.stringify({ imageBase64, title, caption, author }),
+  //     });
+  //     const data = await res.json();
+  //     setDescription(data.description);
+  //     console.log(data.description)
+
+  //     const bookRes = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books`, {
+  //       method: 'POST',
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`
+  //       },
+  //       body: JSON.stringify({
+  //         title, subTitle, author, caption, description, genres, image: imageDataUrl, price, isbn, publishedYear
+  //       })
+  //     })
+
+  //     const createdBook = await bookRes.json()
+
+  //     if (!bookRes.ok) {
+  //       throw new Error(createdBook.message || "Something went wrong")
+  //     }
+
+  //     setBookId(createdBook.fullBook.id)
+
+  //     await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books/rating`, {
+  //       method: 'POST',
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`
+  //       },
+  //       body: JSON.stringify({
+  //         bookId: createdBook.data.user.id,
+  //         rating,
+  //         review: caption
+  //       })          
+  //     })
+
+  //     setShowSuccessModal(true)
+
+  //     setTitle("");
+  //     setSubTitle("");
+  //     setAuthor("");
+  //     setCaption("");
+  //     setDescription("");
+  //     setGenres([]);
+  //     setPrice("");
+  //     setImage(null);
+  //     setRating(3);
+  //     setIsbn("");
+  //     setPublishedYear("");
+  //     setImageBase64(null);
+
+  //     router.push("/")
+  //   } catch (error) {
+  //     console.error("an error occured", error)
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }
+
   const handleSubmit = async () => {
-    if (!title || !author || !caption || !genres || !image || !price || !rating) {
-      Alert.alert("Error", "Please fill in teh empty fields")
+  console.log("🚀 Submit started");
+
+  if (!title || !author || !caption || !genres || !image || !price || !rating) {
+    console.log("❌ Missing fields", { title, author, caption, genres, image, price, rating });
+    Alert.alert("Error", "Please fill in the empty fields");
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+    console.log("⏳ Loading started");
+
+    const uriParts = image?.split(".");
+    const fileType = uriParts?.[uriParts?.length - 1];
+    const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg";
+    const imageDataUrl = `data:${imageType};base64,${imageBase64}`;
+
+    console.log("🖼 Image prepared", { fileType, imageType, hasBase64: !!imageBase64 });
+
+    // ================= DESCRIBE IMAGE =================
+    console.log("📡 Calling describe-image API");
+
+    const res = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books/describe-image`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ imageBase64, title, caption, author }),
+    });
+
+    console.log("📥 describe-image status:", res.status);
+
+    const rawDescribeText = await res.text();
+    console.log("📥 describe-image RAW response:", rawDescribeText);
+
+    let describeData;
+    try {
+      describeData = JSON.parse(rawDescribeText);
+    } catch (err) {
+      console.error("❌ Failed to parse describe-image JSON");
+      throw err;
     }
+
+    console.log("✅ Image description received:", describeData.description);
+
+    const generatedDescription = describeData.description;
+    setDescription(generatedDescription);
+
+    // ================= CREATE BOOK =================
+    console.log("📡 Creating book with data:", {
+      title,
+      subTitle,
+      author,
+      caption,
+      description: generatedDescription,
+      genres,
+      price,
+      isbn,
+      publishedYear
+    });
+
+    const bookRes = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        title,
+        subTitle,
+        author,
+        caption,
+        description: generatedDescription,
+        genres,
+        image: imageDataUrl,
+        price,
+        isbn,
+        publishedYear
+      })
+    });
+
+    console.log("📥 createBook status:", bookRes.status);
+
+    const rawBookText = await bookRes.text();
+    console.log("📥 createBook RAW response:", rawBookText);
+
+    let createdBook;
+    try {
+      createdBook = JSON.parse(rawBookText);
+    } catch (err) {
+      console.error("❌ Failed to parse createBook JSON");
+      throw err;
+    }
+
+    if (!bookRes.ok) {
+      console.error("❌ Book creation failed:", createdBook);
+      throw new Error(createdBook.message || "Something went wrong");
+    }
+
+    console.log("✅ Book created:", createdBook.fullBook.id);
+    setBookId(createdBook.fullBook.id);
+
+    // ================= ADD RATING =================
+    console.log("📡 Sending rating", {
+      bookId: createdBook.fullBook.id,
+      rating,
+      review: caption
+    });
+
+    const ratingRes = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books/rating`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        bookId: createdBook.fullBook.id, // ✅ FIXED
+        rating,
+        review: caption
+      })
+    });
+
+    console.log("📥 rating status:", ratingRes.status);
+
+    const rawRatingText = await ratingRes.text();
+    console.log("📥 rating RAW response:", rawRatingText);
 
     try {
-      setIsLoading(true)
-
-      const uriParts = image?.split(".");
-      const fileType = uriParts?.[uriParts?.length - 1]
-      const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg";
-
-      const imageDataUrl = `data:${imageType};base64,${imageBase64}`
-
-      const res = await fetch(`${API_URL}/api/v1/books/describe-image`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ imageBase64, title, caption, author }),
-        });
-      const data = await res.json();
-      setDescription(data.description);
-      console.log(data.description)
-
-      const bookRes = await fetch(`${API_URL}/api/v1/books`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          title, subTitle, author, caption, description, genres, image: imageDataUrl, price, isbn, publishedYear
-        })
-      })
-
-      const createdBook = await bookRes.json()
-
-      if (!bookRes.ok) {
-        throw new Error(createdBook.message || "Something went wrong")
-      }
-
-      setBookId(createdBook.fullBook.id)
-
-      await fetch(`${API_URL}/api/v1/books/rating`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          bookId: createdBook.data.user.id,
-          rating,
-          review: caption
-        })          
-      })
-
-      setShowSuccessModal(true)
-
-      setTitle("");
-      setSubTitle("");
-      setAuthor("");
-      setCaption("");
-      setDescription("");
-      setGenres([]);
-      setPrice("");
-      setImage(null);
-      setRating(3);
-      setIsbn("");
-      setPublishedYear("");
-      setImageBase64(null);
-
-      router.push("/")
-    } catch (error) {
-      console.error("an error occured", error)
-    } finally {
-      setIsLoading(false)
+      const ratingData = JSON.parse(rawRatingText);
+      console.log("✅ Rating success:", ratingData);
+    } catch {
+      console.warn("⚠️ Rating response was not JSON");
     }
+
+    // ================= SUCCESS =================
+    console.log("🎉 All steps completed successfully");
+
+    setShowSuccessModal(true);
+
+    setTitle("");
+    setSubTitle("");
+    setAuthor("");
+    setCaption("");
+    setDescription("");
+    setGenres([]);
+    setPrice("");
+    setImage(null);
+    setRating(3);
+    setIsbn("");
+    setPublishedYear("");
+    setImageBase64(null);
+
+    router.push("/");
+
+  } catch (error) {
+    console.error("🔥 FINAL ERROR CAUGHT:", error);
+  } finally {
+    console.log("⏹ Loading finished");
+    setIsLoading(false);
   }
+};
+
 
   const renderRatingPicker = () => {
     const stars = [];

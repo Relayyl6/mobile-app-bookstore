@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore'
 import homeStyles from '@/constants/home.styles'
 import { useAppContext } from '@/context/useAppContext'
 import { Image } from 'expo-image'
+import { EXPO_PUBLIC_API_URL } from '../../store/api'
 
 const Index = () => {
   const { token, logout } = useAuthStore()
@@ -13,23 +14,33 @@ const Index = () => {
   const [ page, setPage ] = useState(1);
   const [ hasMore, setHasMore ] = useState(true)
 
-  const fetchBooks = async (pageNum=1, refresh: boolean) => {
+  const fetchBooks = async (pageNum = 1, refresh: boolean = false) => {
     try {
       if (refresh) setRefreshing(true)
       else if (pageNum === 1) setIsLoading(true)
 
-      const response = await fetch(`${process.env.API_URL}/api/v1/books?page=${pageNum}&limit=5`, {
+      const response = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books?page=${pageNum}&limit=5`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
 
       if (!response.ok) {
-        throw new Error("An error occured")
+        throw new Error("An error occured when getting the books")
       }
 
-      const data = response.json()
+      const data = await response.json()
+
+      // @ts-ignore
+      setBooks((prevBooks) => [...prevBooks, data.books])
+
+      setHasMore(pageNum < data.totalPages)
+
+      setPage(pageNum)
     } catch (error) {
-      console.error("Someting", error)
+      console.error("Error fetching books", error)
+    } finally {
+      if (refresh) setRefreshing(false)
+        else setIsLoading(false)
     }
   }
 

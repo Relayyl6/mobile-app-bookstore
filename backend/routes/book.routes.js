@@ -3,6 +3,7 @@ import { authMiddleware } from "../middleware/auth.middleware.js";
 import { createBook, getBooks, deleteBook, updateBook, incrementBookViews, incrementBookPurchases, addOrUpdateRating, deleteRating, getSingleBook, describeImage, uploadFile, chatWithBook, getAllBooksForReading, getChapterForReading, deleteBookReading } from '../controller/book.controller.js'
 import { manualCleanup } from '../lib/cron.js';
 import multer from "multer";
+import { addBookmark, addUserNote, updateReadingProgress } from '../controller/book.controller.cont.js';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage }); // keeps file in memory as buffer
@@ -25,7 +26,7 @@ bookRouter.put("/:id", authMiddleware, updateBook)
 bookRouter.get("/:id", authMiddleware, getSingleBook)
 
 // describe image using generative AI / to get the actual desciption
-bookRouter.post("/describe-image", authMiddleware, describeImage)
+bookRouter.post("/describe-image", describeImage)
 
 
 bookRouter.post("/upload", upload.single("file"), authMiddleware, uploadFile)
@@ -35,6 +36,12 @@ bookRouter.post("/chat", authMiddleware, chatWithBook)
 bookRouter.get("/read-all-books", getAllBooksForReading)
 bookRouter.get("/read-all-books/:id/:chapterNumber", getChapterForReading)
 bookRouter.delete("/read-all-books/:id", deleteBookReading)
+
+bookRouter.post("/reading-progress", updateReadingProgress)
+bookRouter.post("/bookmark", addBookmark)
+bookRouter.post("/user-note", addUserNote)
+
+
 
 
 // helper function for book recommendation algorithm

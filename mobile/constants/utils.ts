@@ -1,6 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker'
 import * as ImagePicker from 'expo-image-picker'
 import { Alert, Platform } from 'react-native';
+import {EXPO_PUBLIC_API_URL} from '../store/api'
 
 export async function pickFile(setFile: (file: any) => void) {
   try {
@@ -93,7 +94,7 @@ export async function uploadFile(
     formData.append('image', image)
   }
   try {
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/upload`, {
+    const response = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books/upload`, {
       method: "POST",
       body: formData,
     });

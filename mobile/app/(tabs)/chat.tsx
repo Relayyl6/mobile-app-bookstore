@@ -18,7 +18,7 @@ import AttachmentPopup from '@/components/PopUp'
 import { pickFile, pickImage, uploadFile } from '@/constants/utils'
 import * as DocumentPicker from 'expo-document-picker'
 import { useAuthStore } from '@/store/authStore'
-
+import { EXPO_PUBLIC_API_URL } from '../../store/api'
 
 const Chat = () => {
   const { colors } = useAppContext()
@@ -145,7 +145,7 @@ const Chat = () => {
       }
       
       // 3. Use the "final" variables in your next request
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/books/chat`, { 
+      const response = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/books/chat`, { 
         method: 'POST', 
         body: JSON.stringify({ 
           userId: finalUserId, 

@@ -18,8 +18,8 @@ dotenv.config();
 const app = express()
 
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "20mb" }));        // or "20mb"
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
 // app.use(cors);
 
 app.use(errorMiddleware);

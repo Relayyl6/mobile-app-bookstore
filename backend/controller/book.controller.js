@@ -10,6 +10,7 @@ import uploadToCloudinary, { analyzeChapterWithAI, checkPdf, embedText, extractP
 import { PDFParse } from 'pdf-parse'
 import bookKnowledgeModel from "../models/knowledge.model.js";
 import userBookStateModel from "../models/userBookState.model.js";
+import { Types } from "mongoose";
 
 export const createBook = async (req, res, next) => {
   // console.log("Trying to create book")
@@ -118,41 +119,59 @@ export const createBook = async (req, res, next) => {
 };
 
 export const describeImage = async (req, res) => {
-  const { imageBase64, title, caption, author } = req.body;
+  try {
+    const { imageBase64, title, caption, author } = req.body;
 
-  const prompt = `
-    You are an expert book cataloguer.
-    Describe the image visually and include the following information:
-    - Title: ${title || "N/A"}
-    - Caption: ${caption || "N/A"}
-    - Author: ${author || "N/A"}
-  `;
+    if (!imageBase64) {
+      return res.status(400).json({ error: "No image provided" });
+    }
 
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const prompt = `
+      You are an expert book cataloguer.
 
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash", // fast + supports images
-  });
+      Describe the image in ONE single plain-text paragraph.
+      Do NOT use bullet points, markdown, headings, or line breaks.
+      Do NOT repeat the field labels.
 
-  const result = await model.generateContent({
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: imageBase64, // must be raw base64 only
+      Naturally incorporate the following book details into the sentence if relevant:
+      Title: ${title || "N/A"}
+      Caption: ${caption || "N/A"}
+      Author: ${author || "N/A"}
+
+      Output must be a single continuous string.
+    `;
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+    });
+
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: imageBase64,
+              },
             },
-          },
-          { text: prompt },
-        ],
-      },
-    ],
-  });
+            { text: prompt },
+          ],
+        },
+      ],
+    });
 
-  res.json({ description: result.response.text() });
+    res.json({ description: result.response.text() });
+
+  } catch (error) {
+    console.error("Gemini describeImage error:", error);
+    res.status(500).json({ error: "Image description failed" });
+  }
 };
+
 
 export const chatWithBook = async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { API_URL } from './api.ts'
+import { EXPO_PUBLIC_API_URL } from './api.ts'
 
 export const useAuthStore = create((set) => ({
 //   bears: 0,
@@ -11,7 +11,7 @@ export const useAuthStore = create((set) => ({
     register: async (username, email, password) => {
         set({isLoading: true})
         try {
-            const response = await fetch(`${API_URL}/api/v1/store/register`, {
+            const response = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/store/register`, {
                 method: "POST",
                 headers: {
                     'Content-Type': "application/json"
@@ -70,7 +70,7 @@ export const useAuthStore = create((set) => ({
         // Implement login logic here
         set({ isLoading: true })
         try {
-            const response = await fetch(`https://store-backend-api-tj22.onrender.com/api/v1/store/log-in`, {
+            const response = await fetch(`${EXPO_PUBLIC_API_URL}/api/v1/store/log-in`, {
                 method: "POST",
                 headers: {
                     'Content-Type': "application/json"
