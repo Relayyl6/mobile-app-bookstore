@@ -38,10 +38,12 @@ const Chat = () => {
   const [image, setImage] = useState<string | null>(null)
   const { userId: contextUserId, bookId: contextBookId, setUserId } = useAppContext()
   const { user } = useAuthStore()
+  
 
   useEffect(() => {
     setUserId(user.id)
   }, [])
+  console.log(contextUserId)
 
   const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 

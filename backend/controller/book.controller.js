@@ -497,25 +497,33 @@ export const deleteBookReading = async (req, res) => {
 
 // example request to get the books as in recommendation
 // const response = await fetch("https://localhost:3000/api/v1/books?page=1&limit=5")
-export const getBooks = async (req, res) => {
-    try {
-      // todo: implement pagination -> infinite loading(scrolling)
-      const page = req.query.page || 1;
-      const limit = req.query.limit || 5;
-      const skip = (page - 1) * limit;
-      const books = await bookModel.find().sort({ created: -1 }).skip(skip).limit(limit).populate("User", "username profileImage"); // createdAt: -1 means desc
-      const totalBooks = bookModel.countDocuments();
-      res.status(200).json({
-          message: "Gotten books successfully",
-          books,
-          currentPage: page,
-          totalBooks,
-          totalPages: Math.ceil(totalBooks / limit),
-      })
-    } catch (error) {
-        console.error("an error occured", error.message)
-        return next(error)
-    }
+export const getBooks = async (req, res, next) => {
+   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    const books = await bookModel
+      .find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("user", "username profileImage") // FIXED
+      .lean();
+
+    const totalBooks = await bookModel.countDocuments(); // FIXED
+
+    res.status(200).json({
+      message: "Gotten books successfully",
+      books,
+      currentPage: page,
+      totalBooks,
+      totalPages: Math.ceil(totalBooks / limit),
+    });
+  } catch (error) {
+    console.error("getBooks error:", error.message);
+    return next(error);
+  }
 }
 
 export const deleteBook = async (req, res) => {
