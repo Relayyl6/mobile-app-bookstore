@@ -173,26 +173,215 @@ export const describeImage = async (req, res) => {
 };
 
 
+// export const chatWithBook = async (req, res) => {
+//   try {
+//     const { userId, bookId, message } = req.body;
+
+//     //  Load user reading state
+//     const state = await userBookStateModel.findOneAndUpdate(
+//       { userId, bookId },
+//       {},
+//       { upsert: true, new: true }
+//     );
+
+
+//     if (!state) return res.status(404).json({ error: "Reading state not found" });
+
+//     if (state.currentChapter === 1 && state.maxSpoilerChapterAllowed === 1) {
+//       return res.json({
+//         reply: "You haven’t started this book yet. Want a spoiler-free intro first?"
+//       });
+//     }
+
+//     //  Generate embedding for the question
+//     const queryEmbedding = await embedText(message);
+
+//     const characterResults = await bookKnowledgeModel.aggregate([
+//       { $match: { bookId } },
+//       { $unwind: "$characters" },
+//       {
+//         $vectorSearch: {
+//           index: "characterEmbeddingIndex",
+//           path: "characters.embedding",
+//           queryVector: queryEmbedding,
+//           numCandidates: 20,
+//           limit: 3
+//         }
+//       },
+//       {
+//         $project: {
+//           name: "$characters.name",
+//           description: "$characters.description",
+//           relationships: "$characters.relationships"
+//         }
+//       }
+//     ]);
+
+//     const recapChapters = await bookKnowledgeModel.aggregate([
+//       { $match: { bookId } },
+//       { $unwind: "$chapters" },
+//       { $match: { "chapters.chapterNumber": { $lte: state.maxSpoilerChapterAllowed } } },
+//       { $sort: { "chapters.chapterNumber": -1 } },
+//       { $limit: 2 },
+//       {
+//         $project: {
+//           chapterNumber: "$chapters.chapterNumber",
+//           summary: "$chapters.summary"
+//         }
+//       }
+//     ]);
+
+
+
+//     //  Vector search only SAFE chapters
+//     const results = await bookKnowledgeModel.aggregate([
+//       { $match: { bookId } },
+//       {
+//         $vectorSearch: {
+//           index: "chapterEmbeddingIndex",
+//           path: "chapters.embedding",
+//           queryVector: queryEmbedding,
+//           numCandidates: 50,
+//           limit: 5
+//         }
+//       },
+//       { $unwind: "$chapters" },
+//       {
+//         $match: {
+//           "chapters.chapterNumber": { $lte: state.maxSpoilerChapterAllowed }
+//         }
+//       },
+//       {
+//         $project: {
+//           chapterNumber: "$chapters.chapterNumber",
+//           summary: "$chapters.summary",
+//           themes: "$chapters.themes",
+//           tone: "$chapters.tone",
+//           characters: "$chapters.characters"
+//         }
+//       }
+//     ]);
+
+//     if (!results.length) {
+//       return res.json({ reply: "I don't have enough context yet — try reading a bit more 📖" });
+//     }
+
+
+//     const contextBlocks = [];
+
+//     if (characterResults.length) {
+//       contextBlocks.push("Character Information:");
+//       characterResults.forEach(c =>
+//         contextBlocks.push(`${c.name}: ${c.description}`)
+//       );
+//     }
+
+//     if (results.length) {
+//       contextBlocks.push("Relevant Chapter Summaries:");
+//       results.forEach(ch =>
+//         contextBlocks.push(`Chapter ${ch.chapterNumber}: ${ch.summary}`)
+//       );
+//     }
+
+//     if (recapChapters.length) {
+//       contextBlocks.push("Recent Events:");
+//       recapChapters.forEach(ch =>
+//         contextBlocks.push(`Chapter ${ch.chapterNumber}: ${ch.summary}`)
+//       );
+//     }
+
+//     if (state.lastAIInteractionSummary) {
+//       contextBlocks.unshift(`Previous discussion summary: ${state.lastAIInteractionSummary}`);
+//     }
+
+//     const contextText = contextBlocks.join("\n\n");
+//     if (!contextText.trim()) {
+//       return res.json({
+//         reply: "I don’t have enough context from what you’ve read so far 📖"
+//       });
+//     }
+
+
+//     // 5️⃣ Ask AI with spoiler protection + tone preference
+//     const prompt = `
+//       You are a spoiler-safe AI book companion.
+
+//       You must answer ONLY using the supplied context.
+//       If the answer is not in the context, say you don’t have enough information yet.
+
+//       Reader progress limit: Chapter ${state.maxSpoilerChapterAllowed}
+//       Never reveal or hint at events beyond this point.
+
+//       Use the reader’s preferred tone: ${state.tonePreferenceForAI}
+
+//       Context:
+//       ${contextText}
+
+//       Question:
+//       ${message}
+//     `;
+
+//     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+//     const model = genAI.getGenerativeModel({
+//       model: "gemini-1.5-flash-latest",
+//     });
+
+//     const aiResult = await model.generateContent(prompt);
+//     const reply = aiResult.response.text();
+
+//     // 6️⃣ Update memory
+//     const memorySummary = `User asked: "${message}" — AI explained without spoilers.`;
+
+//     await userBookStateModel.updateOne(
+//       { userId, bookId },
+//       {
+//         lastAIInteractionSummary: memorySummary,
+//         lastReadAt: new Date()
+//       }
+//     );
+
+//     res.status(200).json({ success: true, result: reply });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Chat failed" });
+//   }
+// };
+
 export const chatWithBook = async (req, res) => {
   try {
     const { userId, bookId, message } = req.body;
+    console.log("📩 Chat request:", { userId, bookId, message });
 
-    //  Load user reading state
-    const state = await userBookStateModel.findOne({ userId, bookId }, { upsert: true, new: true });
-    if (!state) return res.status(404).json({ error: "Reading state not found" });
+    // 1️⃣ Load or create reading state
+    const state = await userBookStateModel.findOneAndUpdate(
+      { userId, bookId },
+      {},
+      { upsert: true, new: true }
+    );
+
+    console.log("📖 Reading state:", state);
+
+    if (!state) {
+      console.log("❌ No reading state found");
+      return res.status(404).json({ error: "Reading state not found" });
+    }
 
     if (state.currentChapter === 1 && state.maxSpoilerChapterAllowed === 1) {
+      console.log("⚠️ User hasn't started reading");
       return res.json({
         reply: "You haven’t started this book yet. Want a spoiler-free intro first?"
       });
     }
 
-    //  Generate embedding for the question
+    // 2️⃣ Generate embedding
+    console.log("🧠 Generating embedding for:", message);
     const queryEmbedding = await embedText(message);
+    console.log("🧠 Embedding length:", queryEmbedding.length);
 
+    // 3️⃣ Character vector search
     const characterResults = await bookKnowledgeModel.aggregate([
-      { $match: { bookId } },
-      { $unwind: "$characters" },
       {
         $vectorSearch: {
           index: "characterEmbeddingIndex",
@@ -202,15 +391,19 @@ export const chatWithBook = async (req, res) => {
           limit: 3
         }
       },
+      { $match: { bookId } },
+      { $unwind: "$characters" },
       {
         $project: {
           name: "$characters.name",
-          description: "$characters.description",
-          relationships: "$characters.relationships"
+          description: "$characters.description"
         }
       }
     ]);
 
+    console.log("👥 Character matches:", characterResults.length);
+
+    // 4️⃣ Recent recap
     const recapChapters = await bookKnowledgeModel.aggregate([
       { $match: { bookId } },
       { $unwind: "$chapters" },
@@ -225,17 +418,10 @@ export const chatWithBook = async (req, res) => {
       }
     ]);
 
+    console.log("📚 Recap chapters found:", recapChapters.length);
 
-
-    //  Vector search only SAFE chapters
+    // 5️⃣ Chapter vector search
     const results = await bookKnowledgeModel.aggregate([
-      { $match: { bookId } },
-      { $unwind: "$chapters" },
-      {
-        $match: {
-          "chapters.chapterNumber": { $lte: state.maxSpoilerChapterAllowed }
-        }
-      },
       {
         $vectorSearch: {
           index: "chapterEmbeddingIndex",
@@ -245,86 +431,74 @@ export const chatWithBook = async (req, res) => {
           limit: 5
         }
       },
+      { $match: { bookId } },
+      { $unwind: "$chapters" },
+      { $match: { "chapters.chapterNumber": { $lte: state.maxSpoilerChapterAllowed } } },
       {
         $project: {
           chapterNumber: "$chapters.chapterNumber",
-          summary: "$chapters.summary",
-          themes: "$chapters.themes",
-          tone: "$chapters.tone",
-          characters: "$chapters.characters"
+          summary: "$chapters.summary"
         }
       }
     ]);
 
+    console.log("🔎 Chapter matches:", results.length);
+
     if (!results.length) {
+      console.log("⚠️ No vector matches found");
       return res.json({ reply: "I don't have enough context yet — try reading a bit more 📖" });
     }
 
-
+    // 6️⃣ Build context
     const contextBlocks = [];
 
-    if (characterResults.length) {
-      contextBlocks.push("Character Information:");
-      characterResults.forEach(c =>
-        contextBlocks.push(`${c.name}: ${c.description}`)
-      );
-    }
+    characterResults.forEach(c =>
+      contextBlocks.push(`Character: ${c.name} — ${c.description}`)
+    );
 
-    if (chapterResults.length) {
-      contextBlocks.push("Relevant Chapter Summaries:");
-      chapterResults.forEach(ch =>
-        contextBlocks.push(`Chapter ${ch.chapterNumber}: ${ch.summary}`)
-      );
-    }
+    results.forEach(ch =>
+      contextBlocks.push(`Chapter ${ch.chapterNumber}: ${ch.summary}`)
+    );
 
-    if (recapChapters.length) {
-      contextBlocks.push("Recent Events:");
-      recapChapters.forEach(ch =>
-        contextBlocks.push(`Chapter ${ch.chapterNumber}: ${ch.summary}`)
-      );
-    }
+    recapChapters.forEach(ch =>
+      contextBlocks.push(`Recent event from Chapter ${ch.chapterNumber}: ${ch.summary}`)
+    );
 
     if (state.lastAIInteractionSummary) {
-      contextBlocks.unshift(`Previous discussion summary: ${state.lastAIInteractionSummary}`);
+      contextBlocks.unshift(`Previous discussion: ${state.lastAIInteractionSummary}`);
     }
 
     const contextText = contextBlocks.join("\n\n");
-    if (!contextText.trim()) {
-      return res.json({
-        reply: "I don’t have enough context from what you’ve read so far 📖"
-      });
-    }
+    console.log("🧩 Context length:", contextText.length);
 
-
-    // 5️⃣ Ask AI with spoiler protection + tone preference
+    // 7️⃣ Ask Gemini
     const prompt = `
-      You are a spoiler-safe AI book companion.
+You are a spoiler-safe AI book companion.
 
-      You must answer ONLY using the supplied context.
-      If the answer is not in the context, say you don’t have enough information yet.
+Use ONLY the provided context. If unsure, say you don't have enough info.
 
-      Reader progress limit: Chapter ${state.maxSpoilerChapterAllowed}
-      Never reveal or hint at events beyond this point.
+Reader limit: Chapter ${state.maxSpoilerChapterAllowed}
 
-      Use the reader’s preferred tone: ${state.tonePreferenceForAI}
+Context:
+${contextText}
 
-      Context:
-      ${contextText}
+Question:
+${message}
+`;
 
-      Question:
-      ${message}
-    `;
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
+    console.log("🤖 Sending prompt to Gemini...");
     const aiResult = await model.generateContent(prompt);
     const reply = aiResult.response.text();
+    console.log("🤖 AI reply:", reply);
 
-    // 6️⃣ Update memory
-    const memorySummary = `User asked: "${message}" — AI explained without spoilers.`;
-
+    // 8️⃣ Save memory
     await userBookStateModel.updateOne(
       { userId, bookId },
       {
-        lastAIInteractionSummary: memorySummary,
+        lastAIInteractionSummary: `User asked: "${message}"`,
         lastReadAt: new Date()
       }
     );
@@ -332,141 +506,295 @@ export const chatWithBook = async (req, res) => {
     res.status(200).json({ success: true, result: reply });
 
   } catch (err) {
-    console.error(err);
+    console.error("🔥 CHAT ERROR:", err);
     res.status(500).json({ error: "Chat failed" });
   }
 };
 
-
 export const uploadFile = async (req, res) => {
-    try {
-      // 🧾 Text fields from formData
-      const fullUserPrompt = req.body.prompt;
-      const text = req.body.text;
-      const image = req.body.image;
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-      console.log(req.file)
+    const userId = req.user._id;
+    const { bookId } = req.body; // book already created in Book collection
 
-      // 📁 File
-      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-      
-      const fileUrl = await uploadToCloudinary(req.file.buffer, "raw");
-      console.log("Cloudinary URL:", fileUrl);
-      console.log("Other fields:", { fullUserPrompt, text, image });
+    // ☁️ Upload original file
+    const fileUrl = await uploadToCloudinary(req.file.buffer, "raw");
 
-      // const checkPdf = await checkPdf(fileUrl);
-      const pdfInfo = await extractPdfInfo(fileUrl);
-      const pdfText = await extractPdfText(fileUrl);
+    // 📖 Extract book data
+    const pdfInfo = await extractPdfInfo(fileUrl);     // title, author, year etc
+    const pdfText = await extractPdfText(fileUrl);
 
-      const chapters = splitIntoChapters(pdfText);
-      const chapterAnalyses = await Promise.all(
-        chapters.map(ch => analyzeChapterWithAI(model, ch.content, ch.chapterNumber))
+    const rawChapters = splitIntoChapters(pdfText);
+
+    // 🧠 AI Analysis
+    const chapterAnalyses = await Promise.all(
+      rawChapters.map(ch =>
+        analyzeChapterWithAI(model, ch.content, ch.chapterNumber)
+      )
+    );
+
+    const bookOverview = await analyzeBookOverview(model, pdfText);
+
+    // 📄 Build structured chapters
+    const structuredChapters = rawChapters.map((ch, i) => ({
+      chapterNumber: i + 1,
+      title: ch.title || `Chapter ${i + 1}`,
+      content: ch.content,
+      pages: splitChapterIntoPages(ch.content),
+
+      summary: chapterAnalyses[i].summary,
+      themes: chapterAnalyses[i].themes,
+      tone: chapterAnalyses[i].tone,
+      characters: chapterAnalyses[i].characters,
+
+      embedding: [] // filled later
+    }));
+
+    // 👥 Book-level characters
+    const structuredCharacters = bookOverview.mainCharacters.map(c => ({
+      name: c.name,
+      description: c.description,
+      relationships: c.role || "",
+      embedding: []
+    }));
+
+    // 💾 Save BookKnowledge
+    await bookKnowledgeModel.create({
+      bookId,
+      fileUrl,
+      metadata: {
+        title: pdfInfo.title,
+        author: pdfInfo.author,
+        genre: pdfInfo.genre,
+        publishedYear: pdfInfo.publishedYear,
+        language: pdfInfo.language,
+      },
+      uploader: userId,
+
+      overview: {
+        summary: bookOverview.summary,
+        majorThemes: bookOverview.majorThemes,
+        tone: bookOverview.tone,
+        embedding: []
+      },
+
+      chapters: structuredChapters,
+      characters: structuredCharacters
+    });
+
+    // 🔢 Generate embeddings AFTER insert
+    for (const ch of structuredChapters) {
+      const embedding = await embedText(genAI, ch.summary);
+      await bookKnowledgeModel.updateOne(
+        { bookId, "chapters.chapterNumber": ch.chapterNumber },
+        { $set: { "chapters.$.embedding": embedding } }
       );
-      const bookOverview = await analyzeBookOverview(model, pdfText);
-
-      const bookId = req.body.prompt.id
-
-      await bookKnowledgeModel.create({
-        bookId,
-        fileUrl,
-        metadata: pdfInfo,
-        overview: bookOverview,
-        chapters: chapterAnalyses.map((analysis, i) => ({
-          chapterNumber: i + 1,
-          title: chapters[i].title || `Chapter ${i+1}`,
-          content: chapters[i].content,      // FULL TEXT FOR READING
-          summary: analysis.summary,
-          pages: splitChapterIntoPages(chapters[i].content),
-          themes: analysis.themes,
-          tone: analysis.tone,
-          embedding: [],
-          characters: analysis.characters
-        })),
-        characters: bookOverview.mainCharacters
-      });
-
-      for (const chapter of chapterAnalyses) {
-        const embedding = await embedText(genAI, chapter.summary);
-            
-        await bookKnowledgeModel.updateOne(
-          { bookId, "chapters.chapterNumber": chapter.chapterNumber },
-          { $set: { "chapters.$.embedding": embedding } }
-        );
-      }
-
-      for (const char of bookOverview.mainCharacters) {
-        const embedding = await embedText(genAI, char.description);
-
-        await bookKnowledgeModel.updateOne(
-          { bookId, "characters.name": char.name },
-          { $set: { "characters.$.embedding": embedding } }
-        );
-      }
-
-      await userBookStateModel.create({
-        userId: req.user?._id,
-        bookId,
-        currentChapter: 1,
-        currentPage: 1,
-        progressPercentage: 0,
-        lastReadAt: new Date(),
-        recentCharactersViewed: [],
-        bookmarks: [],
-        userNotes: [],
-        tonePreferenceForAI: "friendly",
-        maxSpoilerChapterAllowed: 1,
-        lastAIInteractionSummary: ""
-      });
-
-      res.json({
-        success: true,
-        bookId,
-        userId: req.user?._id,
-        message: "File uploaded and processed successfully"
-      });
-    } catch (error) {
-      console.error("An error occured", error)
     }
-}
+
+    for (const char of structuredCharacters) {
+      const embedding = await embedText(genAI, char.description);
+      await bookKnowledgeModel.updateOne(
+        { bookId, "characters.name": char.name },
+        { $set: { "characters.$.embedding": embedding } }
+      );
+    }
+
+    // 👤 Initialize USER READING STATE
+    await userBookStateModel.findOneAndUpdate(
+      { userId, bookId },
+      {
+        $setOnInsert: {
+          currentChapter: 1,
+          currentPage: 1,
+          progressPercentage: 0,
+          lastReadAt: new Date(),
+          recentCharactersViewed: [],
+          bookmarks: [],
+          userNotes: [],
+          tonePreferenceForAI: "friendly",
+          maxSpoilerChapterAllowed: 1,
+          lastAIInteractionSummary: ""
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Book processed with AI knowledge + reading state created",
+      bookId
+    });
+
+  } catch (error) {
+    console.error("Upload pipeline error:", error);
+    res.status(500).json({ error: "Failed to process book" });
+  }
+};
+
 
 // example request to get uploaded books
 export const getAllBooksForReading = async (req, res) => {
   try {
-    const books = await bookKnowledgeModel.find({})
-      .populate("uploader", "username email profileImage") // optional, if you have uploader reference
-      .select("bookId fileUrl overview.metadata"); // minimal info for list
+    const userId = req.user._id;
 
-    res.json({ success: true, books });
+    // 📄 Pagination params
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const skip = (page - 1) * limit;
+
+    // 1️⃣ Fetch paginated books
+    const books = await bookKnowledgeModel
+      .find({})
+      .populate("uploader", "username profileImage")
+      .select("bookId metadata overview fileUrl uploader")
+      .sort({ createdAt: -1 }) // newest first
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // 2️⃣ Get total count for frontend pagination UI
+    const totalBooks = await bookKnowledgeModel.countDocuments();
+
+    // 3️⃣ Get user's reading states only for these books
+    const bookIds = books.map(b => b.bookId);
+    const userStates = await userBookStateModel.find({
+      userId,
+      bookId: { $in: bookIds }
+    });
+
+    const stateMap = {};
+    userStates.forEach(state => {
+      stateMap[state.bookId.toString()] = state;
+    });
+
+    // 4️⃣ Format for frontend
+    const formattedBooks = books.map(book => {
+      const state = stateMap[book.bookId.toString()];
+
+      return {
+        bookId: book.bookId,
+
+        title: book.metadata?.title || "Untitled",
+        author: book.metadata?.author || "Unknown Author",
+        genres: book.metadata?.genre || [],
+        publishedYear: book.metadata?.publishedYear || null,
+        language: book.metadata?.language || null,
+
+        coverImage: book.fileUrl,
+
+        summary: book.overview?.overallSummary || "",
+        tone: book.overview?.overallTone || "",
+
+        progressPercentage: state?.progressPercentage || 0,
+        lastReadAt: state?.lastReadAt || null,
+
+        uploader: {
+          username: book.uploader?.username,
+          profileImage: book.uploader?.profileImage
+        }
+      };
+    });
+
+    res.json({
+      success: true,
+      page,
+      totalPages: Math.ceil(totalBooks / limit),
+      totalBooks,
+      books: formattedBooks
+    });
+
   } catch (err) {
-    console.error(err);
+    console.error("❌ Failed to fetch reading books:", err);
     res.status(500).json({ error: "Failed to fetch books" });
   }
 };
 
-export const getChapterForReading = async (req, res) => {
-  const { bookId, chapterNumber } = req.params;
+
+// example request to get book details
+export const getBookDetails = async (req, res) => {
+  const { bookId } = req.params;
+  const userId = req.user?.id; // from auth middleware
 
   try {
-    const book = await bookKnowledgeModel.findOne(
-      { bookId, "chapters.chapterNumber": chapterNumber },
-      { "chapters.$": 1, title: 1, author: 1 }
-    );
+    // 📚 Store book info
+    const book = await bookModel.findById(bookId)
+      .populate("user", "username profileImage")
+      .lean();
 
-    if (!book) return res.status(404).json({ error: "Chapter not found" });
+    if (!book) return res.status(404).json({ error: "Book not found" });
 
-    const chapter = book.chapters[0];
+    // 🧠 AI knowledge
+    const knowledge = await bookKnowledgeModel.findOne({ bookId }).lean();
+
+    // 👤 User reading state (create if doesn't exist)
+    const state = await userBookStateModel.findOneAndUpdate(
+      { userId, bookId },
+      {},
+      { upsert: true, new: true }
+    ).lean();
+
+    // 📄 Count total pages across chapters
+    const totalPages =
+      knowledge?.chapters?.reduce(
+        (sum, ch) => sum + (ch.pages?.length || 0),
+        0
+      ) || 0;
 
     res.json({
-      bookTitle: book.metadata?.title,
-      chapterNumber: chapter.chapterNumber,
-      chapterTitle: chapter.title,
-      content: chapter.content,   // 👈 This is what mobile displays
-      fullBook: book
+      // ---------- BASIC BOOK INFO ----------
+      coverImage: book.image,
+      title: book.title,
+      subtitle: book.subTitle,
+      author: book.author,
+      authorColor: "#3B82F6",
+
+      price: `$${book.price}`,
+      pages: totalPages,
+      rating: book.averageRating || 0,
+      genres: book.genres || [],
+      isbn: book.isbn || null,
+
+      // ---------- AI KNOWLEDGE ----------
+      plotSummary: knowledge?.overview?.summary || null,
+
+      characters:
+        knowledge?.characters?.map((c) => ({
+          name: c.name,
+          description: c.description,
+          role: c.relationships || null,
+        })) || [],
+
+      theme: knowledge?.overview?.majorThemes?.[0] || null,
+      themeDescription: knowledge?.overview?.majorThemes?.join(", ") || null,
+
+      tone: knowledge?.overview?.tone || null,
+      toneDescription: knowledge?.overview?.tone || null,
+
+      pacing: "Fast-paced", // future AI analysis field
+
+      // ---------- USER READING STATE ----------
+      currentProgress: state.progressPercentage,
+      lastRead: state.lastReadAt,
+      currentChapter: state.currentChapter,
+      currentPage: state.currentPage,
+
+      bookmarks: state.bookmarks,
+      notes: state.userNotes,
+
+      aiPreferences: {
+        tonePreference: state.tonePreferenceForAI,
+        spoilerLimit: state.maxSpoilerChapterAllowed,
+        lastAIInteraction: state.lastAIInteractionSummary,
+        recentCharactersViewed: state.recentCharactersViewed,
+      },
     });
   } catch (err) {
-    res.status(500).json({ error: "Failed to load chapter" });
+    console.error("getBookDetails error:", err);
+    res.status(500).json({ error: "Failed to load book details" });
   }
 };
+
 
 // delete an uploaded book reaading
 export const deleteBookReading = async (req, res) => {

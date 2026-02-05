@@ -11,6 +11,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState("")
   const [bookId, setBookId] = useState("")
+  const [show, setShow] = useState(false)
   
 
   // Load theme preferences from storage
@@ -58,7 +59,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       retro: icons.home,
       forest: icons.profile,
       blossom: icons.settings,
-      cyberpunk: icons.library
+      cyberpunk: icons.library,
     };
 
     return themeIconMap[currentTheme];

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import { useAppContext } from '@/context/useAppContext';
 
-const themes: ThemeType[] = ['forest', 'retro', 'ocean', 'blossom', 'cyberpunk'];
+const themes: ThemeType[] = ['forest', 'retro', 'ocean', 'blossom', 'cyberpunk', 'homeColors', 'profileColors', 'libraryColors', 'greenTheme', 'purpleTheme', 'sunsetTheme', 'grayTheme', 'cyberpunkTheme'];
 
 export const ThemeSwitcher: React.FC = () => {
   const { colors, themeMode, currentTheme, setCurrentTheme, toggleThemeMode } = useAppContext();

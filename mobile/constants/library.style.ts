@@ -1,0 +1,292 @@
+import { StyleSheet, Dimensions } from "react-native";
+
+const { width } = Dimensions.get('window');
+
+const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    fontFamily: 'System',
+  },
+  filterButton: {
+    padding: 8,
+    backgroundColor: colors.cardBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.inputBackground,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  viewToggleContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: colors.inputBackground,
+    borderRadius: 12,
+    padding: 4,
+    gap: 4,
+  },
+  toggleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  toggleButtonActive: {
+    backgroundColor: colors.primary,
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  toggleTextActive: {
+    color: colors.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  sectionTitlePlain: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    paddingHorizontal: 20,
+    marginBottom: 16,
+  },
+  recommendedGrid: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  recommendedCard: {
+    flex: 1,
+  },
+  recommendedCover: {
+    position: 'relative',
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.cardBackground,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  coverImage: {
+    width: '100%',
+    height: 240,
+  },
+  aiSummaryBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
+  },
+  aiSummaryText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.white,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  cardAuthor: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 8,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  rating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  genre: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    backgroundColor: colors.inputBackground,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  listItem: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 16,
+    gap: 16,
+  },
+  listCover: {
+    width: 80,
+    height: 110,
+    borderRadius: 10,
+  },
+  listInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  listTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  listAuthor: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 10,
+  },
+  listFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  aiSummaryBadgeSmall: {
+    backgroundColor: 'rgba(43, 107, 255, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  aiSummaryTextSmall: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  listPages: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  menuButton: {
+    padding: 8,
+    justifyContent: 'center',
+  },
+  bottomSpacer: {
+    height: 20,
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 90,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 100,
+    marginBottom: 10,
+    gap: 8,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  floatingButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    backgroundColor: colors.cardBackground,
+    borderTopWidth: 1,
+    justifyContent: 'space-between',
+    borderTopColor: colors.border,
+    paddingVertical: 12,
+    paddingBottom: 20,
+    marginBottom: 10,
+    marginHorizontal: 10,
+    borderRadius: 32
+  },
+  navItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  navLabel: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+});
+
+export default libraryStyles

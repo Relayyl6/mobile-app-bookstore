@@ -68,6 +68,123 @@ export const lightThemes = {
     border: '#D1D5DB', // Light gray border
     white: '#FFFFFF',
     black: '#000000',
+  } as ColorScheme,
+
+  profileColors: {
+    primary: '#FF8C42',          // Vibrant Orange
+    textPrimary: '#FFFFFF',      // White
+    textSecondary: '#A0A0A0',    // Light Gray
+    textDark: '#1A1A1A',         // Very Dark Gray
+    placeholderText: '#666666',  // Medium Gray
+    background: '#1A1A1A',       // Very Dark Gray
+    cardBackground: '#252525',   // Dark Gray
+    inputBackground: '#2A2A2A',  // Slightly Lighter Dark
+    border: '#333333',           // Medium Dark Gray
+    white: '#FFFFFF',            // Pure White
+    black: '#000000',            // Pure Black
+  } as ColorScheme,
+
+  homeColors: {
+    primary: '#2563EB',          // Bright Blue
+    textPrimary: '#FFFFFF',      // White
+    textSecondary: '#9CA3AF',    // Cool Gray
+    textDark: '#111827',         // Very Dark Blue-Gray
+    placeholderText: '#6B7280',  // Medium Gray
+    background: '#0F172A',       // Navy/Slate
+    cardBackground: '#1E293B',   // Dark Slate
+    inputBackground: '#1E293B',  // Dark Slate
+    border: '#334155',           // Slate Gray
+    white: '#FFFFFF',            // Pure White
+    black: '#000000',            // Pure Black
+  } as ColorScheme,
+
+  libraryColors: {
+    primary: '#2563EB',          // Bright Blue
+    textPrimary: '#1F2937',      // Dark Gray
+    textSecondary: '#6B7280',    // Medium Gray
+    textDark: '#111827',         // Very Dark Gray
+    placeholderText: '#9CA3AF',  // Light Gray
+    background: '#F9FAFB',       // Very Light Gray
+    cardBackground: '#FFFFFF',   // White
+    inputBackground: '#F3F4F6',  // Light Gray
+    border: '#E5E7EB',           // Border Gray
+    white: '#FFFFFF',            // Pure White
+    black: '#000000',            // Pure Black
+  } as ColorScheme,
+
+  // Green Nature Theme
+  greenTheme: {
+    primary: '#10B981',          // Emerald Green
+    textPrimary: '#FFFFFF',
+    textSecondary: '#9CA3AF',
+    textDark: '#111827',
+    placeholderText: '#6B7280',
+    background: '#064E3B',       // Dark Green
+    cardBackground: '#065F46',   // Medium Dark Green
+    inputBackground: '#047857',
+    border: '#059669',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Purple Modern Theme
+  purpleTheme: {
+    primary: '#8B5CF6',          // Violet
+    textPrimary: '#FFFFFF',
+    textSecondary: '#A78BFA',
+    textDark: '#1F2937',
+    placeholderText: '#9CA3AF',
+    background: '#1E1B4B',       // Dark Purple
+    cardBackground: '#312E81',   // Deep Purple
+    inputBackground: '#3730A3',
+    border: '#4C1D95',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Warm Sunset Theme
+  sunsetTheme: {
+    primary: '#F59E0B',          // Amber
+    textPrimary: '#FFFFFF',
+    textSecondary: '#FCD34D',
+    textDark: '#78350F',
+    placeholderText: '#92400E',
+    background: '#451A03',       // Dark Brown
+    cardBackground: '#78350F',   // Brown
+    inputBackground: '#92400E',
+    border: '#B45309',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Minimalist Gray Theme
+  grayTheme: {
+    primary: '#374151',          // Cool Gray
+    textPrimary: '#F9FAFB',
+    textSecondary: '#9CA3AF',
+    textDark: '#111827',
+    placeholderText: '#6B7280',
+    background: '#111827',       // Very Dark Gray
+    cardBackground: '#1F2937',   // Dark Gray
+    inputBackground: '#374151',
+    border: '#4B5563',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Neon Cyberpunk Theme
+  cyberpunkTheme: {
+    primary: '#06B6D4',          // Cyan
+    textPrimary: '#F0FDFA',
+    textSecondary: '#5EEAD4',
+    textDark: '#042F2E',
+    placeholderText: '#99F6E4',
+    background: '#042F2E',       // Very Dark Teal
+    cardBackground: '#134E4A',   // Dark Teal
+    inputBackground: '#115E59',
+    border: '#0F766E',
+    white: '#FFFFFF',
+    black: '#000000',
   } as ColorScheme
 };
 
@@ -129,6 +246,108 @@ export const darkThemes = {
     black: "#000000",
   } as ColorScheme,
 
+  profileColors: {
+    primary: '#FF8C42',          // Vibrant Orange
+    textPrimary: '#FFFFFF',      // White
+    textSecondary: '#A0A0A0',    // Light Gray
+    textDark: '#1A1A1A',         // Very Dark Gray
+    placeholderText: '#666666',  // Medium Gray
+    background: '#1A1A1A',       // Very Dark Gray
+    cardBackground: '#252525',   // Dark Gray
+    inputBackground: '#2A2A2A',  // Slightly Lighter Dark
+    border: '#333333',           // Medium Dark Gray
+    white: '#FFFFFF',            // Pure White
+    black: '#000000',            // Pure Black
+  } as ColorScheme,
+
+  homeColors: {
+    primary: '#2563EB',          // Bright Blue
+    textPrimary: '#FFFFFF',      // White
+    textSecondary: '#9CA3AF',    // Cool Gray
+    textDark: '#111827',         // Very Dark Blue-Gray
+    placeholderText: '#6B7280',  // Medium Gray
+    background: '#0F172A',       // Navy/Slate
+    cardBackground: '#1E293B',   // Dark Slate
+    inputBackground: '#1E293B',  // Dark Slate
+    border: '#334155',           // Slate Gray
+    white: '#FFFFFF',            // Pure White
+    black: '#000000',            // Pure Black
+  } as ColorScheme,
+
+  libraryColors: {
+    primary: '#2563EB',          // Bright Blue
+    textPrimary: '#1F2937',      // Dark Gray
+    textSecondary: '#6B7280',    // Medium Gray
+    textDark: '#111827',         // Very Dark Gray
+    placeholderText: '#9CA3AF',  // Light Gray
+    background: '#F9FAFB',       // Very Light Gray
+    cardBackground: '#FFFFFF',   // White
+    inputBackground: '#F3F4F6',  // Light Gray
+    border: '#E5E7EB',           // Border Gray
+    white: '#FFFFFF',            // Pure White
+    black: '#000000',            // Pure Black
+  } as ColorScheme,
+
+  // Green Nature Theme
+  greenTheme: {
+    primary: '#10B981',          // Emerald Green
+    textPrimary: '#FFFFFF',
+    textSecondary: '#9CA3AF',
+    textDark: '#111827',
+    placeholderText: '#6B7280',
+    background: '#064E3B',       // Dark Green
+    cardBackground: '#065F46',   // Medium Dark Green
+    inputBackground: '#047857',
+    border: '#059669',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Purple Modern Theme
+  purpleTheme: {
+    primary: '#8B5CF6',          // Violet
+    textPrimary: '#FFFFFF',
+    textSecondary: '#A78BFA',
+    textDark: '#1F2937',
+    placeholderText: '#9CA3AF',
+    background: '#1E1B4B',       // Dark Purple
+    cardBackground: '#312E81',   // Deep Purple
+    inputBackground: '#3730A3',
+    border: '#4C1D95',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Warm Sunset Theme
+  sunsetTheme: {
+    primary: '#F59E0B',          // Amber
+    textPrimary: '#FFFFFF',
+    textSecondary: '#FCD34D',
+    textDark: '#78350F',
+    placeholderText: '#92400E',
+    background: '#451A03',       // Dark Brown
+    cardBackground: '#78350F',   // Brown
+    inputBackground: '#92400E',
+    border: '#B45309',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+// Minimalist Gray Theme
+  grayTheme: {
+    primary: '#374151',          // Cool Gray
+    textPrimary: '#F9FAFB',
+    textSecondary: '#9CA3AF',
+    textDark: '#111827',
+    placeholderText: '#6B7280',
+    background: '#111827',       // Very Dark Gray
+    cardBackground: '#1F2937',   // Dark Gray
+    inputBackground: '#374151',
+    border: '#4B5563',
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
   cyberpunk: {
     primary: '#3B82F6', // Blue primary color
     textPrimary: '#1F2937', // Dark text
@@ -139,6 +358,20 @@ export const darkThemes = {
     cardBackground: '#1F2937', // Dark card background
     inputBackground: '#374151', // Dark input background
     border: '#D1D5DB', // Light gray border
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme,
+
+  cyberpunkTheme: {
+    primary: '#06B6D4',          // Cyan
+    textPrimary: '#F0FDFA',
+    textSecondary: '#5EEAD4',
+    textDark: '#042F2E',
+    placeholderText: '#99F6E4',
+    background: '#042F2E',       // Very Dark Teal
+    cardBackground: '#134E4A',   // Dark Teal
+    inputBackground: '#115E59',
+    border: '#0F766E',
     white: '#FFFFFF',
     black: '#000000',
   } as ColorScheme

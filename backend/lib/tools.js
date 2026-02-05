@@ -37,21 +37,21 @@ export async function checkPdf(url) {
 
 export async function extractPdfInfo(url) {
   const parser = new PDFParse({ url });
-
-  const info = await parser.getInfo({ parsePageInfo: true });
+  const info = await parser.getInfo();
   await parser.destroy();
 
   return {
-    totalPages: info.total,
-    title: info.info?.Title || null,
-    author: info.info?.Author || null,
-    creator: info.info?.Creator || null,
-    producer: info.info?.Producer || null,
-    creationDate: info.getDateNode().CreationDate,
-    modifiedDate: info.getDateNode().ModDate,
-    pages: info.pages, // width, height, labels, links
+    title: info.info?.Title || "Unknown Title",
+    author: info.info?.Author || "Unknown Author",
+    genre: [], // AI can fill later
+    publishedYear: info.info?.CreationDate
+      ? new Date(info.info.CreationDate).getFullYear()
+      : null,
+    language: info.info?.Language || "Unknown",
+    totalPages: info.total
   };
 }
+
 
 export async function extractPdfText(url) {
   const parser = new PDFParse({ url });
@@ -63,34 +63,41 @@ export async function extractPdfText(url) {
 }
 
 export function splitIntoChapters(text) {
-  return text
-    .split(/chapter\s+\d+/gi)
-    .map((c, i) => ({
-      chapterNumber: i + 1,
-      content: c.trim(),
-    }))
-    .filter(c => c.content.length > 500); // remove tiny junk sections
+  const rawChapters = text.split(/chapter\s+\d+[:.\-\s]*/gi);
+
+  return rawChapters
+    .map((chunk, i) => {
+      const lines = chunk.trim().split("\n").filter(Boolean);
+
+      return {
+        chapterNumber: i + 1,
+        title: lines[0]?.slice(0, 80) || `Chapter ${i + 1}`,
+        content: chunk.trim(),
+      };
+    })
+    .filter(c => c.content.length > 800); // filter junk
 }
 
-export async function analyzeChapterWithAI(
-  model,
-  chapterText,
-  chapterNumber
-) {
+
+export async function analyzeChapterWithAI(model, chapterText, chapterNumber) {
   const prompt = `
-    You are a literary analyst AI.
-    
-    Analyze the following chapter and return JSON:
-    
+    You are a literary analysis AI.
+
+    Return ONLY valid JSON in this format:
+
     {
-      "summary": "short summary",
+      "summary": "Concise summary of this chapter",
+      "themes": ["theme1", "theme2"],
+      "tone": "overall emotional tone",
       "characters": [
-        { "name": "", "role": "", "relationships": "" }
-      ],
-      "themes": ["", ""],
-      "tone": ""
+        {
+          "name": "Character Name",
+          "role": "Protagonist/Antagonist/Supporting",
+          "description": "Short description of their role in this chapter"
+        }
+      ]
     }
-    
+
     CHAPTER ${chapterNumber}:
     ${chapterText.slice(0, 12000)}
   `;
@@ -98,23 +105,37 @@ export async function analyzeChapterWithAI(
   const result = await model.generateContent(prompt);
   const text = result.response.text();
 
-  return JSON.parse(text); // Make sure to wrap in try/catch in real code
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.log("⚠️ Chapter AI JSON parse failed, using fallback");
+    return {
+      summary: "",
+      themes: [],
+      tone: "",
+      characters: []
+    };
+  }
 }
 
-async function analyzeBookOverview(
-  model,
-  fullText
-) {
+
+export async function analyzeBookOverview(model, fullText) {
   const prompt = `
-    Analyze this entire book and return JSON:
+    You are a book analysis AI.
+
+    Return ONLY valid JSON:
 
     {
-      "overallSummary": "",
+      "summary": "Overall plot summary of the book",
+      "majorThemes": ["theme1", "theme2"],
+      "tone": "overall emotional tone of the book",
       "mainCharacters": [
-        { "name": "", "role": "", "description": "" }
-      ],
-      "majorThemes": [],
-      "overallTone": ""
+        {
+          "name": "Character Name",
+          "description": "Who they are",
+          "relationships": "Connections to other characters"
+        }
+      ]
     }
 
     BOOK TEXT:
@@ -122,8 +143,20 @@ async function analyzeBookOverview(
   `;
 
   const result = await model.generateContent(prompt);
-  return JSON.parse(result.response.text());
+
+  try {
+    return JSON.parse(result.response.text());
+  } catch {
+    console.log("⚠️ Book overview JSON parse failed");
+    return {
+      summary: "",
+      majorThemes: [],
+      tone: "",
+      mainCharacters: []
+    };
+  }
 }
+
 
 export async function embedText(genAI, text) {
   const embeddingModel = genAI.getGenerativeModel({ model: "text-embedding-004" });

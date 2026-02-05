@@ -1,5 +1,6 @@
 import readStyles from '@/constants/read.styles';
 import { useAppContext } from '@/context/useAppContext';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   View,
@@ -40,6 +41,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   const { colors } = useAppContext()
   const styles = readStyles(colors)
+  const router = useRouter()
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
@@ -136,7 +138,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
           <Text style={styles.aiAssistantText}>AI Assistant</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.navArrow}>
+        <TouchableOpacity style={styles.navArrow} onPress={() => router.push('/chat')}>
           <Text style={styles.navArrowText}>›</Text>
         </TouchableOpacity>
       </View>

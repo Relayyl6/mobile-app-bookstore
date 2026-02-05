@@ -241,17 +241,19 @@ const detailStyles = (colors: ColorScheme) => StyleSheet.create({
     color: colors.textSecondary,
   },
   themesGrid: {
+    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between', // spreads 2 cards per row nicely
   },
   themeCard: {
+    width: '48%',              // forces 2 cards per row
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 16,
-    width: '48%',
+    marginBottom: 12,          // vertical spacing (since gap isn't fully reliable)
   },
   themeIcon: {
     fontSize: 24,

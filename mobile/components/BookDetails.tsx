@@ -1,8 +1,6 @@
 import detailStyles from '@/constants/details.style';
 import { useAppContext } from '@/context/useAppContext';
 import React from 'react';
-
-
 import {
   View,
   Text,
@@ -12,40 +10,6 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-interface Character {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  iconColor: string;
-}
-
-interface BookDetailsProps {
-  coverImage: any; // Image source
-  title: string;
-  subtitle: string;
-  author: string;
-  authorColor?: string;
-  price: string;
-  pages: number;
-  rating: number;
-  currentProgress: number;
-  lastRead: string;
-  genres: string[];
-  plotSummary: string;
-  characters: Character[];
-  theme: string;
-  themeDescription: string;
-  tone: string;
-  toneDescription: string;
-  pacing: string;
-  isbn: string;
-  onBack?: () => void;
-  onShare?: () => void;
-  onMore?: () => void;
-  onReadNow?: () => void;
-  onAIAnalysis?: () => void;
-}
 
 const BookDetails: React.FC<BookDetailsProps> = ({
   coverImage,
@@ -216,7 +180,7 @@ const BookDetails: React.FC<BookDetailsProps> = ({
               <Text style={styles.themeIcon}>🎭</Text>
               <View>
                 <Text style={styles.themeLabel}>TONE</Text>
-                <Text style={styles.themeValue}>{tone}</Text>
+                <Text style={styles.themeValue} numberOfLines={1} ellipsizeMode="tail">{tone}</Text>
               </View>
             </View>
             <View style={styles.themeCard}>

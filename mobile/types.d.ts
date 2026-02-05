@@ -13,7 +13,7 @@ declare interface ColorScheme {
   black: string;
 }
 
-declare type ThemeType = 'forest' | 'retro' | 'ocean' | 'blossom' | 'cyberpunk';
+declare type ThemeType = 'forest' | 'retro' | 'ocean' | 'blossom' | 'cyberpunk' | 'homeColors' | 'profileColors' | 'libraryColors' | 'greenTheme' | 'purpleTheme' | 'sunsetTheme' | 'grayTheme' | 'cyberpunkTheme';
 declare type ThemeMode = 'light' | 'dark';
 
 
@@ -36,6 +36,8 @@ declare interface AppContextType {
   setUserId: React.Dispatch<React.SetStateAction<string | null>>;
   bookId: string | null;
   setBookId:  React.Dispatch<React.SetStateAction<string | null>>;
+  show: boolean;
+  setShow(value: any) => void
 }
 
 // Image Module Declarations
@@ -97,4 +99,39 @@ declare interface ChatMessage {
   timestamp: Date
   fileType?: FileType
   aiContext?: AIContext
+}
+
+declare interface Character {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  iconColor: string;
+}
+
+declare interface BookDetailsProps {
+  coverImage: any; // Image source
+  title: string;
+  subtitle: string;
+  author: string;
+  authorColor?: string;
+  price: string;
+  pages: number;
+  rating: number;
+  currentProgress: number;
+  lastRead: string;
+  genres: string[];
+  plotSummary: string;
+  characters: Character[];
+  theme: string;
+  themeDescription: string;
+  tone: string;
+  toneDescription: string;
+  pacing: string;
+  isbn: string;
+  onBack?: () => void;
+  onShare?: () => void;
+  onMore?: () => void;
+  onReadNow?: () => void;
+  onAIAnalysis?: () => void;
 }

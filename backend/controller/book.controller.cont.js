@@ -12,7 +12,8 @@ import userBookStateModel from "../models/userBookState.model.js";
 
 
 export const updateReadingProgress = async (req, res) => {
-  const { userId, bookId, currentChapter, currentPage, progressPercentage, maxSpoilerChapterAllowed } = req.body;
+  const { bookId, currentChapter, currentPage, progressPercentage } = req.body;
+  const userId = req.user._id;
 
   try {
     const state = await userBookStateModel.findOneAndUpdate(
@@ -23,53 +24,57 @@ export const updateReadingProgress = async (req, res) => {
           currentPage,
           progressPercentage,
           lastReadAt: new Date(),
-          maxSpoilerChapterAllowed
-        }
+        },
+        $max: { maxSpoilerChapterAllowed: currentChapter } // 👈 prevents going backwards
       },
-      { new: true, upsert: true } // create if not exists
+      { new: true, upsert: true }
     );
 
     res.json({ success: true, state });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Failed to update reading progress" });
   }
 };
 
+
 export const addBookmark = async (req, res) => {
-  const { userId, bookId, chapter, note, page } = req.body;
+  const { bookId, chapter, page, note } = req.body;
+  const userId = req.user._id;
 
   try {
     const state = await userBookStateModel.findOneAndUpdate(
       { userId, bookId },
       {
-        $push: { bookmarks: { chapter, note, page } },
+        $push: { bookmarks: { chapter, page, note } },
         $set: { lastReadAt: new Date() }
       },
-      { new: true, upsert: true }
+      { new: true }
     );
 
-    res.json({ success: true, state });
-  } catch (err) {
+    res.json({ success: true, bookmarks: state.bookmarks });
+  } catch {
     res.status(500).json({ error: "Failed to add bookmark" });
   }
 };
 
+
 export const addUserNote = async (req, res) => {
-  const { userId, bookId, chapter, content, page } = req.body;
+  const { bookId, chapter, page, content } = req.body;
+  const userId = req.user._id;
 
   try {
     const state = await userBookStateModel.findOneAndUpdate(
       { userId, bookId },
       {
-        $push: { userNotes: { chapter, content, page } },
+        $push: { userNotes: { chapter, page, content } },
         $set: { lastReadAt: new Date() }
       },
-      { new: true, upsert: true }
+      { new: true }
     );
 
-    res.json({ success: true, state });
-  } catch (err) {
+    res.json({ success: true, notes: state.userNotes });
+  } catch {
     res.status(500).json({ error: "Failed to add note" });
   }
 };
+

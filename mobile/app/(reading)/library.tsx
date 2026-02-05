@@ -13,11 +13,10 @@ import {
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAppContext } from '@/context/useAppContext';
 import libraryStyles from '@/constants/library.style';
-import BigCard from '@/constants/BigCard';
 
 const LibraryScreen = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); 
-  const { colors, show: something, setShow: setSomething } = useAppContext()
+  const { colors } = useAppContext()
   const styles = libraryStyles(colors)
 
   return (
@@ -85,20 +84,49 @@ const LibraryScreen = () => {
           </View>
 
           <View style={styles.recommendedGrid}>
-            <BigCard
-              toptext='AI Summary'
-              title='The Midnight...'
-              author='Matt Haig'
-              rating={4.8}
-              genre='Fiction'
-            />
-            <BigCard
-              toptext='AI Summary'
-              title='Project Hail Mary'
-              author='Andy Weir'
-              rating={4.2}
-              genre='Sci-Fi'
-            />
+            <View style={styles.recommendedCard}>
+              <View style={styles.recommendedCover}>
+                <Image
+                  source={{ uri: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300' }}
+                  style={styles.coverImage}
+                />
+                <View style={styles.aiSummaryBadge}>
+                  <Feather name="zap" size={12} color={colors.white} />
+                  <Text style={styles.aiSummaryText}>AI Summary</Text>
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>The Midnight...</Text>
+              <Text style={styles.cardAuthor}>Matt Haig</Text>
+              <View style={styles.cardFooter}>
+                <View style={styles.rating}>
+                  <Feather name="star" size={14} color="#ffa500" fill="#ffa500" />
+                  <Text style={styles.ratingText}>4.8</Text>
+                </View>
+                <Text style={styles.genre}>Fiction</Text>
+              </View>
+            </View>
+
+            <View style={styles.recommendedCard}>
+              <View style={styles.recommendedCover}>
+                <Image
+                  source={{ uri: 'https://images.unsplash.com/photo-1614544048536-0d28caf77f41?w=300' }}
+                  style={styles.coverImage}
+                />
+                <View style={styles.aiSummaryBadge}>
+                  <Feather name="zap" size={12} color={colors.white} />
+                  <Text style={styles.aiSummaryText}>AI Summary</Text>
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Project Hail Mary</Text>
+              <Text style={styles.cardAuthor}>Andy Weir</Text>
+              <View style={styles.cardFooter}>
+                <View style={styles.rating}>
+                  <Feather name="star" size={14} color="#ffa500" fill="#ffa500" />
+                  <Text style={styles.ratingText}>4.9</Text>
+                </View>
+                <Text style={styles.genre}>Sci-Fi</Text>
+              </View>
+            </View>
           </View>
         </View>
 
@@ -185,27 +213,28 @@ const LibraryScreen = () => {
       {/* Floating AI Button */}
       <TouchableOpacity style={styles.floatingButton}>
         <MaterialCommunityIcons name="robot" size={24} color={colors.white} />
+        <Text style={styles.floatingButtonText}>Ask AI for a Book</Text>
       </TouchableOpacity>
 
       {/* Bottom Navigation */}
-      { 
-        something && (   
-          <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navItem}>
-              <Feather name="compass" size={24} color={colors.textSecondary} />
-              <Text style={styles.navLabel}>EXPLORE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem}>
-              <Feather name="book" size={24} color={colors.textSecondary} />
-              <Text style={styles.navLabel}>MY BOOKS</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navItem}>
-              <MaterialCommunityIcons name="chart-box" size={24} color={colors.textSecondary} />
-              <Text style={styles.navLabel}>STATS</Text>
-            </TouchableOpacity>
-          </View>
-        )
-      }
+      <View style={styles.bottomNav}>
+        <TouchableOpacity style={styles.navItem}>
+          <Feather name="compass" size={24} color={colors.textSecondary} />
+          <Text style={styles.navLabel}>EXPLORE</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Feather name="book" size={24} color={colors.textSecondary} />
+          <Text style={styles.navLabel}>MY BOOKS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <MaterialCommunityIcons name="chart-box" size={24} color={colors.textSecondary} />
+          <Text style={styles.navLabel}>STATS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem}>
+          <Feather name="user" size={24} color={colors.textSecondary} />
+          <Text style={styles.navLabel}>PROFILE</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

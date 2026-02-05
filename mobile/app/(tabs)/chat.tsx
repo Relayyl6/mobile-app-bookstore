@@ -43,7 +43,6 @@ const Chat = () => {
   useEffect(() => {
     setUserId(user.id)
   }, [])
-  console.log(contextUserId)
 
   const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 
@@ -168,13 +167,14 @@ const Chat = () => {
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, aiMsg])
-    } catch {
+    } catch (error) {
       const errorMsg: ChatMessage = {
         id: generateId(),
         role: 'assistant',
         text: 'Something went wrong. Please try again.',
         timestamp: new Date(),
       }
+      console.error(error)
       setMessages((prev) => [...prev, errorMsg])
     } finally {
       setIsLoading(false)
@@ -215,7 +215,7 @@ const Chat = () => {
         {/* Header                                                       */}
         {/* ----------------------------------------------------------- */}
         <View style={[styles.header, { paddingTop: 12, marginBottom: 12 }]}>
-          <Text style={[styles.title, { textAlign: 'center' }]}>Yemeul Chat</Text>
+          <Text style={[styles.title, { textAlign: 'center' }]}>Hello {user.username}</Text>
           <Text style={[styles.subtitle, { textAlign: 'center' }]}>
             Chat with your book, Literally
           </Text>
@@ -415,7 +415,7 @@ const Chat = () => {
               color: colors.textPrimary,
               fontSize: 14,
             }}
-            placeholder='Ask anything about your book…'
+            placeholder='Ask about your book…'
             placeholderTextColor={colors.placeholderText}
             value={inputText}
             onChangeText={setInputText}

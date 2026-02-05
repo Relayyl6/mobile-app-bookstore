@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from "../middleware/auth.middleware.js";
-import { createBook, getBooks, deleteBook, updateBook, incrementBookViews, incrementBookPurchases, addOrUpdateRating, deleteRating, getSingleBook, describeImage, uploadFile, chatWithBook, getAllBooksForReading, getChapterForReading, deleteBookReading } from '../controller/book.controller.js'
+import { createBook, getBooks, deleteBook, updateBook, incrementBookViews, incrementBookPurchases, addOrUpdateRating, deleteRating, getSingleBook, describeImage, uploadFile, chatWithBook, getAllBooksForReading, deleteBookReading, getBookDetails } from '../controller/book.controller.js'
 import { manualCleanup } from '../lib/cron.js';
 import multer from "multer";
 import { addBookmark, addUserNote, updateReadingProgress } from '../controller/book.controller.cont.js';
@@ -34,7 +34,7 @@ bookRouter.post("/chat", authMiddleware, chatWithBook)
 
 // get literal book not recommendation that has been uploaded
 bookRouter.get("/read-all-books", getAllBooksForReading)
-bookRouter.get("/read-all-books/:id/:chapterNumber", getChapterForReading)
+bookRouter.get("/read-all-books/:id/:chapterNumber", getBookDetails)
 bookRouter.delete("/read-all-books/:id", deleteBookReading)
 
 bookRouter.post("/reading-progress", updateReadingProgress)
