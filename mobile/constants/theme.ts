@@ -55,6 +55,20 @@ export const lightThemes = {
     white: "#ffffff",
     black: "#000000",
   } as ColorScheme,
+
+  cyberpunk: {
+    primary: '#3B82F6', // Blue primary color
+    textPrimary: '#1F2937', // Dark text
+    textSecondary: '#6B7280', // Gray text
+    textDark: '#111827', // Almost black text
+    placeholderText: '#9CA3AF', // Light gray for placeholders
+    background: '#F3F4F6', // Light background
+    cardBackground: '#1F2937', // Dark card background
+    inputBackground: '#374151', // Dark input background
+    border: '#D1D5DB', // Light gray border
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme
 };
 
 // Dark Themes
@@ -114,4 +128,18 @@ export const darkThemes = {
     white: "#ffffff",
     black: "#000000",
   } as ColorScheme,
+
+  cyberpunk: {
+    primary: '#3B82F6', // Blue primary color
+    textPrimary: '#1F2937', // Dark text
+    textSecondary: '#6B7280', // Gray text
+    textDark: '#111827', // Almost black text
+    placeholderText: '#9CA3AF', // Light gray for placeholders
+    background: '#F3F4F6', // Light background
+    cardBackground: '#1F2937', // Dark card background
+    inputBackground: '#374151', // Dark input background
+    border: '#D1D5DB', // Light gray border
+    white: '#FFFFFF',
+    black: '#000000',
+  } as ColorScheme
 };

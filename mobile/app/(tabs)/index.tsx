@@ -223,6 +223,10 @@ const Index = () => {
         <View style={styles.bookImageContainer}>
           <Image source={{ uri: item.image }} style={styles.bookImage} contentFit='cover' />
         </View>
+
+        <View style={styles.bookDetails}>
+
+        </View>
       </View>
     )
   }
@@ -242,6 +246,7 @@ const Index = () => {
           name={i < rating ? 'star' : "star-outline"}
           size={16}
           color={i < rating ? "#F4B400" : colors.textSecondary}
+          style={{ marginRight: 2 }}
         />
       )
     }
@@ -254,7 +259,6 @@ const Index = () => {
         data={books}
         renderItem={renderItem}
         keyExtractor={(item) => {
-          console.log("🔑 Extracting key for:", item?._id)
           return item._id
         }}
         contentContainerStyle={styles.listContainer}

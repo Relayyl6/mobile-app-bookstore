@@ -1,12 +1,13 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
-const Books = () => {
+const Profile = () => {
   return (
-    <View>
-      <Text>Books</Text>
+    <View style={{ flex: 1, justifyContent: 'center' }}>
+      <ThemeSwitcher/>
     </View>
   )
 }
 
-export default Books
+export default Profile

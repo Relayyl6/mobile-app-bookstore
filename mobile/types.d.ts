@@ -13,7 +13,7 @@ declare interface ColorScheme {
   black: string;
 }
 
-declare type ThemeType = 'forest' | 'retro' | 'ocean' | 'blossom';
+declare type ThemeType = 'forest' | 'retro' | 'ocean' | 'blossom' | 'cyberpunk';
 declare type ThemeMode = 'light' | 'dark';
 
 

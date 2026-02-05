@@ -1,0 +1,161 @@
+import { StyleSheet } from "react-native";
+
+const readStyles = (colors: ColorScheme) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerButton: {
+    padding: 8,
+    width: 40,
+    alignItems: 'center',
+  },
+  headerIcon: {
+    fontSize: 20,
+    color: colors.textDark,
+  },
+  headerCenter: {
+    alignItems: 'center',
+  },
+  chapterNumber: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.textDark,
+    letterSpacing: 0.5,
+  },
+  timeRemaining: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  contentInner: {
+    padding: 20,
+    paddingBottom: 120,
+  },
+  chapterTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.textDark,
+    marginBottom: 24,
+    lineHeight: 40,
+  },
+  paragraph: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: colors.textDark,
+    marginBottom: 20,
+    fontFamily: 'System',
+  },
+  dropCap: {
+    fontSize: 52,
+    fontWeight: '700',
+    color: colors.primary,
+    lineHeight: 52,
+    marginRight: 4,
+  },
+  actionMenu: {
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    marginTop: -100,
+    backgroundColor: colors.white,
+    borderRadius: 30,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  menuItem: {
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+  },
+  analyzeButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    marginVertical: 8,
+    paddingVertical: 16,
+  },
+  menuIconContainer: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuIcon: {
+    fontSize: 18,
+  },
+  menuLabel: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: 4,
+    letterSpacing: 0.5,
+  },
+  analyzeLabelText: {
+    color: colors.white,
+    fontSize: 11,
+  },
+  navigationContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.black,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  navArrow: {
+    width: 44,
+    height: 44,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navArrowText: {
+    fontSize: 24,
+    color: colors.white,
+    fontWeight: '300',
+  },
+  aiAssistantButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+  },
+  aiAssistantIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+  aiAssistantText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.white,
+  },
+});
+
+export default readStyles

@@ -58,6 +58,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       retro: icons.home,
       forest: icons.profile,
       blossom: icons.settings,
+      cyberpunk: icons.library
     };
 
     return themeIconMap[currentTheme];
