@@ -208,7 +208,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const estimateReadingTime = (pageText: string) => {
     if (!pageText) return setTimeRemaining("0 min left");
     const words = pageText.split(/\s+/).length;
-    const wordsPerMinute = 200;
+    const wordsPerMinute = 300;
     const minutes = Math.ceil(words / wordsPerMinute);
     setTimeRemaining(`${minutes} min left`);
   };
