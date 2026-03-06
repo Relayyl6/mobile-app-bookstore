@@ -10,6 +10,7 @@ import multer from 'multer';
 import * as bookController from '../controller/book.controller.js';
 import * as chatController from '../controller/chat.controller.js';
 import * as readingController from '../controller/reading.controller.js';
+import * as bookContController from '../controller/book.controller.cont.js';
 
 const bookRouter = express.Router();
 
@@ -329,7 +330,7 @@ bookRouter.delete(
 bookRouter.get(
   '/:bookId/bookmarks',
   authMiddleware,
-  readingController.getBookmarks
+  bookContController.getBookmarks
 );
 
 /**
@@ -340,7 +341,7 @@ bookRouter.get(
 bookRouter.get(
   '/:bookId/notes',
   authMiddleware,
-  readingController.getNotes
+  bookContController.getNotes
 );
 
 /**
