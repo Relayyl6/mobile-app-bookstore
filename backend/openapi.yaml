@@ -1,12 +1,24 @@
 openapi: 3.0.0
 info:
-  title: Book Store & Recommendation API
-  description: Backend API for authentication, book management, ratings, interactions, and personalized recommendations.
-  version: 1.0.0
+  title: Book Platform API - Complete Reading & Recommendation System
+  description: |
+    Production-ready API for a comprehensive book platform featuring:
+    - Book catalog management
+    - PDF content processing with AI
+    - Reading progress tracking
+    - AI-powered chat assistant
+    - Personalized recommendations
+    - User interactions & ratings
+  version: 2.0.0
+  contact:
+    name: Leonard Oseghale
+    email: your-email@example.com
 
 servers:
   - url: http://localhost:3000/api/v1
     description: Local development server
+  - url: https://api.yourplatform.com/api/v1
+    description: Production server
 
 components:
   securitySchemes:
@@ -14,6 +26,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: JWT token obtained from login/register
 
   schemas:
     User:
@@ -21,83 +34,234 @@ components:
       properties:
         id:
           type: string
+          example: "507f1f77bcf86cd799439011"
         username:
           type: string
+          example: "johndoe"
         email:
           type: string
+          example: "john@example.com"
         profileImage:
           type: string
+          example: "https://cloudinary.com/..."
+        preferredGenres:
+          type: array
+          items:
+            type: string
+          example: ["fiction", "mystery"]
+        favoriteAuthors:
+          type: array
+          items:
+            type: string
+          example: ["Agatha Christie", "Stephen King"]
 
     Book:
       type: object
       properties:
         id:
           type: string
+          example: "507f1f77bcf86cd799439011"
         title:
           type: string
+          example: "The Great Gatsby"
         subTitle:
           type: string
+          example: "A Novel"
         author:
           type: string
+          example: "F. Scott Fitzgerald"
         caption:
           type: string
+          example: "A classic American novel"
         description:
           type: string
+          example: "The story primarily concerns the young..."
         genres:
           type: array
           items:
             type: string
+          example: ["fiction", "classic", "romance"]
         image:
           type: string
+          example: "https://cloudinary.com/..."
         price:
           type: number
+          example: 9.99
         isbn:
           type: string
+          example: "978-0-7432-7356-5"
         publishedYear:
           type: number
+          example: 1925
         averageRating:
           type: number
+          example: 4.5
         totalRatings:
           type: number
+          example: 1234
         totalViews:
           type: number
+          example: 5678
         totalPurchases:
           type: number
+          example: 890
+        hasContent:
+          type: boolean
+          example: true
+        status:
+          type: string
+          enum: [draft, published, archived]
+          example: "published"
+
+    ReadingState:
+      type: object
+      properties:
+        currentChapter:
+          type: number
+          example: 3
+        currentPage:
+          type: number
+          example: 45
+        progressPercentage:
+          type: number
+          example: 25
+        lastReadAt:
+          type: string
+          format: date-time
+        maxUnlockedChapter:
+          type: number
+          example: 3
+        bookmarks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bookmark'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
+
+    Bookmark:
+      type: object
+      properties:
+        chapterNumber:
+          type: number
+          example: 2
+        pageNumber:
+          type: number
+          example: 30
+        note:
+          type: string
+          example: "Important plot twist"
+        createdAt:
+          type: string
+          format: date-time
+
+    Note:
+      type: object
+      properties:
+        chapterNumber:
+          type: number
+          example: 2
+        pageNumber:
+          type: number
+          example: 30
+        note:
+          type: string
+          example: "Character development moment"
+        highlight:
+          type: string
+          example: "He looked at her with wonder"
+        createdAt:
+          type: string
+          format: date-time
+
+    Rating:
+      type: object
+      required: [bookId, rating]
+      properties:
+        bookId:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+          example: 5
+        review:
+          type: string
+          example: "Absolutely brilliant book!"
+
+    ChatMessage:
+      type: object
+      required: [userId, message]
+      properties:
+        userId:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        bookId:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+          description: "Optional - for book-aware chat"
+        message:
+          type: string
+          example: "Who is the main character?"
+        systemInstruction:
+          type: string
+          example: "Be friendly and concise"
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation successful"
 
     ErrorResponse:
       type: object
-      required: [error]
       properties:
+        success:
+          type: boolean
+          example: false
         error:
           type: string
-          example: Invalid request
-        hint:
-          type: string
-          example: Check the API documentation for the correct endpoint
-
-    ValidationError:
-      type: object
-      properties:
-        error:
-          type: string
-          example: Validation failed
-        fields:
-          type: object
-          additionalProperties:
-            type: string
-          example:
-            email: Invalid email format
-            password: Must be at least 8 characters
+          example: "Invalid request"
+        statusCode:
+          type: number
+          example: 400
 
 security:
   - bearerAuth: []
 
-paths:
+tags:
+  - name: Auth
+    description: Authentication & user management
+  - name: Books - Catalog
+    description: Book metadata management
+  - name: Books - Content
+    description: PDF upload & content management
+  - name: Books - Reading
+    description: Reading progress & experience
+  - name: Books - Bookmarks
+    description: Bookmarks & notes management
+  - name: AI
+    description: AI-powered features
+  - name: Interactions
+    description: User interactions tracking
+  - name: Ratings
+    description: Book ratings & reviews
+  - name: Recommendations
+    description: Personalized recommendations
 
-  /store/register:
+paths:
+  # ==================== AUTH ====================
+  /auth/register:
     post:
       summary: Register a new user
       tags: [Auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -108,66 +272,53 @@ paths:
               properties:
                 email:
                   type: string
+                  example: "john@example.com"
                 username:
                   type: string
+                  example: "johndoe"
                 password:
                   type: string
+                  example: "password123"
                 preferredGenres:
                   type: array
                   items:
                     type: string
+                  example: ["fiction", "mystery"]
                 favoriteAuthors:
                   type: array
                   items:
                     type: string
+                  example: ["Agatha Christie"]
       responses:
-        201:
+        '201':
           description: User registered successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: boolean
                   message:
                     type: string
-                    example: User registered successfully
-
-        400:
-          description: Invalid request payload
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '400':
+          description: Invalid input
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-        404:
-          description: Endpoint not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              example:
-                error: Endpoint not found
-                hint: Did you mean POST /store/register?
-
-        409:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
           description: User already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
-        422:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationError"
-
-
-  /store/log-in:
+  /auth/login:
     post:
       summary: Login user
       tags: [Auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -181,176 +332,212 @@ paths:
                 password:
                   type: string
       responses:
-        201:
-          description: User registered successfully
+        '200':
+          description: Login successful
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  success:
+                    type: boolean
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
                     type: string
-                    example: User registered successfully
-        400:
-          description: Invalid request payload
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+        '401':
+          description: Invalid credentials
 
+  # ==================== BOOKS - CATALOG ====================
   /books:
     post:
-      summary: Create a book
-      tags: [Books]
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Book'
-      responses:
-        201:
-          description: Book created
-
-    get:
-      summary: Get all books (paginated)
-      tags: [Books]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-        - in: query
-          name: limit
-          schema:
-            type: integer
-      responses:
-        200:
-          description: List of books
-
-  /books/{id}:
-    get:
-      summary: Get a single book
-      tags: [Books]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Book retrieved
-
-    put:
-      summary: Update a book
-      tags: [Books]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Book updated
-
-    delete:
-      summary: Delete a book
-      tags: [Books]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Book deleted
-
-  /books/views/{id}:
-    post:
-      summary: Increment book views
-      tags: [Interactions]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: View recorded
-
-  /books/purchase/{id}:
-    post:
-      summary: Increment book purchases
-      tags: [Interactions]
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Purchase recorded
-
-  /books/rating:
-    post:
-      summary: Add or update a rating
-      tags: [Ratings]
-      security:
-        - bearerAuth: []
+      summary: Create a book (metadata only)
+      tags: [Books - Catalog]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [bookId, rating]
+              required: [title, author, caption, genres, image, price]
               properties:
-                bookId:
+                title:
                   type: string
-                rating:
+                subTitle:
+                  type: string
+                author:
+                  type: string
+                caption:
+                  type: string
+                description:
+                  type: string
+                genres:
+                  type: array
+                  items:
+                    type: string
+                image:
+                  type: string
+                  description: "Base64 encoded image"
+                price:
                   type: number
-                review:
+                isbn:
                   type: string
+                publishedYear:
+                  type: number
       responses:
-        200:
-          description: Rating saved
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  book:
+                    $ref: '#/components/schemas/Book'
 
-  /recommendations:
     get:
-      summary: Get personalized recommendations
-      tags: [Recommendations]
-      security:
-        - bearerAuth: []
+      summary: Get all books (paginated)
+      tags: [Books - Catalog]
+      security: []
       parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
         - in: query
           name: limit
           schema:
             type: integer
+            default: 10
       responses:
-        200:
-          description: Recommended books
+        '200':
+          description: Books retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  books:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+                  currentPage:
+                    type: number
+                  totalPages:
+                    type: number
+                  totalBooks:
+                    type: number
 
-  /recommendations/similar/{bookId}:
+  /books/{id}:
     get:
-      summary: Get similar books
-      tags: [Recommendations]
+      summary: Get single book details
+      tags: [Books - Catalog]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Book details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  book:
+                    $ref: '#/components/schemas/Book'
+
+    put:
+      summary: Update book metadata
+      tags: [Books - Catalog]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                price:
+                  type: number
+      responses:
+        '200':
+          description: Book updated
+
+    delete:
+      summary: Delete book completely
+      tags: [Books - Catalog]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Book deleted
+
+  # ==================== BOOKS - CONTENT ====================
+  /books/{bookId}/content:
+    post:
+      summary: Upload PDF content for a book
+      tags: [Books - Content]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: "PDF file"
+      responses:
+        '200':
+          description: PDF processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      totalChapters:
+                        type: number
+                      totalCharacters:
+                        type: number
+
+    delete:
+      summary: Delete book content (keeps metadata)
+      tags: [Books - Content]
       parameters:
         - in: path
           name: bookId
@@ -358,21 +545,493 @@ paths:
           schema:
             type: string
       responses:
-        200:
+        '200':
+          description: Content deleted
+
+  /books/reading/library:
+    get:
+      summary: Get books with readable content
+      tags: [Books - Content]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Readable books
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  books:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+
+  # ==================== BOOKS - READING ====================
+  /books/{bookId}/reading/state:
+    get:
+      summary: Get user's reading state for a book
+      tags: [Books - Reading]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reading state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  state:
+                    $ref: '#/components/schemas/ReadingState'
+
+  /books/{bookId}/reading/progress:
+    put:
+      summary: Update reading progress
+      tags: [Books - Reading]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentChapter:
+                  type: number
+                currentPage:
+                  type: number
+                progressPercentage:
+                  type: number
+      responses:
+        '200':
+          description: Progress updated
+
+  /books/{bookId}/chapters/{chapterNumber}:
+    get:
+      summary: Get chapter content
+      tags: [Books - Reading]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: chapterNumber
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Chapter content
+        '403':
+          description: Chapter locked (spoiler protection)
+
+  /books/{bookId}/table-of-contents:
+    get:
+      summary: Get book table of contents
+      tags: [Books - Reading]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Table of contents with unlock status
+
+  /books/{bookId}/characters:
+    get:
+      summary: Get book characters
+      tags: [Books - Reading]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of characters
+
+  /books/reading/statistics:
+    get:
+      summary: Get user's reading statistics
+      tags: [Books - Reading]
+      responses:
+        '200':
+          description: Reading statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  statistics:
+                    type: object
+                    properties:
+                      totalBooksStarted:
+                        type: number
+                      booksInProgress:
+                        type: number
+                      booksCompleted:
+                        type: number
+                      averageProgress:
+                        type: number
+
+  # ==================== BOOKMARKS & NOTES ====================
+  /books/{bookId}/bookmarks:
+    post:
+      summary: Add bookmark
+      tags: [Books - Bookmarks]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chapterNumber, pageNumber]
+              properties:
+                chapterNumber:
+                  type: number
+                pageNumber:
+                  type: number
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Bookmark added
+
+  /books/{bookId}/bookmarks/{bookmarkId}:
+    delete:
+      summary: Remove bookmark
+      tags: [Books - Bookmarks]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: bookmarkId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bookmark removed
+
+  /books/{bookId}/notes:
+    post:
+      summary: Add note
+      tags: [Books - Bookmarks]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [chapterNumber, note]
+              properties:
+                chapterNumber:
+                  type: number
+                pageNumber:
+                  type: number
+                note:
+                  type: string
+                highlight:
+                  type: string
+      responses:
+        '200':
+          description: Note added
+
+  # ==================== AI FEATURES ====================
+  /books/ai/describe-image:
+    post:
+      summary: Generate book description from cover image
+      tags: [AI]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imageBase64]
+              properties:
+                imageBase64:
+                  type: string
+                title:
+                  type: string
+                author:
+                  type: string
+                caption:
+                  type: string
+      responses:
+        '200':
+          description: Description generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  description:
+                    type: string
+
+  /books/ai/chat:
+    post:
+      summary: Chat with AI (book-aware or general)
+      tags: [AI]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessage'
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  result:
+                    type: string
+                  mode:
+                    type: string
+                    enum: [general, book-aware]
+
+  # ==================== INTERACTIONS ====================
+  /books/{id}/view:
+    post:
+      summary: Track book view
+      tags: [Interactions]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: View tracked
+
+  /books/{id}/purchase:
+    post:
+      summary: Track book purchase
+      tags: [Interactions]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: number
+                  default: 1
+      responses:
+        '200':
+          description: Purchase tracked
+
+  # ==================== RATINGS ====================
+  /books/ratings:
+    post:
+      summary: Add or update rating
+      tags: [Ratings]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rating'
+      responses:
+        '200':
+          description: Rating saved
+
+  /books/{bookId}/ratings:
+    delete:
+      summary: Delete rating
+      tags: [Ratings]
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rating deleted
+
+  # ==================== RECOMMENDATIONS ====================
+  /recommendations/personalized:
+    get:
+      summary: Get personalized recommendations
+      tags: [Recommendations]
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: number
+                  recommendations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+
+  /recommendations/similar/{bookId}:
+    get:
+      summary: Get similar books
+      tags: [Recommendations]
+      security: []
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
           description: Similar books
 
   /recommendations/popular:
     get:
       summary: Get popular books
       tags: [Recommendations]
+      security: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
       responses:
-        200:
+        '200':
           description: Popular books
 
   /recommendations/new:
     get:
       summary: Get new releases
       tags: [Recommendations]
+      security: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
       responses:
-        200:
+        '200':
           description: New books
+
+  /recommendations/trending:
+    get:
+      summary: Get trending books
+      tags: [Recommendations]
+      security: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: days
+          schema:
+            type: integer
+            default: 7
+      responses:
+        '200':
+          description: Trending books
+
+  /recommendations/genre/{genre}:
+    get:
+      summary: Get books by genre
+      tags: [Recommendations]
+      security: []
+      parameters:
+        - in: path
+          name: genre
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Books in genre
+
+  /recommendations/author/{author}:
+    get:
+      summary: Get books by author
+      tags: [Recommendations]
+      security: []
+      parameters:
+        - in: path
+          name: author
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Books by author

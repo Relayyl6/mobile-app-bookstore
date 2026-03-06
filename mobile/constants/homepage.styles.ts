@@ -12,13 +12,14 @@ const homePageStyle = (colors: ColorScheme) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 50,
+    margin: 8,
+    paddingVertical: 10,
     paddingBottom: 16,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   avatar: {
     width: 48,
@@ -45,9 +46,9 @@ const homePageStyle = (colors: ColorScheme) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.inputBackground,
-    borderRadius: 12,
+    borderRadius: 15,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 3,
     gap: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -155,7 +156,7 @@ const homePageStyle = (colors: ColorScheme) => StyleSheet.create({
     fontSize: 11,
     color: colors.primary,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 0,
     letterSpacing: 0.5,
   },
   aiPickBadgeOrange: {
@@ -279,6 +280,202 @@ const homePageStyle = (colors: ColorScheme) => StyleSheet.create({
   navLabelActive: {
     color: colors.primary,
   },
+  loadMoreButton: {
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 24,
+
+    backgroundColor: colors.primary,
+
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    // shadow (iOS)
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+
+    // elevation (Android)
+    elevation: 4,
+  },
+  loadMoreText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  
+communityGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  gap: 12,
+  paddingHorizontal: 20,
+},
+
+communityCard: {
+  width: '48%',
+  backgroundColor: colors.cardBackground,
+  borderRadius: 12,
+  overflow: 'hidden',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 3,
+},
+
+// Image Container
+communityImageContainer: {
+  position: 'relative',
+  width: '100%',
+  height: 200,
+},
+
+communityImage: {
+  width: '100%',
+  height: '100%',
+},
+
+communityImageOverlay: {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: '50%',
+  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+},
+
+// User Badge (Top Left)
+communityUserBadge: {
+  position: 'absolute',
+  top: 8,
+  left: 8,
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 12,
+  gap: 4,
+  maxWidth: '70%',
+},
+
+communityUserAvatar: {
+  width: 16,
+  height: 16,
+  borderRadius: 8,
+},
+
+communityUserName: {
+  fontSize: 10,
+  fontWeight: '600',
+  color: '#fff',
+},
+
+// Rating Badge (Top Right)
+communityRatingBadge: {
+  position: 'absolute',
+  top: 8,
+  right: 8,
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  paddingHorizontal: 6,
+  paddingVertical: 3,
+  borderRadius: 8,
+  gap: 3,
+},
+
+communityRatingText: {
+  fontSize: 10,
+  fontWeight: '700',
+  color: '#FFD700',
+},
+
+// Genre Tag (Bottom on Image)
+communityGenreTag: {
+  position: 'absolute',
+  bottom: 8,
+  left: 8,
+  backgroundColor: colors.primary,
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 6,
+},
+
+communityGenreText: {
+  fontSize: 9,
+  fontWeight: '700',
+  color: colors.white,
+  textTransform: 'uppercase',
+  letterSpacing: 0.5,
+},
+
+// Card Content (Below Image)
+communityCardContent: {
+  padding: 12,
+},
+
+communityTitle: {
+  fontSize: 14,
+  fontWeight: '700',
+  color: colors.textPrimary,
+  marginBottom: 4,
+  lineHeight: 18,
+},
+
+communityAuthor: {
+  fontSize: 12,
+  color: colors.textSecondary,
+  marginBottom: 8,
+},
+
+// Footer Row
+communityCardFooter: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginTop: 4,
+},
+
+communityPagesContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 4,
+},
+
+communityPages: {
+  fontSize: 11,
+  color: colors.textSecondary,
+  fontWeight: '500',
+},
+
+// Price Tag (this was the missing one!)
+communityPriceTag: {
+  backgroundColor: colors.primary + '20',
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  borderRadius: 6,
+},
+
+communityPriceTagText: {
+  fontSize: 12,
+  fontWeight: '700',
+  color: colors.primary,
+},
+
+communityPriceContainer: {
+  flex: 1,
+},
+
+communityPrice: {
+  fontSize: 14,
+  fontWeight: '700',
+  color: colors.primary,
+  textAlign: 'right',
+}
+
 });
 
 export default homePageStyle;

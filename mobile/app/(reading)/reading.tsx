@@ -15,10 +15,10 @@ export const ReadingPageExample = () => {
 
   return (
     <ReadingPage
-      chapterNumber={1}
-      chapterTitle="The Great Beginning"
-      timeRemaining="12 mins remaining"
-      content={chapterContent}
+      // chapterNumber={1}
+      // chapterTitle="The Great Beginning"
+      // timeRemaining="12 mins remaining"
+      // content={chapterContent}
       onBack={() => router.back()}
       onSettings={() => console.log('Settings pressed')}
       onCast={() => console.log('Cast pressed')}
@@ -31,7 +31,7 @@ export const ReadingPageExample = () => {
 
 const Reading = () => {
     const params = useLocalSearchParams();
-    const bookId = params?.page;
+    const page = params?.page;
   return (
     <View style={{ flex: 1, justifyContent: 'center' }}>
       <ReadingPageExample />

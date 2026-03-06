@@ -18,10 +18,14 @@ const ChapterSchema = new Schema(
 
     pages: [PageSchema], // For Kindle-style pagination later
 
+    wordCount: { type: Number, default: 0 }, // helps with AI context limits
+
     // AI knowledge fields
     summary: { type: String },
     themes: [String],
     tone: { type: String },
+
+    setting: { type: String }, // e.g. "Victorian London", "Dystopian Future"
 
     characters: [
       {
@@ -30,6 +34,11 @@ const ChapterSchema = new Schema(
         description: String
       },
     ],
+
+    narrativeSignificance: { type: String }, // e.g. "central to plot", "minor subplot"
+
+    startMarker: { type: String }, // text snippet at chapter start for quick retrieval
+    endMarker: { type: String },   // text snippet at chapter end for quick retrieval
 
     embedding: {
       type: [Number], // semantic search vector

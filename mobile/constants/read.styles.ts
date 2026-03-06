@@ -156,6 +156,109 @@ const readStyles = (colors: ColorScheme) => StyleSheet.create({
     fontWeight: '600',
     color: colors.white,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#fff", // or your app's background color
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "80%",
+    padding: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    paddingBottom: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    padding: 5,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: "#666",
+  },
+  modalBody: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 15,
+    marginBottom: 5,
+    color: "#333",
+  },
+  modalText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#444",
+  },
+  bulletItem: {
+    fontSize: 14,
+    marginLeft: 10,
+    lineHeight: 22,
+    color: "#444",
+  },
+  characterCard: {
+    padding: 10,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  characterName: {
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 80,
+    textAlignVertical: "top",
+    marginBottom: 10,
+  },
+  primaryButton: {
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  noteItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  deleteText: {
+    color: "red",
+    fontSize: 12,
+  },
+  tocItem: {
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  tocItemText: {
+    fontSize: 16,
+    color: "#333",
+  },
 });
 
 export default readStyles

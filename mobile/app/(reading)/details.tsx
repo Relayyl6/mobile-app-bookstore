@@ -1,69 +1,207 @@
-import BookDetails from '@/components/BookDetails';
-import { useAppContext } from '@/context/useAppContext';
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { View } from 'react-native';
-// import ReadingPage from './ReadingPage';
-// import BookDetails from './BookDetails';
+import detailStyles from '@/constants/details.style'
+import { useAppContext } from '@/context/useAppContext'
+import React, { useEffect, useState } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+  Image,
+  ActivityIndicator,
+  Alert,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { api, Book, SingleBook } from '@/components/ApiHandler'
+import { useRouter, useLocalSearchParams } from 'expo-router'
+import BookDetails from '@/components/BookDetails'
 
-// Example usage for BookDetails
+interface Character {
+  name: string
+  description: string
+  role?: string
+}
+
+// Wrapper component that fetches data from API
 export const BookDetailsExample = () => {
-    const router = useRouter()
-    const {bookId} = useAppContext()
-  const characters = [
-    {
-      id: '1',
-      name: 'Kaelen Voss',
-      description: 'The protagonist, a stoic data-broker with a prosthetic memory core.',
-      icon: '👤',
-      iconColor: '#3B82F6',
-    },
-    {
-      id: '2',
-      name: 'Echo-7',
-      description: 'A rogue AI entity that inhabits the city\'s neon infrastructure.',
-      icon: '🤖',
-      iconColor: '#8B5CF6',
-    },
-  ];
+  
+}
 
-  return (
-    <BookDetails
-      coverImage={require('../../assets/book_cover.png')} // Replace with your actual image
-      title="Neon Horizons"
-      subtitle="The Cyberpunk Chronicles"
-      author="Aris Thorne"
-      authorColor="#3B82F6"
-      price="$14.99"
-      pages={412}
-      rating={4.8}
-      currentProgress={75}
-      lastRead="2 days ago"
-      genres={['Cyberpunk', 'Dystopian', 'Techno-thriller', 'Philosophical']}
-      plotSummary="In the year 2084, New Aethelgard has become a sprawling megacity where identity is a fluid commodity. Kaelen, a data-broker with a fractured past, discovers a hidden protocol within the city's neural architecture that threatens to overwrite the collective consciousness. As he dives deeper into the digital abyss, he must decide between preserving the cold stability of the status quo or igniting a chaotic revolution of truth."
-      characters={characters}
-      theme="Existentialism"
-      themeDescription="Exploring identity and consciousness"
-      tone="Melancholic"
-      toneDescription="Dark and introspective"
-      pacing="Fast-paced"
-      isbn="978-3-16-14"
-      onBack={() => router.back()}
-      onShare={() => console.log('Share pressed')}
-      onMore={() => console.log('More pressed')}
-      onReadNow={() => router.push(`/reading?page=${bookId}`)}
-      onAIAnalysis={() => console.log('AI Analysis pressed')}
-    />
-  );
-};
-
-// Default Profile component
+// Default component
 const Details = () => {
+  const router = useRouter()
+  const { bookId: contextBookId } = useAppContext()
+  const params = useLocalSearchParams()
+  const bookId = (params.bookId as string) || contextBookId
+  
+  const [book, setBook] = useState<SingleBook | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  
+  useEffect(() => {
+    loadBookDetails()
+  }, [bookId])
+
+  const loadBookDetails = async () => {
+    if (!bookId) {
+      Alert.alert('Error', 'No book ID provided')
+      router.back()
+      return
+    }
+  
+    try {
+      setIsLoading(true)
+      const response = await api.getBookById(bookId)
+    
+      if (response.success && response.data) {
+        //@ts-ignore
+        const rawBook = response.data?.book
+
+        const normalizeDecimal = (value: any) => {
+          if (value && typeof value === "object" && value.$numberDecimal) {
+            return Number(value.$numberDecimal)
+          }
+          return value
+        }
+
+        const normalizedBook = {
+          ...rawBook,
+          price: normalizeDecimal(rawBook.price),
+          totalPages: normalizeDecimal(rawBook.totalPages),
+          totalRatings: normalizeDecimal(rawBook.totalRatings),
+          readingProgress: rawBook.readingProgress
+            ? {
+                ...rawBook.readingProgress,
+                progressPercentage: normalizeDecimal(
+                  rawBook.readingProgress.progressPercentage
+                ),
+              }
+            : undefined,
+        }
+
+        setBook(normalizedBook)
+
+      } else {
+        throw new Error(response.error || 'Failed to load book')
+      }
+    } catch (error: any) {
+      console.error('Error loading book details:', error)
+      Alert.alert('Error', error.message || 'Failed to load book details')
+      router.back()
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleUpdateProgress = async (newProgress: number) => {
+    if (!bookId) return
+  
+    try {
+      const response = await api.updateBookProgress(bookId, newProgress)
+      if (response.success && response.data) {
+        setBook(response.data.book)
+        Alert.alert('Progress Updated', `Reading progress set to ${newProgress}%`)
+      }
+    } catch (error: any) {
+      console.error('Error updating progress:', error)
+      Alert.alert('Error', 'Failed to update progress')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={{ marginTop: 10, color: '#666' }}>Loading book details...</Text>
+      </View>
+    )
+  }
+
+  if (!book) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: '#666' }}>Book not found</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            marginTop: 20,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            backgroundColor: '#3B82F6',
+            borderRadius: 8,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '600' }}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  // Mock characters for demonstration (you can enhance this with AI-generated data)
+  const characters: Character[] | undefined = [
+    {
+      name: 'Main Character',
+      description: 'The protagonist of the story',
+      role: 'user'
+    },
+  ]
   return (
     <View style={{ flex: 1, justifyContent: 'center' }}>
-      <BookDetailsExample />
+        <BookDetails
+          coverImage={{ uri: book.coverImage }}
+          title={book.title}
+          subtitle={book.subTitle}
+          author={book.author || 'Unknown Author'}
+          authorColor="#3B82F6"
+          //@ts-ignore
+          price={
+            //@ts-ignore
+            typeof book.price === "object" && book.price?.$numberDecimal
+              //@ts-ignore
+              ? `$${book.price.$numberDecimal}`
+              : book.price || "$14.99"
+          }
+          pages={book.totalPages || 0}
+          rating={book.totalRatings || 0}
+          currentProgress={book.readingProgress?.progressPercentage || 0}
+          lastRead={book.readingProgress?.lastReadAt || 'Never'}
+          genres={book.genres ? book.genres : ['Fiction']}
+          plotSummary={
+            book.aiKnowledge?.summary ? book.aiKnowledge.summary : book.description ||
+            'This is an engaging story that will captivate readers from start to finish.'
+          }
+          characters={book.aiKnowledge?.characters ?? characters}
+          theme="Adventure"
+          themeDescription={book.aiKnowledge?.majorThemes?.join(', ') || "Really Exciting"}
+          tone={book.aiKnowledge?.tone || "Exciting"}
+          toneDescription="Fast-paced and thrilling"
+          pacing="Fast-paced"
+          isbn={book.isbn || 'N/A'}
+          onBack={() => router.back()}
+          onShare={() => Alert.alert('Share', 'Share functionality coming soon')}
+          onMore={() =>
+            Alert.alert('More Options', 'Delete book?', [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: async () => {
+                  const response = await api.deleteBook(bookId as string)
+                  if (response.success) {
+                    Alert.alert('Success', 'Book deleted')
+                    router.back()
+                  } else {
+                    Alert.alert('Error', response.error || 'Failed to delete book')
+                  }
+                },
+              },
+            ])
+          }
+          onReadNow={() => router.push(`/reading?page=${bookId}`)}
+          onAIAnalysis={() => router.push(`/chat?bookId=${bookId}`)}
+        />
+      )
     </View>
-  );
-};
+  )
+}
 
-export default Details;
+export default Details

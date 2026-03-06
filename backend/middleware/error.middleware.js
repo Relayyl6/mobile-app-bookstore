@@ -1,12 +1,14 @@
 const errorMiddleware = (err, req, res, next) => {
     try {
-        // console.error(err); // log full error for debugging
-        // console.log("====== RAW ERROR START ======");
-        // console.log(err);
-        // console.log("err.message:", err.message);
-        // console.log("typeof err.message:", typeof err.message);
-        // console.log("====== RAW ERROR END ======");
-
+        // Normalize plain objects passed to next({ statusCode, message })
+        if (!(err instanceof Error) && typeof err === "object") {
+            const statusCode = err.statusCode || 500;
+            const message = typeof err.message === "string" 
+                ? err.message 
+                : JSON.stringify(err.message) || "Server Error";
+            return res.status(statusCode).json({ success: false, error: message });
+        }
+        
         let statusCode = err.statusCode || 500;
         let message = err.message || "Server Error";
 

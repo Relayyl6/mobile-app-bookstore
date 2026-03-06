@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { generateToken } from "../lib/utils.js";
 import userModel from "../models/auth.model.js";
 import { NODE_ENV } from "../config/env.js";
+import { format } from "date-fns";
 
 export const register = async (req, res, next) => {
     // const session = await mongoose.startSession();
@@ -101,7 +102,8 @@ export const register = async (req, res, next) => {
                     id: user._id,
                     username: user.username,
                     email: user.email,
-                    profileImage: user.profileImage
+                    profileImage: user.profileImage,
+                    createdAt: format(new Date(user.createdAt), 'MMM d')
                 }
             }
         })

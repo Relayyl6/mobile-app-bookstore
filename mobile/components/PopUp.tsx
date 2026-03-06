@@ -14,22 +14,6 @@ import { useAppContext } from '@/context/useAppContext'
 import styles from '@/constants/popup.style'
 import { contextOptions, fileTypes } from '@/constants/data'
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-interface AttachmentPopupProps {
-  visible: boolean
-  onClose: () => void
-  onConfirm: (selectedItems: { fileTypes: FileType[]; contexts: AIContext[] }) => void
-  // Position of the attach button (pass this from the chat screen)
-  buttonPosition?: { x: number; y: number }
-}
-
 const AttachmentPopup = ({ 
   visible, 
   onClose, 
@@ -41,9 +25,6 @@ const AttachmentPopup = ({
   const [selectedContexts, setSelectedContexts] = useState<AIContext[]>([])
   const scaleAnim = useRef(new Animated.Value(0)).current
 
-  // -----------------------------------------------------------------------
-  // Animation
-  // -----------------------------------------------------------------------
   useEffect(() => {
     if (visible) {
       Animated.spring(scaleAnim, {
@@ -57,14 +38,7 @@ const AttachmentPopup = ({
     }
   }, [visible])
 
-
-  
-
-  
-
-  // -----------------------------------------------------------------------
-  // Handlers
-  // -----------------------------------------------------------------------
+  // handlers
   const toggleFileType = (type: FileType) => {
     setSelectedFileTypes((prev) =>
       prev.includes(type)
@@ -82,20 +56,14 @@ const AttachmentPopup = ({
   }
 
   const handleConfirm = () => {
-    if (selectedFileTypes.length === 0 && selectedContexts.length === 0) {
-      onClose()
-      return
-    }
-
-    // Pass selections to parent
     onConfirm({
       fileTypes: selectedFileTypes,
       contexts: selectedContexts,
     })
-    
-    // Don't reset here - let parent decide when to reset
-    // The parent will call onClose after handling the selections
+  
+    onClose()
   }
+
 
   const handleClose = () => {
     setSelectedFileTypes([])

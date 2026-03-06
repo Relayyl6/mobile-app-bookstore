@@ -1,5 +1,5 @@
 import { useAppContext } from '@/context/useAppContext';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -42,7 +42,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+            <Feather name="home" size={size} color={colors.textSecondary} />
           )
         }}
       />
@@ -51,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: 'Books',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
+            <Feather name="book" size={24} color={colors.textSecondary} />
           )
         }} 
       />
@@ -60,7 +60,7 @@ export default function TabLayout() {
         options={{
           title: 'Create',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-outline" size={size} color={color} />
+            <Feather name="compass" size={size} color={colors.textSecondary} />
           )
         }} 
       />
@@ -69,7 +69,7 @@ export default function TabLayout() {
         options={{
           title: 'Chat',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbox-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="message-text" size={24} color={colors.textSecondary} />
           )
         }} 
       />
@@ -78,7 +78,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+            <Feather name="user" size={24} color={colors.primary} />
           )
         }} 
       />

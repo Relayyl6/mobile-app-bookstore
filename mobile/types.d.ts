@@ -37,7 +37,7 @@ declare interface AppContextType {
   bookId: string | null;
   setBookId:  React.Dispatch<React.SetStateAction<string | null>>;
   show: boolean;
-  setShow(value: any) => void
+  setShow: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // Image Module Declarations
@@ -97,8 +97,8 @@ declare interface ChatMessage {
   role: MessageRole
   text: string
   timestamp: Date
-  fileType?: FileType
-  aiContext?: AIContext
+  fileTypes?: FileType[]
+  aiContexts?: AIContext[]
 }
 
 declare interface Character {
@@ -115,7 +115,7 @@ declare interface BookDetailsProps {
   subtitle: string;
   author: string;
   authorColor?: string;
-  price: string;
+  price: any;
   pages: number;
   rating: number;
   currentProgress: number;
@@ -134,4 +134,16 @@ declare interface BookDetailsProps {
   onMore?: () => void;
   onReadNow?: () => void;
   onAIAnalysis?: () => void;
+}
+
+declare type BookListHandle = {
+  loadMore: () => void | Promise<void>
+}
+
+declare interface AttachmentPopupProps {
+  visible: boolean
+  onClose: () => void
+  onConfirm: (selectedItems: { fileTypes: FileType[]; contexts: AIContext[] }) => void
+  // Position of the attach button (pass this from the chat screen)
+  buttonPosition?: { x: number; y: number }
 }

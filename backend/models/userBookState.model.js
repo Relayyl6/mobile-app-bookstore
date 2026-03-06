@@ -12,9 +12,10 @@ const BookmarkSchema = new Schema(
 
 const UserNoteSchema = new Schema(
   {
-    chapter: { type: Number, default: 1 },
-    page: { type: Number, default: 1 },
-    content: { type: String, default: "" },
+    chapterNumber: { type: Number, default: 1 },
+    pageNumber: { type: Number, default: 1 },
+    note: { type: String, default: "" },
+    highlight: { type: String, default: "" },
     createdAt: { type: Date, default: Date.now },
   },
   { _id: false }

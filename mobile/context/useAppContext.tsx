@@ -9,8 +9,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
   const [currentTheme, setCurrentThemeState] = useState<ThemeType>('forest');
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState("")
-  const [bookId, setBookId] = useState("")
+  const [userId, setUserId] = useState<string | null>("")
+  const [bookId, setBookId] = useState<string | null>("")
   const [show, setShow] = useState(false)
   
 
@@ -82,7 +82,9 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     userId,
     setUserId,
     bookId,
-    setBookId
+    setBookId,
+    show,
+    setShow
   };
 
   if (isLoading) {

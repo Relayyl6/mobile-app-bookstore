@@ -119,6 +119,15 @@ const bookSchema = new Schema(
        */
     },
 
+    hasContent: {
+      type: Boolean,
+      default: false,
+      /**
+       * Set to true after a PDF has been uploaded and processed.
+       * Used to enable/disable AI chat feature on the frontend.
+       */
+    },
+
     /* ------------------- OWNERSHIP ------------------- */
 
     user: {

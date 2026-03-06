@@ -12,8 +12,10 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 16,
+    paddingVertical: 10,
+    margin: 8,
+    // backgroundColor: colors.cardBackground,
+    borderRadius: 16,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -35,16 +37,16 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 9
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.inputBackground,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    borderRadius: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    gap: 6,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -55,12 +57,13 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
   },
   viewToggleContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 12,
+    borderRadius: 24
   },
   viewToggle: {
     flexDirection: 'row',
     backgroundColor: colors.inputBackground,
-    borderRadius: 12,
+    borderRadius: 30,
     padding: 4,
     gap: 4,
   },
@@ -70,7 +73,7 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 20,
     gap: 8,
   },
   toggleButtonActive: {
@@ -119,6 +122,11 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
   },
   recommendedCard: {
     flex: 1,
+    borderRadius: 12,
+    padding: 5,
+    backgroundColor: colors.cardBackground,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
   },
   recommendedCover: {
     position: 'relative',
@@ -134,7 +142,7 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
   },
   coverImage: {
     width: '100%',
-    height: 240,
+    height: 200,
   },
   aiSummaryBadge: {
     position: 'absolute',
@@ -152,6 +160,7 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: colors.white,
+    justifyContent: 'flex-end'
   },
   cardTitle: {
     fontSize: 16,
@@ -287,6 +296,48 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
   },
+
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    textAlign: 'center' as const,
+    paddingVertical: 20,
+    paddingHorizontal: 40,
+  },
+  
+  // ==========================================
+  // EMPTY STATE STYLES - ADD THESE
+  // ==========================================
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 60,
+  },
+
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 24,
+  },
+
+  emptyButtonText: {
+    color: colors.white,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+
 });
 
 export default libraryStyles
