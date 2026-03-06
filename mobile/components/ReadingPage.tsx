@@ -93,12 +93,12 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         // setNotes(chapterNotes);
         
         // Otherwise, set all notes:
-        setNotes(notesRes.data || []); 
+        setNotes(notesRes.notes || []); 
       }
 
       // Update Bookmarks State
       if (bookmarksRes && bookmarksRes.success) {
-        setBookmarks(bookmarksRes.data || []);
+        setBookmarks(bookmarksRes.bookmarks || []);
       }
     } catch (err) {
       console.log("Failed to fetch notes and bookmarks:", err);
