@@ -65,6 +65,27 @@ export const HomeHeaderSkeleton = () => (
   </View>
 );
 
+// Add to SkeletonLoaders.tsx
+export const NewReleasesSkeleton = () => (
+  <View style={{ paddingHorizontal: 16 }}>
+    {[1, 2, 3].map((i) => (
+      <View key={i} style={{ flexDirection: 'row', marginBottom: 16 }}>
+        <Skeleton width={60} height={90} borderRadius={8} />
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Skeleton width="80%" height={16} />
+          <Skeleton width="60%" height={12} style={{ marginTop: 6 }} />
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+            <Skeleton width={70} height={20} borderRadius={4} />
+            <Skeleton width={60} height={20} />
+            <Skeleton width={40} height={20} />
+          </View>
+        </View>
+        <Skeleton width={24} height={24} borderRadius={12} />
+      </View>
+    ))}
+  </View>
+)
+
 export const ContinueReadingSkeleton = () => (
   <View style={{ paddingLeft: 20, marginBottom: 24 }}>
     <Skeleton width={140} height={20} style={{ marginBottom: 16 }} />

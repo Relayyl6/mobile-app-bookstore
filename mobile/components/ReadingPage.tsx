@@ -119,7 +119,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     try {
       const res = await api.getTableOfContents(bookId as string);
       if (res.success) {
-        setTocData(res.tableOfContents);
+        setTocData(res.tableOfContents || []);
       }
     } catch (err) {
       console.log("Failed to fetch TOC", err);
@@ -130,9 +130,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const handleAddNote = async () => {
     if (!newNoteText.trim()) return;
     try {
-      await api.addNote(bookId as string, { text: newNoteText, chapterNumber: chapterNumber, pageNumber: currentPageNumber });
-      if (res.success && res.data) {
-        setNotes(prevNotes => [res.notes[0], ...prevNotes]);
+      const res = await api.addNote(bookId as string, { text: newNoteText, chapterNumber: chapterNumber, pageNumber: currentPageNumber });
+      if (res.success) {
+        setNotes(prevNotes => [res?.notes?.[0], ...prevNotes]);
       }
       setNewNoteText("");
       // Refresh notes list here if your API returns it, or append locally
@@ -144,8 +144,8 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const handleDeleteNote = async (noteId: string) => {
     try {
       const res = await api.deleteNote(bookId as string, noteId);
-      if (res.success && res.data) {
-        setNotes(res.notes); // API returns full updated notes array
+      if (res.success) {
+        setNotes(res?.notes || []); // API returns full updated notes array
       }
     } catch (err) {
       console.log("Failed to delete note", err);

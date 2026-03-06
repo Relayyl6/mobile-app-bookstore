@@ -17,9 +17,10 @@ import { useAppContext } from '@/context/useAppContext'
 import libraryStyles from '@/constants/library.style'
 import BigCard from '@/components/BigCard'
 import SmallCard from '@/components/SmallCard'
-import { api, SingleBook } from '@/components/ApiHandler'
+import { api } from '@/components/ApiHandler'
 import { useRouter } from 'expo-router'
-import Skeleton from '@/components/SkeletonLoaders'
+// import Skeleton from '@/components/SkeletonLoaders'
+import Skeleton, { LibraryHeaderSkeleton, NewReleasesSkeleton, LibrarySectionSkeleton, LibraryBookGridSkeleton } from '@/components/SkeletonLoaders'
 
 const { width } = Dimensions.get('window')
 const CARD_WIDTH = (width - 60) / 2
@@ -30,17 +31,13 @@ interface ReadingLibraryData {
   limit?: number
 }
 
-interface RecommendationData {
-  books: SingleBook[]
-}
-
 const LibraryScreen = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
-  const [myBooks, setMyBooks] = useState<SingleBook[]>([])
-  const [recommendedBooks, setRecommendedBooks] = useState<SingleBook[]>([])
-  const [popularBooks, setPopularBooks] = useState<SingleBook[]>([])
-  const [newBooks, setNewBooks] = useState<SingleBook[]>([])
+  const [myBooks, setMyBooks] = useState<BookForReading[]>([])
+  const [recommendedBooks, setRecommendedBooks] = useState<DisplayBook[]>([])
+  const [popularBooks, setPopularBooks] = useState<DisplayBook[]>([])
+  const [newBooks, setNewBooks] = useState<DisplayBook[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
@@ -51,7 +48,7 @@ const LibraryScreen = () => {
     myBooks: true,
   })
 
-  const { colors } = useAppContext()
+  const { colors, bookId } = useAppContext()
   const styles = libraryStyles(colors)
   const router = useRouter()
 
@@ -64,7 +61,7 @@ const LibraryScreen = () => {
   const loadLibrary = async (page = 1, isRefresh = false) => {
     try {
       // Fetch user's reading library
-      const myBooksResponse = await api.getReadingLibrary<ReadingLibraryData>(page)
+      const myBooksResponse = await api.getReadingLibrary<ReadingLibraryResponse>(page)
       const books = myBooksResponse.data?.books ?? []
 
       if (myBooksResponse.success) {
@@ -74,8 +71,8 @@ const LibraryScreen = () => {
           setMyBooks((prev) => [...prev, ...books])
         }
 
-        const totalBooks = myBooksResponse.data?.total || 0
-        const limit = myBooksResponse.data?.limit || 10
+        const totalBooks = myBooksResponse.data?.totalBooks || 0
+        const limit = 15  // backend hardcodes this
         setHasMore(page * limit < totalBooks)
       }
       setLoadingSections((prev) => ({ ...prev, myBooks: false }))
@@ -83,23 +80,51 @@ const LibraryScreen = () => {
       // Fetch other sections only on page 1
       if (page === 1) {
         // Recommended
-        const recResponse = await api.getPersonalizedRecommendations<RecommendationData>(6)
-        if (recResponse.success && recResponse.data?.books) {
-          setRecommendedBooks(recResponse.data.books)
+        const recResponse = await api.getPersonalizedRecommendations(6)
+        if (recResponse.success && recResponse.data?.recommendations) {
+          setRecommendedBooks(
+            recResponse.data?.recommendations.map((b: any) => ({
+              _id: b.id,
+              title: b.title,
+              author: b.author,
+              genres: b.genres,
+              averageRating: b.averageRating,
+              image: b.image,
+            })) || []
+          )
         }
         setLoadingSections((prev) => ({ ...prev, recommended: false }))
 
         // Popular
-        const popularResponse = await api.getPopularBooks<RecommendationData>(6)
-        if (popularResponse.success && popularResponse.data?.books) {
-          setPopularBooks(popularResponse.data.books)
+        const popularResponse = await api.getPopularBooks(6)
+        if (popularResponse.success && popularResponse.data?.popularBooks) {
+          setPopularBooks(
+            popularResponse.data?.popularBooks.map((b: any) => ({
+              _id: b._id,
+              title: b.title,
+              author: b.author,
+              genres: b.genres,
+              averageRating: b.averageRating,
+              image: b.image,
+            })) || []
+          )
         }
         setLoadingSections((prev) => ({ ...prev, popular: false }))
 
         // New Books
-        const newResponse = await api.getNewBooks<RecommendationData>(6)
-        if (newResponse.success && newResponse.data?.books) {
-          setNewBooks(newResponse.data.books)
+        const newResponse = await api.getNewBooks(6)
+        if (newResponse.success && newResponse.data?.newBooks) {
+          setNewBooks(
+            newResponse.data.newBooks.map(b => ({
+              _id: b._id,
+              title: b.title,
+              author: b.author,
+              genres: b.genres,
+              averageRating: b.averageRating || 0,
+              image: b.image,
+              totalPages: b.totalPages || 0,
+            }))
+          )
         }
         setLoadingSections((prev) => ({ ...prev, newBooks: false }))
       }
@@ -152,25 +177,28 @@ const LibraryScreen = () => {
     }
 
     try {
-      const response = await api.searchBooks(query)
-      if (response.success && response.data?.books) {
+      const response = await api.searchBooks(bookId as string, query)
+      if (response.success) {
         //@ts-ignore
-        setMyBooks(response.data.books || [])
+        setMyBooks(response?.answer || [])
       }
     } catch (error) {
       console.error('Search error:', error)
     }
   }
 
-  const renderBookCard = (book: SingleBook, size: 'big' | 'small' = 'big') => {
+  const renderBookCard = (book: DisplayBook, size: 'big' | 'small' = 'big') => {
+    const bookId = book._id
+    const cover = book.coverImage || book.image || ''
+
     return (
       <TouchableOpacity
-        key={book._id}
+        key={bookId}
         style={{
           marginBottom: 20,
           width: size === 'big' ? CARD_WIDTH : undefined,
         }}
-        onPress={() => router.push(`/details?bookId=${book._id}`)}
+        onPress={() => router.push(`/details?bookId=${bookId}`)}
         activeOpacity={0.85}
       >
         {size === 'big' ? (
@@ -283,7 +311,7 @@ const LibraryScreen = () => {
       {/* Sections ScrollView */}
       <FlatList
         data={myBooks}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item.title}
         key={viewMode}
         numColumns={viewMode === 'grid' ? 2 : 1}
         ListHeaderComponent={
@@ -301,23 +329,7 @@ const LibraryScreen = () => {
                 </View>
 
                 {loadingSections.recommended ? (
-                  <View style={styles.recommendedGrid}>
-                    {[1, 2].map((i) => (
-                      <View key={i} style={{ width: CARD_WIDTH }}>
-                        <Skeleton width="100%" height={220} borderRadius={12} />
-                        <Skeleton
-                          width="100%"
-                          height={14}
-                          style={{ marginTop: 8 }}
-                        />
-                        <Skeleton
-                          width="80%"
-                          height={12}
-                          style={{ marginTop: 4 }}
-                        />
-                      </View>
-                    ))}
-                  </View>
+                  <LibrarySectionSkeleton title="Recommended for You" />  // ← place here, replacing the <View style={styles.recommendedGrid}> skeleton block
                 ) : (
                   <View style={styles.recommendedGrid}>
                     {recommendedBooks.map((book) => renderBookCard(book, 'big'))}
@@ -334,25 +346,7 @@ const LibraryScreen = () => {
                   <Text style={styles.sectionTitle}>Popular Books</Text>
                 </View>
 
-                {loadingSections.popular ? (
-                  <View style={styles.recommendedGrid}>
-                    {[1, 2].map((i) => (
-                      <View key={i} style={{ width: CARD_WIDTH }}>
-                        <Skeleton width="100%" height={220} borderRadius={12} />
-                        <Skeleton
-                          width="100%"
-                          height={14}
-                          style={{ marginTop: 8 }}
-                        />
-                        <Skeleton
-                          width="80%"
-                          height={12}
-                          style={{ marginTop: 4 }}
-                        />
-                      </View>
-                    ))}
-                  </View>
-                ) : (
+                {loadingSections.popular ? <LibrarySectionSkeleton title="Popular Books" /> : (
                   <View style={styles.recommendedGrid}>
                     {popularBooks.map((book) => renderBookCard(book, 'big'))}
                   </View>
@@ -372,35 +366,7 @@ const LibraryScreen = () => {
                   <Text style={styles.sectionTitle}>New Releases</Text>
                 </View>
 
-                {loadingSections.newBooks ? (
-                  <>
-                    {[1, 2, 3].map((i) => (
-                      <View key={i} style={styles.listItem}>
-                        <Skeleton width={60} height={90} borderRadius={8} />
-                        <View style={{ flex: 1, marginLeft: 12 }}>
-                          <Skeleton width="80%" height={16} />
-                          <Skeleton
-                            width="60%"
-                            height={12}
-                            style={{ marginTop: 6 }}
-                          />
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              gap: 8,
-                              marginTop: 8,
-                            }}
-                          >
-                            <Skeleton width={70} height={20} borderRadius={4} />
-                            <Skeleton width={60} height={20} />
-                            <Skeleton width={40} height={20} />
-                          </View>
-                        </View>
-                        <Skeleton width={24} height={24} borderRadius={12} />
-                      </View>
-                    ))}
-                  </>
-                ) : (
+                {loadingSections.newBooks ? <NewReleasesSkeleton /> : (
                   <>
                     {newBooks.map((book) => (
                       <TouchableOpacity
@@ -478,7 +444,7 @@ const LibraryScreen = () => {
                   </Text>
                   <TouchableOpacity
                     style={styles.emptyButton}
-                    onPress={() => router.push('/chat')}
+                    onPress={() => router.push('/create')}
                   >
                     <Text style={styles.emptyButtonText}>
                       Upload Your First Book

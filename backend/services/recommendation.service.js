@@ -136,6 +136,7 @@ class RecommendationService {
   async getPopularBooks(excludeBookIds = [], limit = 10) {
     return bookModel
       .find({ _id: { $nin: excludeBookIds } })
+      .select("_id title author genres image price averageRating totalRatings totalPurchases totalViews hasContent publishedYear totalPages createdAt")
       .sort({ totalPurchases: -1, averageRating: -1, totalViews: -1 })
       .limit(limit)
       .populate("user", "username profileImage");
@@ -145,6 +146,7 @@ class RecommendationService {
   async getNewReleases(excludeBookIds = [], limit = 10) {
     return bookModel
       .find({ _id: { $nin: excludeBookIds } })
+      .select("_id title author genres image price averageRating totalRatings totalPurchases totalViews hasContent publishedYear totalPages createdAt")
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate("user", "username profileImage");
@@ -301,6 +303,7 @@ class RecommendationService {
       totalRatings:  book.totalRatings   || 0,
       hasContent:    book.hasContent     || false,
       publishedYear: book.publishedYear,
+      totalPages:    book.totalPages     || 0,
     };
   }
 

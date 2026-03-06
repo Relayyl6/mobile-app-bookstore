@@ -78,7 +78,7 @@ export const addUserNote = async (req, res) => {
   }
 };
 
-//**
+/**
  * Get all bookmarks for a book
  */
 export const getBookmarks = async (req, res, next) => {
@@ -135,4 +135,4 @@ export const getNotes = async (req, res, next) => {
     next(err);
   }
 };
-};
+

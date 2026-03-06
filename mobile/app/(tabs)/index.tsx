@@ -14,8 +14,9 @@ import { useRouter } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
 import { useAppContext } from '@/context/useAppContext'
 import homePageStyle from '@/constants/homepage.styles'
-import { api, Book } from '@/components/ApiHandler'
-import Skeleton from '@/components/SkeletonLoaders'
+import { api } from '@/components/ApiHandler'
+// import Skeleton from '@/components/SkeletonLoaders'
+import Skeleton, { HomeHeaderSkeleton, ContinueReadingSkeleton, AiPicksSkeleton, PopularBooksSkeleton, CommunityUploadsSkeleton } from '@/components/SkeletonLoaders';
 
 const HomeScreen = () => {
   const { colors } = useAppContext()
@@ -172,28 +173,7 @@ const HomeScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {loadingSections.continueReading ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalScroll}
-              >
-                {[1, 2].map((i) => (
-                  <View key={i} style={styles.bookCard}>
-                    <Skeleton width={120} height={180} borderRadius={8} />
-                    <Skeleton
-                      width={120}
-                      height={8}
-                      borderRadius={4}
-                      style={{ marginTop: 8 }}
-                    />
-                    <Skeleton width={80} height={12} style={{ marginTop: 4 }} />
-                    <Skeleton width={100} height={14} style={{ marginTop: 4 }} />
-                    <Skeleton width={90} height={12} style={{ marginTop: 2 }} />
-                  </View>
-                ))}
-              </ScrollView>
-            ) : (
+            { loadingSections.continueReading ? <ContinueReadingSkeleton /> : (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -242,29 +222,7 @@ const HomeScreen = () => {
               <Text style={styles.sectionTitle}>AI Picks for You</Text>
             </View>
 
-            {loadingSections.aiPicks ? (
-              <>
-                {[1, 2].map((i) => (
-                  <View key={i} style={styles.aiPickCard}>
-                    <View style={styles.aiPickContent}>
-                      <Skeleton width={100} height={140} borderRadius={8} />
-                      <View style={styles.aiPickInfo}>
-                        <Skeleton width={150} height={12} />
-                        <Skeleton width={120} height={18} style={{ marginTop: 8 }} />
-                        <Skeleton width="100%" height={14} style={{ marginTop: 8 }} />
-                        <Skeleton width="100%" height={14} style={{ marginTop: 4 }} />
-                        <Skeleton
-                          width={130}
-                          height={36}
-                          borderRadius={8}
-                          style={{ marginTop: 12 }}
-                        />
-                      </View>
-                    </View>
-                  </View>
-                ))}
-              </>
-            ) : (
+            {loadingSections.aiPicks ? <AiPicksSkeleton /> : (
               <>
                 {aiPicks.map((book, index) => (
                   <View key={book._id} style={styles.aiPickCard}>
@@ -325,31 +283,7 @@ const HomeScreen = () => {
               </View>
             </View>
 
-            {loadingSections.trending ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.horizontalScroll}
-              >
-                {[1, 2, 3].map((i) => (
-                  <View key={i} style={styles.trendingCard}>
-                    <Skeleton
-                      width={32}
-                      height={32}
-                      borderRadius={16}
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        zIndex: 1,
-                      }}
-                    />
-                    <Skeleton width={140} height={200} borderRadius={8} />
-                    <Skeleton width={140} height={14} style={{ marginTop: 8 }} />
-                  </View>
-                ))}
-              </ScrollView>
-            ) : (
+            {loadingSections.trending ? <PopularBooksSkeleton /> : (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -389,23 +323,7 @@ const HomeScreen = () => {
       </TouchableOpacity>
     </View>
 
-    {loadingSections.community ? (
-      <View style={styles.communityGrid}>
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <View key={i} style={styles.communityCard}>
-            <Skeleton width="100%" height={200} borderRadius={12} />
-            <View style={styles.communityCardContent}>
-              <Skeleton width="100%" height={14} style={{ marginTop: 8 }} />
-              <Skeleton width="70%" height={12} style={{ marginTop: 4 }} />
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
-                <Skeleton width={60} height={20} borderRadius={4} />
-                <Skeleton width={40} height={20} borderRadius={4} />
-              </View>
-            </View>
-          </View>
-        ))}
-      </View>
-    ) : (
+    {loadingSections.community ? <CommunityUploadsSkeleton /> : (
       <View style={styles.communityGrid}>
         {community.map((book) => {
           // Safe data extraction with fallbacks

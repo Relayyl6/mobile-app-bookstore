@@ -802,7 +802,8 @@ export const getBooksForReading = async (req, res, next) => {
         coverImage: book.image,
         progressPercentage: state?.progressPercentage || 0,
         lastReadAt: state?.lastReadAt || null,
-        currentChapter: state?.currentChapter || 1
+        currentChapter: state?.currentChapter || 1,
+        averageRating: book.averageRating || 0,
       };
     });
 

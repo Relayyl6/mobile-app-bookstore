@@ -2,109 +2,6 @@ import { EXPO_PUBLIC_API_URL } from '../store/api'
 import { useAuthStore } from '../store/authStore'
 
 /* ======================================================
-   TYPES
-====================================================== */
-
-export interface ApiResponse<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-  book?: T
-  message?: string
-  description?: string
-}
-
-// In your ApiHandler.ts or at the top of this file
-
-
-
-export interface SingleBook {
-  // Basic metadata 
-  _id: string 
-  title: string
-  subTitle?: string
-  author?: string
-  isbn?: string
-  caption?: string
-  description?: string
-  genres?: string[]
-  coverImage: string
-  price?: number | string | undefined
-  publishedYear?: number
-
-  // Stats
-  averageRating: number
-  totalRatings: number
-  totalViews: number
-  totalPurchases: number
-
-  // Content
-  hasContent: boolean
-  totalPages: number
-  
-  // AI knowledge
-  aiKnowledge?: {
-    summary?: string
-    majorThemes?: string[]
-    tone?: string
-    characters?: {
-      name: string
-      description: string
-      role?: string
-    }[] } | null | undefined
-      
-  // Reading progress
-  readingProgress?: {
-    currentChapter: number
-    currentPage: number
-    progressPercentage: number
-    lastReadAt: string
-    bookmarks: any[]
-    notes: any[]
-  } | null
-  
-  // Uploader
-  uploader: {
-    username: string
-    profileImage: string
-  }
-}
-
-export interface Book {
-  _id: string
-  title: string
-  subTitle?: string
-  author?: string
-  image: string
-  rating?: number
-  pages?: number,
-  totalPages?: number,
-  genre?: string
-  genres?: string[],
-  price: number | string 
-  description?: string
-  progress?: number
-  lastRead?: string
-  isbn?: string
-  user: {
-    _id: string
-    username: string
-    profileImage: string
-  }
-  createdAt: string
-  updatedAt: string
-}
-
-export interface ChatMessage {
-  id: string
-  role: 'user' | 'assistant'
-  text: string
-  timestamp: Date
-  fileTypes?: string[]
-  aiContexts?: string[]
-}
-
-/* ======================================================
    API HANDLER
 ====================================================== */
 
@@ -253,25 +150,25 @@ class ApiHandler {
      PART 4: RECOMMENDATIONS
   ====================================================== */
 
-  async getPersonalizedRecommendations<T>(limit = 10): Promise<ApiResponse<T>> {
+  async getPersonalizedRecommendations(limit = 10): Promise<ApiResponse<RecommendationResponse>> {
     return this.request(
       `/api/v1/books/recommendations/personalized?limit=${limit}`
     )
   }
 
-  async getSimilarBooks<T>(bookId: string, limit = 5): Promise<ApiResponse<T>> {
+  async getSimilarBooks(bookId: string, limit = 5): Promise<ApiResponse<SimilarBooksResponse>> {
     return this.request(
       `/api/v1/books/${bookId}/similar?limit=${limit}`
     )
   }
 
-  async getPopularBooks<T>(limit = 10): Promise<ApiResponse<T>> {
+  async getPopularBooks(limit = 10): Promise<ApiResponse<PopularBooksResponse>> {
     return this.request(
       `/api/v1/books/recommendations/popular?limit=${limit}`
     )
   }
 
-  async getNewBooks<T>(limit = 10): Promise<ApiResponse<T>> {
+  async getNewBooks(limit = 10): Promise<ApiResponse<NewBooksResponse>> {
     return this.request(
       `/api/v1/books/recommendations/new?limit=${limit}`
     )
@@ -420,7 +317,9 @@ class ApiHandler {
       { method: 'DELETE' }
     )
   }
+ 
   
+
   async getBookmarks(bookId: string) {
     return this.request(`/api/v1/books/${bookId}/bookmarks`, {
       method: 'GET',
