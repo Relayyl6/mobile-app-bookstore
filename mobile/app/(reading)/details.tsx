@@ -12,15 +12,10 @@ import {
   Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { api, Book, SingleBook } from '@/components/ApiHandler'
+import { api } from '@/components/ApiHandler'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import BookDetails from '@/components/BookDetails'
-
-interface Character {
-  name: string
-  description: string
-  role?: string
-}
+import Skeleton, { BookDetailsSkeleton } from '@/components/SkeletonLoaders'
 
 // Wrapper component that fetches data from API
 export const BookDetailsExample = () => {
@@ -96,11 +91,7 @@ const Details = () => {
     if (!bookId) return
   
     try {
-      const response = await api.updateBookProgress(bookId, newProgress)
-      if (response.success && response.data) {
-        setBook(response.data.book)
-        Alert.alert('Progress Updated', `Reading progress set to ${newProgress}%`)
-      }
+      await api.updateReadingProgress(bookId, { currentChapter: 1, currentPage: 1, progressPercentage: newProgress})
     } catch (error: any) {
       console.error('Error updating progress:', error)
       Alert.alert('Error', 'Failed to update progress')
@@ -109,10 +100,9 @@ const Details = () => {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={{ marginTop: 10, color: '#666' }}>Loading book details...</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1 }}>
+        <BookDetailsSkeleton />
+      </SafeAreaView>
     )
   }
 
@@ -170,7 +160,7 @@ const Details = () => {
             'This is an engaging story that will captivate readers from start to finish.'
           }
           characters={book.aiKnowledge?.characters ?? characters}
-          theme="Adventure"
+          theme={book.aiKnowledge?.majorThemes?.[0]}
           themeDescription={book.aiKnowledge?.majorThemes?.join(', ') || "Really Exciting"}
           tone={book.aiKnowledge?.tone || "Exciting"}
           toneDescription="Fast-paced and thrilling"

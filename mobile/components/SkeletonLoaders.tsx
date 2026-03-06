@@ -172,6 +172,42 @@ export const LibraryBookGridSkeleton = () => (
   </View>
 );
 
+export const BookDetailsSkeleton = () => (
+  <View style={{ flex: 1, padding: 20 }}>
+    {/* Cover Image */}
+    <Skeleton width="100%" height={300} borderRadius={12} style={{ marginBottom: 20 }} />
+    
+    {/* Title + Author */}
+    <Skeleton width="80%" height={24} style={{ marginBottom: 8 }} />
+    <Skeleton width="50%" height={16} style={{ marginBottom: 20 }} />
+
+    {/* Price + Pages + Rating row */}
+    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
+      <Skeleton width={70} height={32} borderRadius={8} />
+      <Skeleton width={70} height={32} borderRadius={8} />
+      <Skeleton width={70} height={32} borderRadius={8} />
+    </View>
+
+    {/* Genres */}
+    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
+      <Skeleton width={60} height={24} borderRadius={12} />
+      <Skeleton width={80} height={24} borderRadius={12} />
+      <Skeleton width={70} height={24} borderRadius={12} />
+    </View>
+
+    {/* Summary */}
+    <Skeleton width="40%" height={18} style={{ marginBottom: 10 }} />
+    <Skeleton width="100%" height={14} style={{ marginBottom: 6 }} />
+    <Skeleton width="100%" height={14} style={{ marginBottom: 6 }} />
+    <Skeleton width="90%" height={14} style={{ marginBottom: 6 }} />
+    <Skeleton width="75%" height={14} style={{ marginBottom: 20 }} />
+
+    {/* Action Buttons */}
+    <Skeleton width="100%" height={48} borderRadius={12} style={{ marginBottom: 12 }} />
+    <Skeleton width="100%" height={48} borderRadius={12} />
+  </View>
+)
+
 export const LibrarySectionSkeleton = ({ title }: { title: string }) => (
   <View style={{ paddingHorizontal: 16, marginBottom: 24 }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>

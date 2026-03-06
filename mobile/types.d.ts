@@ -246,11 +246,9 @@ declare interface ChatMessage {
 }
 
 declare interface Character {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  iconColor: string;
+  name: string
+  description: string
+  role?: string
 }
 
 declare interface BookDetailsProps {

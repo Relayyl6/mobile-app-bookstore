@@ -2,8 +2,8 @@ import { Schema, model, Types } from "mongoose";
 
 const BookmarkSchema = new Schema(
   {
-    chapter: { type: Number, default: 1 },
-    page: { type: Number, default: 1 },
+    chapterNumber: { type: Number, default: 1 },
+    pageNumber: { type: Number, default: 1 },
     note: { type: String, default: "" },
     createdAt: { type: Date, default: Date.now },
   },

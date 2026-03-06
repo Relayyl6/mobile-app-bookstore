@@ -4,7 +4,7 @@ import { router, useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 export const ReadingPageExample = () => {
-    const router = useRouter()
+  const router = useRouter()
   const chapterContent = [
     "The sun dipped below the horizon, casting long shadows across the valley. Elias stood at the edge of the cliff, the wind whipping his cloak around him like a frantic bird. The air smelled of ozone and damp earth—a storm was brewing in the west, one that promised more than just rain.",
     "He knew the journey ahead would be perilous, but the artifacts had to be returned to the Citadel before the lunar eclipse. Every step felt heavier than the last, yet his resolve remained unshaken. He adjusted the strap of his satchel, feeling the cold hum of the relics against his spine.",

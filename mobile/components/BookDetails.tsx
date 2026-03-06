@@ -1,5 +1,6 @@
 import detailStyles from '@/constants/details.style';
 import { useAppContext } from '@/context/useAppContext';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import {
   View,
@@ -181,11 +182,13 @@ const BookDetails: React.FC<BookDetailsProps> = ({
             </View>
             <View style={styles.charactersContainer}>
               {characters.map((character) => (
-                <View key={character.id} style={styles.characterCard}>
+                <View key={character.name} style={styles.characterCard}>
                   <View
-                    style={[styles.characterIcon, { backgroundColor: character.iconColor }]}
+                    style={[styles.characterIcon, { backgroundColor: colors.primary }]}
                   >
-                    <Text style={styles.characterIconText}>{character.icon}</Text>
+                    <Text style={styles.characterIconText}>
+                      <Ionicons name="woman-sharp" color="#FFF" size={20} />
+                    </Text>
                   </View>
                   <View style={styles.characterInfo}>
                     <Text style={styles.characterName}>{character.name}</Text>
