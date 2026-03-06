@@ -119,7 +119,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     try {
       const res = await api.getTableOfContents(bookId as string);
       if (res.success) {
-        setTocData(res.data); // Adjust based on actual API response structure
+        setTocData(res.tableOfContents);
       }
     } catch (err) {
       console.log("Failed to fetch TOC", err);
