@@ -130,9 +130,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const handleAddNote = async () => {
     if (!newNoteText.trim()) return;
     try {
-      await api.addNote(bookId as string, { text: newNoteText, chapter: chapterNumber });
+      await api.addNote(bookId as string, { text: newNoteText, chapterNumber: chapterNumber, pageNumber: currentPageNumber });
       if (res.success && res.data) {
-        setNotes(prevNotes => [res.data, ...prevNotes]);
+        setNotes(prevNotes => [res.notes[0], ...prevNotes]);
       }
       setNewNoteText("");
       // Refresh notes list here if your API returns it, or append locally
@@ -208,7 +208,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const estimateReadingTime = (pageText: string) => {
     if (!pageText) return setTimeRemaining("0 min left");
     const words = pageText.split(/\s+/).length;
-    const wordsPerMinute = 300;
+    const wordsPerMinute = 100;
     const minutes = Math.ceil(words / wordsPerMinute);
     setTimeRemaining(`${minutes} min left`);
   };
