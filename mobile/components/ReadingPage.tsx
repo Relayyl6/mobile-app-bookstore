@@ -143,8 +143,10 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   const handleDeleteNote = async (noteId: string) => {
     try {
-      await api.deleteNote(bookId as string, noteId);
-      // Remove note from local state here
+      const res = await api.deleteNote(bookId as string, noteId);
+      if (res.success && res.data) {
+        setNotes(res.notes); // API returns full updated notes array
+      }
     } catch (err) {
       console.log("Failed to delete note", err);
     }
