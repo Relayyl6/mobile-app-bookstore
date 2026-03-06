@@ -322,6 +322,28 @@ bookRouter.delete(
 );
 
 /**
+ * @route   GET /api/v1/books/:bookId/bookmarks
+ * @desc    Get all bookmarks for a book
+ * @access  Private
+ */
+bookRouter.get(
+  '/:bookId/bookmarks',
+  authMiddleware,
+  readingController.getBookmarks
+);
+
+/**
+ * @route   GET /api/v1/books/:bookId/notes
+ * @desc    Get all notes for a book
+ * @access  Private
+ */
+bookRouter.get(
+  '/:bookId/notes',
+  authMiddleware,
+  readingController.getNotes
+);
+
+/**
  * @route   POST /api/v1/books/:bookId/notes
  * @desc    Add note
  * @access  Private
