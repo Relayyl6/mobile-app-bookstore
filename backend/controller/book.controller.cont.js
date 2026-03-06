@@ -78,35 +78,32 @@ export const addUserNote = async (req, res) => {
   }
 };
 
-/**
+//**
  * Get all bookmarks for a book
  */
 export const getBookmarks = async (req, res, next) => {
   try {
     const { bookId } = req.params;
-    const userId = req.user?._id;
+    const userId = req.user._id;
 
-    if (!userId) {
-      return next({ statusCode: 401, message: "Unauthorized" });
-    }
-
-    const state = await userBookStateModel.findOne({ userId, bookId }).lean();
+    const state = await userBookStateModel.findOne({ userId, bookId });
 
     if (!state) {
-      return res.status(200).json({
-        success: true,
-        message: "No reading state found for this book",
-        bookmarks: [],
+      return next({
+        statusCode: 404,
+        message: "Reading state not found"
       });
     }
 
-    res.status(200).json({
+    res.json({
       success: true,
-      message: "Bookmarks fetched successfully",
-      bookmarks: state.bookmarks || [],
+      message: "Bookmarks fetched",
+      bookmarks: state.bookmarks
     });
-  } catch (error) {
-    next(error);
+
+  } catch (err) {
+    console.error("Error fetching bookmarks:", err);
+    next(err);
   }
 };
 
@@ -116,28 +113,26 @@ export const getBookmarks = async (req, res, next) => {
 export const getNotes = async (req, res, next) => {
   try {
     const { bookId } = req.params;
-    const userId = req.user?._id;
+    const userId = req.user._id;
 
-    if (!userId) {
-      return next({ statusCode: 401, message: "Unauthorized" });
-    }
-
-    const state = await userBookStateModel.findOne({ userId, bookId }).lean();
+    const state = await userBookStateModel.findOne({ userId, bookId });
 
     if (!state) {
-      return res.status(200).json({
-        success: true,
-        message: "No reading state found for this book",
-        notes: [],
+      return next({
+        statusCode: 404,
+        message: "Reading state not found"
       });
     }
 
-    res.status(200).json({
+    res.json({
       success: true,
-      message: "Notes fetched successfully",
-      notes: state.userNotes || [],
+      message: "Notes fetched",
+      notes: state.userNotes
     });
-  } catch (error) {
-    next(error);
+
+  } catch (err) {
+    console.error("Error fetching notes:", err);
+    next(err);
   }
+};
 };
