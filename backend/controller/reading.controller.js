@@ -62,6 +62,13 @@ export const getChapterContent = async (req, res, next) => {
       });
     }
 
+    if (parseInt(chapterNumber) >= state.maxSpoilerChapterAllowed) {
+      await userBookStateModel.updateOne(
+        { userId, bookId },
+        { $set: { maxSpoilerChapterAllowed: parseInt(chapterNumber) + 1 } }
+      );
+    }
+
     // Update last read time
     await userBookStateModel.updateOne(
       { userId, bookId },
@@ -175,24 +182,23 @@ export const updateReadingProgress = async (req, res, next) => {
     const totalChapters = knowledge.chapters.length;
 
     // Calculate new max spoiler chapter (can only increase, not decrease)
-    let maxSpoilerChapterAllowed = currentChapter;
-    
-    // Allow AI to discuss up to the chapter user is currently reading
-    // This prevents spoilers for future chapters
-    
+    const currentState = await userBookStateModel.findOne({ userId, bookId });
+
     const updateData = {
       currentChapter,
       currentPage,
-      progressPercentage: progressPercentage || 
-        Math.round((currentChapter / totalChapters) * 100),
-      maxSpoilerChapterAllowed,
-      lastReadAt: new Date()
+      progressPercentage: progressPercentage || Math.round((currentChapter / totalChapters) * 100),
+      lastReadAt: new Date(),
+      // Never decrease maxSpoilerChapterAllowed, and always unlock next chapter
+      maxSpoilerChapterAllowed: Math.max(
+        currentState?.maxSpoilerChapterAllowed || 1,
+        currentChapter + 1  // unlock next chapter
+      )
     };
 
     // Update max spoiler chapter if user progressed further
-    const currentState = await userBookStateModel.findOne({ userId, bookId });
     if (!currentState || currentChapter > currentState.maxSpoilerChapterAllowed) {
-      updateData.maxSpoilerChapterAllowed = currentChapter;
+      updateData.maxSpoilerChapterAllowed = currentChapter + 1;
     }
 
     const state = await userBookStateModel.findOneAndUpdate(

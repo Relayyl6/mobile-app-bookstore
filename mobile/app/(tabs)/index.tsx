@@ -50,9 +50,10 @@ const HomeScreen = () => {
   const loadHomeData = async () => {
     try {
       // Load continue reading
+      // console.log("get")
       const readingRes = await api.getReadingLibrary(1)
+      // console.log(readingRes.data)
       if (readingRes.success && readingRes.data) {
-        //@ts-ignore
         setContinueReading(readingRes.data.books || [])
       }
       setLoadingSections((prev) => ({ ...prev, continueReading: false }))
@@ -61,7 +62,7 @@ const HomeScreen = () => {
       const aiRes = await api.getPersonalizedRecommendations(5)
       if (aiRes.success && aiRes.data) {
         //@ts-ignore
-        setAiPicks(aiRes.data.books || [])
+        setAiPicks(aiRes.data.recommendations || [])
       }
       setLoadingSections((prev) => ({ ...prev, aiPicks: false }))
 
@@ -69,7 +70,7 @@ const HomeScreen = () => {
       const trendingRes = await api.getPopularBooks(5)
       if (trendingRes.success && trendingRes.data) {
         //@ts-ignore
-        setTrending(trendingRes.data.books || [])
+        setTrending(trendingRes.data.popularBooks || [])
       }
       setLoadingSections((prev) => ({ ...prev, trending: false }))
 
@@ -77,7 +78,7 @@ const HomeScreen = () => {
       const communityRes = await api.getBooks(1, 6)
       if (communityRes.success && communityRes.data) {
         //@ts-ignore
-        setCommunity(communityRes.data.books || [])
+        setCommunity(communityRes.data?.books || [])
       }
       setLoadingSections((prev) => ({ ...prev, community: false }))
     } catch (err) {
@@ -168,7 +169,7 @@ const HomeScreen = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Continue Reading</Text>
-              <TouchableOpacity onPress={() => router.push('/library')}>
+              <TouchableOpacity onPress={() => router.push('/books')}>
                 <Text style={styles.seeAllButton}>See all</Text>
               </TouchableOpacity>
             </View>
@@ -183,19 +184,19 @@ const HomeScreen = () => {
                   <TouchableOpacity
                     key={book._id}
                     style={styles.bookCard}
-                    onPress={() => openBook(book._id)}
+                    onPress={() => openBook(book.bookId)}
                   >
-                    <Image source={{ uri: book.image }} style={styles.bookCover} />
+                    <Image source={{ uri: book.coverImage }} style={styles.bookCover} />
                     <View style={styles.progressBar}>
                       <View
                         style={[
                           styles.progressFill,
-                          { width: `${book.progress || 0}%` },
+                          { width: `${book.progressPercentage || 0}%` },
                         ]}
                       />
                     </View>
                     <Text style={styles.progressText}>
-                      {book.progress || 0}% complete
+                      {book.progressPercentage || 0}% complete
                     </Text>
                     <Text style={styles.bookTitle} numberOfLines={1}>
                       {book.title}
@@ -250,13 +251,16 @@ const HomeScreen = () => {
                         </Text>
                         <TouchableOpacity
                           style={styles.startReadingButton}
-                          onPress={() => openBook(book._id)}
+                          onPress={() => {
+                            openBook(book._id)
+
+                          }}
                         >
                           <Text style={styles.startReadingText}>
                             Start Reading
                           </Text>
                           <Feather
-                            name="arrow-right"
+                            name="arrow-right" 
                             size={16}
                             color={colors.white}
                           />
@@ -318,7 +322,7 @@ const HomeScreen = () => {
   <View style={styles.section}>
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>Community Uploads</Text>
-      <TouchableOpacity onPress={() => router.push('/library')}>
+      <TouchableOpacity onPress={() => router.push('/books')}>
         <Text style={styles.seeAllButton}>See all</Text>
       </TouchableOpacity>
     </View>

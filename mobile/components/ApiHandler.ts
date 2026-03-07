@@ -29,8 +29,14 @@ class ApiHandler {
         ...options,
         headers,
       })
-
-      const data = await response.json()
+      // console.log("URL:", url, "STATUS:", response.status)
+      let data: any = {}
+      try {
+        data = await response.json()
+      } catch {
+        // server returned HTML (like a 403 page)
+        data = { error: `Server error: ${response.status}` }
+      }
 
       if (!response.ok) {
         throw new Error(data?.error || data?.message || `HTTP ${response.status}`)
@@ -109,7 +115,7 @@ class ApiHandler {
     })
   }
 
-  async getReadingLibrary<T>(page = 1): Promise<ApiResponse<T>> {
+  async getReadingLibrary(page = 1): Promise<ApiResponse<ReadingLibraryResponse>> {
     return this.request(`/api/v1/books/reading/library?page=${page}`)
   }
 
@@ -256,7 +262,7 @@ class ApiHandler {
     })
   }
 
-  async getChapterContent<T>(bookId: string, chapterNumber: number): Promise<ApiResponse<T>> {
+  async getChapterContent(bookId: string, chapterNumber: number): Promise<ApiResponse<ChapterContentResponse>> {
     return this.request(
       `/api/v1/books/${bookId}/chapters/${chapterNumber}`
     )
@@ -272,7 +278,7 @@ class ApiHandler {
     )
   }
 
-  async getTableOfContents(bookId: string) {
+  async getTableOfContents(bookId: string): Promise<ApiResponse<TableOfContentsResponse>> {
     return this.request(`/api/v1/books/${bookId}/table-of-contents`)
   }
 
@@ -294,7 +300,7 @@ class ApiHandler {
     )
   }
 
-  async addNote(bookId: string, data: any) {
+  async addNote(bookId: string, data: any): Promise<ApiResponse<AddNoteResponse>> {
     return this.request(`/api/v1/books/${bookId}/notes`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -311,25 +317,23 @@ class ApiHandler {
     )
   }
 
-  async deleteNote(bookId: string, noteId: string) {
+  async deleteNote(bookId: string, noteId: string): Promise<ApiResponse<AddNoteResponse>> {
     return this.request(
       `/api/v1/books/${bookId}/notes/${noteId}`,
       { method: 'DELETE' }
     )
   }
- 
-  
 
-  async getBookmarks(bookId: string) {
+  async getBookmarks(bookId: string): Promise<ApiResponse<BookmarksResponse>> {
     return this.request(`/api/v1/books/${bookId}/bookmarks`, {
       method: 'GET',
-    });
+    })
   }
 
-  async getNotes(bookId: string) {
+  async getNotes(bookId: string): Promise<ApiResponse<NotesResponse>> {
     return this.request(`/api/v1/books/${bookId}/notes`, {
       method: 'GET',
-    });
+    })
   }
 
   /* ======================================================

@@ -186,12 +186,14 @@ export const BookDetailsSkeleton = () => (
       <Skeleton width={70} height={32} borderRadius={8} />
       <Skeleton width={70} height={32} borderRadius={8} />
       <Skeleton width={70} height={32} borderRadius={8} />
+      <Skeleton width={70} height={32} borderRadius={8} />
     </View>
 
     {/* Genres */}
     <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
       <Skeleton width={60} height={24} borderRadius={12} />
       <Skeleton width={80} height={24} borderRadius={12} />
+      <Skeleton width={70} height={24} borderRadius={12} />
       <Skeleton width={70} height={24} borderRadius={12} />
     </View>
 
@@ -225,5 +227,42 @@ export const LibrarySectionSkeleton = ({ title }: { title: string }) => (
     </View>
   </View>
 );
+
+export const ReadingPageSkeleton = () => (
+  <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 16 }}>
+    {/* Header */}
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
+      <Skeleton width={32} height={32} borderRadius={16} />
+      <View style={{ alignItems: 'center', gap: 6 }}>
+        <Skeleton width={100} height={12} borderRadius={4} />
+        <Skeleton width={70} height={10} borderRadius={4} />
+      </View>
+      <Skeleton width={32} height={32} borderRadius={16} />
+    </View>
+
+    {/* Chapter Title */}
+    <Skeleton width="60%" height={18} borderRadius={4} style={{ alignSelf: 'center', marginBottom: 28 }} />
+
+    {/* Drop cap + first paragraph */}
+    <View style={{ flexDirection: 'row', marginBottom: 24, alignItems: 'flex-start' }}>
+      <Skeleton width={38} height={38} borderRadius={4} style={{ marginRight: 8 }} />
+      <View style={{ flex: 1, gap: 8 }}>
+        <Skeleton width="100%" height={14} borderRadius={3} />
+        <Skeleton width="100%" height={14} borderRadius={3} />
+        <Skeleton width="80%" height={14} borderRadius={3} />
+      </View>
+    </View>
+
+    {/* Paragraphs */}
+    {[1, 2, 3, 4].map((i) => (
+      <View key={i} style={{ marginBottom: 24, gap: 8 }}>
+        <Skeleton width="100%" height={14} borderRadius={3} />
+        <Skeleton width="100%" height={14} borderRadius={3} />
+        <Skeleton width="100%" height={14} borderRadius={3} />
+        <Skeleton width={`${60 + (i % 3) * 10}%`} height={14} borderRadius={3} />
+      </View>
+    ))}
+  </View>
+)
 
 export default Skeleton;

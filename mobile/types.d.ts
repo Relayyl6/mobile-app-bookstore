@@ -125,6 +125,9 @@ declare interface GetBooksForReadingResponse {
 
 declare interface Book {
   _id: string
+  bookId: string
+  coverImage: string
+  progressPercentage: number
   title: string
   subTitle?: string
   author?: string
@@ -365,4 +368,31 @@ declare interface NewBooksResponse {
 declare interface SimilarBooksResponse {
   success: boolean
   books: SimilarBook[]
+}
+
+
+declare interface NotesResponse {
+  success: boolean
+  notes: any[]
+}
+
+declare interface BookmarksResponse {
+  success: boolean
+  bookmarks: any[]
+}
+
+declare interface TableOfContentsResponse {
+  success: boolean
+  tableOfContents: any[]
+}
+
+declare interface ChapterContentResponse {
+  success: boolean
+  chapter: any
+  userProgress: any
+}
+
+declare interface AddNoteResponse {
+  success: boolean
+  notes: any[]
 }

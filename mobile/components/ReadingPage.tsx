@@ -1,7 +1,7 @@
 import readStyles from "@/constants/read.styles";
 import { useAppContext } from "@/context/useAppContext";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/components/ApiHandler";
-import Skeleton, { LibraryHeaderSkeleton, LibrarySectionSkeleton, LibraryBookGridSkeleton } from '@/components/SkeletonLoaders'
+import Skeleton, { ReadingPageSkeleton } from '@/components/SkeletonLoaders'
+
 
 interface ReadingPageProps {
   onBack: () => void
@@ -23,6 +24,8 @@ interface ReadingPageProps {
   onAnalyze: () => void
   onNotes: () => void
   onCast: () => void 
+  initialChapter: number
+  bookId: string
 }
 
 const ReadingPage: React.FC<ReadingPageProps> = ({
@@ -32,15 +35,13 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   onAnalyze,
   onNotes,
   onSaved,
+  initialChapter,
+  bookId
 }) => {
-  const { colors, bookId } = useAppContext();
+  const { colors } = useAppContext();
   const styles = readStyles(colors);
   const router = useRouter();
-  const params = useLocalSearchParams();
 
-  const initialChapter = Number(params.chapter) || 1;
-
-    // Define the Page type based on your schema
   type Page = {
     text?: string | null;
     pageNumber?: number | null;
@@ -67,39 +68,51 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const [timeRemaining, setTimeRemaining] = useState("...");
   const [loading, setLoading] = useState(true);
 
-  // --- NEW STATES ---
   // Tracks which modal content to show
   const [activeModal, setActiveModal] = useState<"none" | "cast" | "analyze" | "notes" | "saved" | "toc">("none");
 
   // Data states for API fetches
   const [tocData, setTocData] = useState<any[]>([]);
-  const [notes, setNotes] = useState<any[]>([]); // Populate this with actual notes data if available
-  const [bookmarks, setBookmarks] = useState<any[]>([]); // Populate with actual bookmarks
+  const [notes, setNotes] = useState<any[]>([]);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [newNoteText, setNewNoteText] = useState("");
+
+    // Add this near your other state/hooks
+  const paragraphs = useMemo(() => {
+    const rawText = pages[currentPageNumber - 1]?.text || "";
+    
+    const cleaned = rawText
+      .replace(/\r\n/g, ' ')
+      .replace(/\n/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    const sentences = cleaned.match(/[^.!?\"]+[.!?\"]+[\s]*/g) || [cleaned];
+
+    const result: string[] = [];
+    const chunkSize = 3;
+    for (let i = 0; i < sentences.length; i += chunkSize) {
+      const chunk = sentences.slice(i, i + chunkSize).join('').trim();
+      if (chunk.length > 0) result.push(chunk);
+  }
+  return result;
+}, [pages, currentPageNumber]); // ← recalculates when page changes
 
 
   // ================= FETCH USER ANNOTATIONS =================
   const fetchUserAnnotations = async () => {
     try {
-      // Fetch both simultaneously to save time using Promise.all
       const [notesRes, bookmarksRes] = await Promise.all([
-        api.getNotes(bookId as string),       // Assumes this endpoint exists
-        api.getBookmarks(bookId as string)    // Assumes this endpoint exists
+        api.getNotes(bookId as string),
+        api.getBookmarks(bookId as string)
       ]);
 
-      // Update Notes State
       if (notesRes && notesRes.success) {
-        // If you only want to show notes for the CURRENT chapter, filter them here:
-        // const chapterNotes = notesRes.data.filter(note => note.chapter === chapterNumber);
-        // setNotes(chapterNotes);
-        
-        // Otherwise, set all notes:
-        setNotes(notesRes.notes || []); 
+        setNotes(notesRes.data?.notes || []);
       }
 
-      // Update Bookmarks State
       if (bookmarksRes && bookmarksRes.success) {
-        setBookmarks(bookmarksRes.bookmarks || []);
+        setBookmarks(bookmarksRes.data?.bookmarks || []);
       }
     } catch (err) {
       console.log("Failed to fetch notes and bookmarks:", err);
@@ -107,7 +120,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   };
 
   // ================= INITIAL LOAD EFFECT =================
-  // Run this when the component mounts, or when the bookId/chapterNumber changes
   useEffect(() => {
     if (bookId) {
       fetchUserAnnotations();
@@ -120,7 +132,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     try {
       const res = await api.getTableOfContents(bookId as string);
       if (res.success) {
-        setTocData(res.tableOfContents || []);
+        setTocData(res.data?.tableOfContents || []);
       }
     } catch (err) {
       console.log("Failed to fetch TOC", err);
@@ -133,10 +145,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     try {
       const res = await api.addNote(bookId as string, { text: newNoteText, chapterNumber: chapterNumber, pageNumber: currentPageNumber });
       if (res.success) {
-        setNotes(prevNotes => [res?.notes?.[0], ...prevNotes]);
+        setNotes(prevNotes => [res.data?.notes?.[0], ...prevNotes]);
       }
       setNewNoteText("");
-      // Refresh notes list here if your API returns it, or append locally
     } catch (err) {
       console.log("Failed to add note", err);
     }
@@ -146,7 +157,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     try {
       const res = await api.deleteNote(bookId as string, noteId);
       if (res.success) {
-        setNotes(res?.notes || []); // API returns full updated notes array
+        setNotes(res.data?.notes || []);
       }
     } catch (err) {
       console.log("Failed to delete note", err);
@@ -157,25 +168,27 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   const handleRemoveBookmark = async (bookmarkId: string) => {
     try {
       await api.removeBookmark(bookId as string, bookmarkId);
-      // Remove bookmark from local state here
+      setBookmarks(prev => prev.filter(bm => bm.id !== bookmarkId));
     } catch (err) {
       console.log("Failed to remove bookmark", err);
     }
   };
 
   // ================= FETCH CHAPTER =================
-  // Note: Added `targetPage` so when navigating backward from Chapter 2 to 1, 
-  // it starts you on the *last* page of Chapter 1 instead of page 1.
   const fetchChapter = async (chapter: number, targetPage: number | "last" = 1) => {
     try {
       setLoading(true);
-
+      // console.log("FETCHING CHAPTER:", chapter, "for bookId:", bookId); 
       const res = await api.getChapterContent(bookId as string, chapter);
+      // console.log("PAGES COUNT:", res.data?.chapter?.pages?.length);
+      // console.log("PAGES:", res.data?.chapter?.pages?.map((p: any) => p.pageNumber));
 
       if (!res.success) throw new Error(res.error);
 
-      const chapterData = res.chapter;
-      const progressData = res.userProgress;
+      const chapterData = res.data?.chapter;
+      const progressData = res.data?.userProgress;
+
+      // console.log(chapterData)
 
       // Set Chapter Data
       setChapterTitle(chapterData?.title || `Chapter ${chapter}`);
@@ -217,14 +230,12 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   };
 
   // ================= TRACK PROGRESS =================
-  // Use a useEffect to trigger this whenever the chapter or page changes
   useEffect(() => {
     const updateProgress = async () => {
       try {
         await api.updateReadingProgress(bookId as string, {
           currentChapter: chapterNumber,
           currentPage: currentPageNumber,
-          // Calculate progress based on page / total pages
           progressPercentage: pages.length > 0 
             ? Math.round((currentPageNumber / pages.length) * 100) 
             : 0, 
@@ -242,14 +253,12 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   // ================= NAVIGATION =================
   const handleNext = () => {
     if (currentPageNumber < pages.length) {
-      // 1. Next Page (Same Chapter)
       const nextPg = currentPageNumber + 1;
+      console.log("GOING TO PAGE:", nextPg, "TEXT:", pages[nextPg - 1]?.text?.slice(0, 50));
       setCurrentPageNumber(nextPg);
-      
       const nextPageText = pages[nextPg - 1]?.text || "";
       estimateReadingTime(nextPageText);
     } else {
-      // 2. Next Chapter (Starts at Page 1)
       const nextChap = chapterNumber + 1;
       setChapterNumber(nextChap);
       fetchChapter(nextChap, 1);
@@ -258,15 +267,13 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
 
   const handlePrevious = () => {
     if (currentPageNumber > 1) {
-      // 1. Previous Page (Same Chapter)
       const prevPg = currentPageNumber - 1;
+      console.log("GOING TO PAGE:", prevPg, "TEXT:", pages[prevPg - 1]?.text?.slice(0, 50));
       setCurrentPageNumber(prevPg);
-      
       const prevPageText = pages[prevPg - 1]?.text || "";
       estimateReadingTime(prevPageText);
     } else {
-      // 2. Previous Chapter (Starts at the Last Page)
-      if (chapterNumber === 1) return; // Can't go back further than Ch 1 Pg 1
+      if (chapterNumber === 1) return;
       const prevChap = chapterNumber - 1;
       setChapterNumber(prevChap);
       fetchChapter(prevChap, "last");
@@ -281,9 +288,9 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ReadingPageSkeleton />
       </SafeAreaView>
-    );
+    )
   }
 
   return (
@@ -306,38 +313,27 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
         </TouchableOpacity>
       </View>
 
-      {/* Reading Content */}
-      {/* ---------------- GET CURRENT PAGE TEXT ---------------- */}
-      {/* Safely get the text, split by newlines, and remove empty strings */}
-      {(() => {
-        const rawText = pages[currentPageNumber - 1]?.text || "";
-        const currentParagraphs = rawText.split("\n").filter(p => p.trim() !== "");
-
-        return (
-          <>
-            {/* ---------------- READING CONTENT ---------------- */}
-            <ScrollView 
-              style={styles.contentContainer}
-              contentContainerStyle={styles.contentInner}
-              showsVerticalScrollIndicator={false}
-            >
-              <Text style={styles.chapterTitle}>{chapterTitle}</Text>
-              
-              {/* Render Paragraphs for the current page */}
-              {currentParagraphs.map((paragraph, index) => (
-                <Text key={index} style={styles.paragraph}>
-                  {index === 0 && (
-                    <Text style={styles.dropCap}>
-                      {paragraph.charAt(0)}
-                    </Text>
-                  )}
-                  {index === 0 ? paragraph.slice(1) : paragraph}
-                </Text>
-              ))}
-            </ScrollView>
-          </>
-        );
-      })()}
+      <ScrollView
+        key={`${chapterNumber}-${currentPageNumber}`}
+        style={styles.contentContainer}
+        contentContainerStyle={styles.contentInner}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.chapterTitle}>{chapterTitle}</Text>
+        {/* //@ts-ignore */}
+        {paragraphs.map((paragraph, index) => (
+          <View key={`${chapterNumber}-${currentPageNumber}-${index}`}>
+            {index === 0 ? (
+              <Text style={styles.paragraph}>
+                <Text style={styles.dropCap}>{paragraph.charAt(0)}</Text>
+                {paragraph.slice(1)}
+              </Text>
+            ) : (
+              <Text style={styles.paragraph}>{paragraph}</Text>
+            )}
+          </View>
+        ))}
+      </ScrollView>
 
       {/* Action Menu */}
       <View style={styles.actionMenu}>
@@ -363,9 +359,7 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
       </View>
 
       {/* Navigation Arrows */}
-      {/* ---------------- NAVIGATION ARROWS ---------------- */}
       <View style={styles.navigationContainer}>
-        {/* Disable previous button if on Chapter 1, Page 1 */}
         <TouchableOpacity 
           style={[styles.navArrow, (chapterNumber === 1 && currentPageNumber === 1) && { opacity: 0.5 }]} 
           onPress={handlePrevious}
@@ -434,7 +428,10 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                     {characters && characters.length > 0 ? (
                       characters.map((char, idx) => (
                         <View key={idx} style={styles.characterCard}>
-                          <Text style={styles.characterName}>{char}</Text>
+                          <Text style={styles.characterName}>{char.name}</Text>
+                          {char.description && (
+                            <Text style={styles.modalText}>{char.description}</Text>
+                          )}
                         </View>
                       ))
                     ) : (
@@ -458,7 +455,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                     </TouchableOpacity>
 
                     <Text style={styles.sectionTitle}>Your Notes</Text>
-                    {/* Map over your 'notes' array here */}
                     {notes.map((note, idx) => (
                       <View key={idx} style={styles.noteItem}>
                         <Text style={styles.modalText}>{note.text}</Text>
@@ -474,7 +470,6 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
                 {activeModal === "saved" && (
                   <View>
                     <Text style={styles.sectionTitle}>Bookmarks</Text>
-                    {/* Map over your 'bookmarks' array here */}
                     {bookmarks.map((bm, idx) => (
                       <View key={idx} style={styles.noteItem}>
                         <Text style={styles.modalText}>Chapter {bm.chapter} - Page {bm.page}</Text>
@@ -516,7 +511,5 @@ const ReadingPage: React.FC<ReadingPageProps> = ({
     </SafeAreaView>
   );
 };
-
-
 
 export default ReadingPage;

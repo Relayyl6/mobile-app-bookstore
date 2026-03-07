@@ -166,8 +166,8 @@
 
         if (!createRes.success)
           throw new Error(createRes.error || "Book creation failed");
-
-        const bookId = createRes?.book?.id;
+        //@ts-ignore
+        const bookId = createRes?.data.book?.id;
         if (!bookId) throw new Error("Book ID missing");
 
         setBookId(bookId);
