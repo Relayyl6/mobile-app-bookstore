@@ -52,7 +52,8 @@ export const createBook = async (req, res, next) => {
       image,
       price,
       isbn,
-      publishedYear
+      publishedYear,
+      visibility
     } = req.body;
 
     console.log("Parsed fields:", {
@@ -65,7 +66,8 @@ export const createBook = async (req, res, next) => {
       image,
       price,
       isbn,
-      publishedYear
+      publishedYear,
+      visibility
     });
 
     // Validate required fields
@@ -131,6 +133,7 @@ export const createBook = async (req, res, next) => {
       
       // Content status
       hasContent: false, // Will be true after PDF upload
+      visibility: visibility || 'private'
     });
 
     console.log("Book created:", JSON.stringify(book, null, 2));
@@ -182,6 +185,7 @@ export const updateBook = async (req, res, next) => {
       "price",
       "isbn",
       "publishedYear",
+      "visibility",
     ];
 
     const updateFields = {};
@@ -234,6 +238,10 @@ export const deleteBook = async (req, res, next) => {
       return next({ statusCode: 404, message: "Book not found" });
     }
 
+    if (book.visibility === 'private' && (book.user?._id ? book.user._id.toString() : book.user.toString()) !== userId.toString()) {
+      return next({ statusCode: 403, message: 'Private book. Access denied' });
+    }
+
     if (book.user.toString() !== userId.toString()) {
       console.log("🔴 Sending 401 to middleware:", { statusCode: 401, message: "Unauthorized. Cannot delete what you didnt upload" });
       return next({ statusCode: 401, message: "Unauthorized. Cannot delete what you didnt upload" });
@@ -273,14 +281,14 @@ export const getBooks = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const books = await bookModel
-      .find()
+      .find({ visibility: "public" })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate("user", "username profileImage")
       .lean();
 
-    const totalBooks = await bookModel.countDocuments();
+    const totalBooks = await bookModel.countDocuments({ visibility: "public" });
 
     res.status(200).json({
       success: true,
@@ -316,6 +324,10 @@ export const getSingleBook = async (req, res, next) => {
       return next({ statusCode: 404, message: "Book not found" });
     }
 
+    if (book.visibility === 'private' && (book.user?._id ? book.user._id.toString() : book.user.toString()) !== userId.toString()) {
+      return next({ statusCode: 403, message: 'Private book. Access denied' });
+    }
+
     // Get AI knowledge if exists
     const knowledge = await bookKnowledgeModel.findOne({ bookId: id }).lean();
 
@@ -343,6 +355,7 @@ export const getSingleBook = async (req, res, next) => {
         coverImage: book.image,
         price: book.price,
         publishedYear: book.publishedYear,
+        visibility: book.visibility,
 
         // Stats
         averageRating: book.averageRating || 0,
@@ -423,6 +436,10 @@ export const uploadBookContent = async (req, res, next) => {
 
     if (!book) {
       return next({ statusCode: 404, message: "Book not found" });
+    }
+
+    if (book.visibility === 'private' && (book.user?._id ? book.user._id.toString() : book.user.toString()) !== userId.toString()) {
+      return next({ statusCode: 403, message: 'Private book. Access denied' });
     }
 
     if (book.user.toString() !== userId.toString()) {
@@ -767,14 +784,14 @@ export const getBooksForReading = async (req, res, next) => {
 
     // Get books that have content
     const booksWithContent = await bookModel
-      .find({ hasContent: true })
-      .select("_id title author genres image publishedYear")
+      .find({ hasContent: true, $or: [{ visibility: "public" }, { user: userId }] })
+      .select("_id title author genres image publishedYear visibility averageRating")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const totalBooks = await bookModel.countDocuments({ hasContent: true });
+    const totalBooks = await bookModel.countDocuments({ hasContent: true, $or: [{ visibility: "public" }, { user: userId }] });
 
     const bookIds = booksWithContent.map(b => b._id);
 
@@ -799,6 +816,7 @@ export const getBooksForReading = async (req, res, next) => {
         author: book.author,
         genres: book.genres,
         publishedYear: book.publishedYear,
+        visibility: book.visibility,
         coverImage: book.image,
         progressPercentage: state?.progressPercentage || 0,
         lastReadAt: state?.lastReadAt || null,
@@ -832,6 +850,10 @@ export const deleteBookContent = async (req, res, next) => {
     const book = await bookModel.findById(bookId);
     if (!book) {
       return next({ statusCode: 404, message: "Book not found" });
+    }
+
+    if (book.visibility === 'private' && (book.user?._id ? book.user._id.toString() : book.user.toString()) !== userId.toString()) {
+      return next({ statusCode: 403, message: 'Private book. Access denied' });
     }
 
     if (book.user.toString() !== userId.toString()) {
@@ -971,6 +993,10 @@ export const addOrUpdateRating = async (req, res, next) => {
     const book = await bookModel.findById(bookId);
     if (!book) {
       return next({ statusCode: 404, message: "Book not found" });
+    }
+
+    if (book.visibility === 'private' && (book.user?._id ? book.user._id.toString() : book.user.toString()) !== userId.toString()) {
+      return next({ statusCode: 403, message: 'Private book. Access denied' });
     }
 
     // Create or update rating

@@ -91,6 +91,13 @@ export const getChapterContent = async (req, res, next) => {
         currentChapter: state.currentChapter,
         currentPage: state.currentPage,
         maxUnlockedChapter: state.maxSpoilerChapterAllowed
+      },
+      readingTools: {
+        noteCount: state.userNotes?.filter(note => note.chapterNumber === parseInt(chapterNumber)).length || 0,
+        bookmarkCount: state.bookmarks?.filter(bookmark => bookmark.chapterNumber === parseInt(chapterNumber)).length || 0,
+        chapterCompletion: chapter.pages?.length
+          ? Math.min(100, Math.round((state.currentPage / chapter.pages.length) * 100))
+          : 0,
       }
     });
 
@@ -349,9 +356,9 @@ export const addNote = async (req, res, next) => {
   try {
     const { bookId } = req.params;
     const userId = req.user._id;
-    const { chapterNumber, pageNumber, note, highlight } = req.body;
+    const { chapterNumber, pageNumber, note, text, highlight } = req.body;
 
-    if (!chapterNumber || !note) {
+    if (!chapterNumber || !(note || text)) {
       return next({
         statusCode: 400,
         message: "chapterNumber and note are required"
@@ -361,7 +368,7 @@ export const addNote = async (req, res, next) => {
     const noteObj = {
       chapterNumber,
       pageNumber: pageNumber || null,
-      note,
+      note: note || text,
       highlight: highlight || "",
       createdAt: new Date()
     };
@@ -590,6 +597,40 @@ export const trackCharacterView = async (req, res, next) => {
 
   } catch (err) {
     console.error("Error tracking character view:", err);
+    next(err);
+  }
+};
+
+
+/**
+ * Mark chapter for offline access
+ */
+export const markChapterOffline = async (req, res, next) => {
+  try {
+    const { bookId } = req.params;
+    const userId = req.user._id;
+    const { chapterNumber } = req.body;
+
+    if (!chapterNumber) {
+      return next({ statusCode: 400, message: "chapterNumber is required" });
+    }
+
+    const state = await userBookStateModel.findOneAndUpdate(
+      { userId, bookId },
+      {
+        $addToSet: { offlineChapters: parseInt(chapterNumber) },
+        $set: { lastReadAt: new Date() }
+      },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Chapter marked for offline reading",
+      offlineChapters: state.offlineChapters || []
+    });
+  } catch (err) {
+    console.error("Error marking chapter offline:", err);
     next(err);
   }
 };

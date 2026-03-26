@@ -262,6 +262,14 @@ class ApiHandler {
     })
   }
 
+
+  async markBookOffline(bookId: string, chapterNumber: number) {
+    return this.request(`/api/v1/books/${bookId}/reading/offline`, {
+      method: 'PUT',
+      body: JSON.stringify({ chapterNumber }),
+    })
+  }
+
   async getChapterContent(bookId: string, chapterNumber: number): Promise<ApiResponse<ChapterContentResponse>> {
     return this.request(
       `/api/v1/books/${bookId}/chapters/${chapterNumber}`
