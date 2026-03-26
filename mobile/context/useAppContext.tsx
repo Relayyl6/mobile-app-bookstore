@@ -9,8 +9,8 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
   const [currentTheme, setCurrentThemeState] = useState<ThemeType>('forest');
   const [isLoading, setIsLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>("")
-  const [bookId, setBookId] = useState<string | null>("")
+  const [userId, setUserId] = useState<string | null>(null)
+  const [bookId, setBookId] = useState<string | null>(null)
   const [show, setShow] = useState(false)
   
 
@@ -60,6 +60,14 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       forest: icons.profile,
       blossom: icons.settings,
       cyberpunk: icons.library,
+      homeColors: icons.home,
+      profileColors: icons.profile,
+      libraryColors: icons.library,
+      greenTheme: icons.profile,
+      purpleTheme: icons.settings,
+      sunsetTheme: icons.home,
+      grayTheme: icons.library,
+      cyberpunkTheme: icons.settings,
     };
 
     return themeIconMap[currentTheme];

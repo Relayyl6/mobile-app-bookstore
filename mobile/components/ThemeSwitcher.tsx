@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppContext } from '@/context/useAppContext';
+import { darkThemes, lightThemes } from '@/constants/theme';
 
 const themes: ThemeType[] = [
   'forest',
@@ -20,6 +21,7 @@ const themes: ThemeType[] = [
 
 export const ThemeSwitcher: React.FC = () => {
   const { colors, themeMode, currentTheme, setCurrentTheme, toggleThemeMode } = useAppContext();
+  const palette = themeMode === 'light' ? lightThemes : darkThemes
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>      
@@ -37,7 +39,10 @@ export const ThemeSwitcher: React.FC = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.carouselContent}
       >
-        {themes.map((theme) => (
+        {themes.map((theme) => {
+          const themeColors = palette[theme]
+
+          return (
           <TouchableOpacity
             key={theme}
             onPress={() => setCurrentTheme(theme)}
@@ -49,12 +54,16 @@ export const ThemeSwitcher: React.FC = () => {
               },
             ]}
           >
-            <View style={[styles.preview, { backgroundColor: colors.primary }]} />
+            <View style={[styles.preview, { backgroundColor: themeColors.background }]}>
+              <View style={[styles.previewBar, { backgroundColor: themeColors.primary }]} />
+              <View style={[styles.previewCard, { backgroundColor: themeColors.cardBackground, borderColor: themeColors.border }]} />
+              <View style={[styles.previewText, { backgroundColor: themeColors.textSecondary }]} />
+            </View>
             <Text style={[styles.themeName, { color: colors.textPrimary }]} numberOfLines={1}>
               {theme}
             </Text>
           </TouchableOpacity>
-        ))}
+        )})}
       </ScrollView>
 
       <Text style={[styles.currentText, { color: colors.textSecondary }]}>Current: {currentTheme} ({themeMode})</Text>
@@ -91,6 +100,23 @@ const styles = StyleSheet.create({
   preview: {
     height: 70,
     borderRadius: 10,
+    padding: 6,
+    gap: 4,
+  },
+  previewBar: {
+    height: 8,
+    borderRadius: 4,
+  },
+  previewCard: {
+    flex: 1,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  previewText: {
+    height: 6,
+    width: '70%',
+    borderRadius: 4,
+    opacity: 0.7,
   },
   themeName: {
     fontSize: 13,

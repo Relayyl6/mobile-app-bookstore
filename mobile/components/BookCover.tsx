@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
+import { resolveBookImage } from '@/utils/bookImageLookup';
 
 type BookCoverProps = {
   title: string;
@@ -40,8 +41,29 @@ export const BookCover: React.FC<BookCoverProps> = ({
   width = 120,
   height = 180,
 }) => {
-  if (coverUrl) {
-    return <Image source={{ uri: coverUrl }} style={[styles.coverImage, { width, height }]} />;
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(coverUrl || null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadImage = async () => {
+      if (coverUrl) {
+        setResolvedUrl(coverUrl);
+        return;
+      }
+
+      const foundImage = await resolveBookImage(title, author);
+      if (mounted) setResolvedUrl(foundImage);
+    };
+
+    loadImage();
+    return () => {
+      mounted = false;
+    };
+  }, [author, coverUrl, title]);
+
+  if (resolvedUrl) {
+    return <Image source={{ uri: resolvedUrl }} style={[styles.coverImage, { width, height }]} />;
   }
 
   const [startColor, endColor] = getPalette(title);
