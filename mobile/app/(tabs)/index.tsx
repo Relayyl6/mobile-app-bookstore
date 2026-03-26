@@ -16,6 +16,7 @@ import { useAppContext } from '@/context/useAppContext'
 import homePageStyle from '@/constants/homepage.styles'
 import { api } from '@/components/ApiHandler'
 import { GENRES } from '@/constants/data'
+import { ContinueReadingSkeleton, CommunityUploadsSkeleton, AiPicksSkeleton, PopularBooksSkeleton } from '@/components/SkeletonLoaders'
 
 const GUEST_BOOKS: Book[] = [
   {
@@ -65,6 +66,15 @@ const GUEST_BOOKS: Book[] = [
   },
 ]
 
+
+
+const withTimeout = async <T,>(promise: Promise<T>, ms = 6500): Promise<T> => {
+  return await Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ])
+}
+
 const HomeScreen = () => {
   const { colors } = useAppContext()
   const styles = homePageStyle(colors)
@@ -89,10 +99,10 @@ const HomeScreen = () => {
   const loadHomeData = async () => {
     try {
       const [readingRes, aiRes, trendingRes, communityRes] = await Promise.all([
-        api.getReadingLibrary(1),
-        api.getPersonalizedRecommendations(5),
-        api.getPopularBooks(5),
-        api.getBooks(1, 6),
+        withTimeout(api.getReadingLibrary(1)),
+        withTimeout(api.getPersonalizedRecommendations(5)),
+        withTimeout(api.getPopularBooks(5)),
+        withTimeout(api.getBooks(1, 6)),
       ])
 
       setContinueReading(readingRes.success ? (((readingRes.data as any)?.books as any) || []) : [])
@@ -205,21 +215,64 @@ const HomeScreen = () => {
               </TouchableOpacity>
             </View>
 
+            {loadingSections.continueReading ? (
+              <ContinueReadingSkeleton />
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+                {(guestMode ? GUEST_BOOKS : filterByGenre(continueReading)).map((book) => (
+                  <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book.bookId || book._id)}>
+                    <Image source={{ uri: book.coverImage || book.image }} style={styles.bookCover} />
+                    <View style={styles.progressBar}>
+                      <View style={[styles.progressFill, { width: `${book.progressPercentage || 0}%` }]} />
+                    </View>
+                    <Text style={styles.progressText}>{book.progressPercentage || 0}% complete</Text>
+                    <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
+                    <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        )}
+
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>AI Picks</Text>
+          </View>
+          {loadingSections.aiPicks ? (
+            <AiPicksSkeleton />
+          ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-              {(guestMode ? GUEST_BOOKS : filterByGenre(continueReading)).map((book) => (
-                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book.bookId || book._id)}>
-                  <Image source={{ uri: book.coverImage || book.image }} style={styles.bookCover} />
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { width: `${book.progressPercentage || 0}%` }]} />
-                  </View>
-                  <Text style={styles.progressText}>{book.progressPercentage || 0}% complete</Text>
+              {filterByGenre(aiPicks.length ? aiPicks : GUEST_BOOKS).map((book) => (
+                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id)}>
+                  <Image source={{ uri: book.image || book.coverImage }} style={styles.bookCover} />
                   <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
                   <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Trending Now</Text>
           </View>
-        )}
+          {loadingSections.trending ? (
+            <PopularBooksSkeleton />
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
+              {filterByGenre(trending.length ? trending : GUEST_BOOKS).map((book) => (
+                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id)}>
+                  <Image source={{ uri: book.image || book.coverImage }} style={styles.bookCover} />
+                  <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
+                  <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
 
         {filterByGenre(community.length ? community : GUEST_BOOKS).length > 0 && (
           <View style={styles.section}>
@@ -230,30 +283,34 @@ const HomeScreen = () => {
               </TouchableOpacity>
             </View>
 
-            <View style={styles.communityGrid}>
-              {filterByGenre(community.length ? community : GUEST_BOOKS).map((book) => (
-                <TouchableOpacity key={book._id} style={styles.communityCard} onPress={() => openBook(book._id)}>
-                  <View style={styles.communityImageContainer}>
-                    <Image source={{ uri: book.image || book.coverImage }} style={styles.communityImage} />
-                    <View style={styles.communityImageOverlay} />
-                    <View style={styles.communityUserBadge}>
-                      <Image source={{ uri: book.user?.profileImage || 'https://i.pravatar.cc/100' }} style={styles.communityUserAvatar} />
-                      <Text style={styles.communityUserName} numberOfLines={1}>{book.user?.username || 'Anonymous'}</Text>
-                    </View>
-                    {!!book.genre && (
-                      <View style={styles.communityGenreTag}>
-                        <Text style={styles.communityGenreText}>{book.genre}</Text>
+            {loadingSections.community ? (
+              <CommunityUploadsSkeleton />
+            ) : (
+              <View style={styles.communityGrid}>
+                {filterByGenre(community.length ? community : GUEST_BOOKS).map((book) => (
+                  <TouchableOpacity key={book._id} style={styles.communityCard} onPress={() => openBook(book._id)}>
+                    <View style={styles.communityImageContainer}>
+                      <Image source={{ uri: book.image || book.coverImage }} style={styles.communityImage} />
+                      <View style={styles.communityImageOverlay} />
+                      <View style={styles.communityUserBadge}>
+                        <Image source={{ uri: book.user?.profileImage || 'https://i.pravatar.cc/100' }} style={styles.communityUserAvatar} />
+                        <Text style={styles.communityUserName} numberOfLines={1}>{book.user?.username || 'Anonymous'}</Text>
                       </View>
-                    )}
-                  </View>
+                      {!!book.genre && (
+                        <View style={styles.communityGenreTag}>
+                          <Text style={styles.communityGenreText}>{book.genre}</Text>
+                        </View>
+                      )}
+                    </View>
 
-                  <View style={styles.communityCardContent}>
-                    <Text style={styles.communityTitle} numberOfLines={2}>{book.title}</Text>
-                    <Text style={styles.communityAuthor} numberOfLines={1}>{book.author || 'Unknown Author'}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    <View style={styles.communityCardContent}>
+                      <Text style={styles.communityTitle} numberOfLines={2}>{book.title}</Text>
+                      <Text style={styles.communityAuthor} numberOfLines={1}>{book.author || 'Unknown Author'}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         )}
 

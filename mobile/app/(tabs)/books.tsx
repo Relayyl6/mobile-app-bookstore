@@ -18,6 +18,7 @@ import SmallCard from '@/components/SmallCard'
 import { api } from '@/components/ApiHandler'
 import { useRouter } from 'expo-router'
 import { GENRES } from '@/constants/data'
+import { LibrarySectionSkeleton, NewReleasesSkeleton, LibraryBookGridSkeleton } from '@/components/SkeletonLoaders'
 
 const { width } = Dimensions.get('window')
 const CARD_WIDTH = (width - 60) / 2
@@ -241,41 +242,59 @@ const LibraryScreen = () => {
         columnWrapperStyle={viewMode === 'grid' ? { justifyContent: 'space-between', paddingHorizontal: 20 } : undefined}
         ListHeaderComponent={
           <>
-            {recommendedBooks.length > 0 && (
+            {(loadingSections.recommended || recommendedBooks.length > 0) && (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <MaterialCommunityIcons name="star" size={22} color={colors.primary} />
                   <Text style={styles.sectionTitle}>Recommended for You</Text>
                 </View>
-                <View style={styles.recommendedGrid}>{recommendedBooks.map((book) => renderBookCard(book, 'big'))}</View>
+                {loadingSections.recommended ? (
+                  <LibrarySectionSkeleton title="Recommended for You" />
+                ) : (
+                  <View style={styles.recommendedGrid}>{recommendedBooks.map((book) => renderBookCard(book, 'big'))}</View>
+                )}
               </View>
             )}
 
-            {popularBooks.length > 0 && (
+            {(loadingSections.popular || popularBooks.length > 0) && (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <MaterialCommunityIcons name="fire" size={22} color="#FF4444" />
                   <Text style={styles.sectionTitle}>Popular Books</Text>
                 </View>
-                <View style={styles.recommendedGrid}>{popularBooks.map((book) => renderBookCard(book, 'big'))}</View>
+                {loadingSections.popular ? (
+                  <LibrarySectionSkeleton title="Popular Books" />
+                ) : (
+                  <View style={styles.recommendedGrid}>{popularBooks.map((book) => renderBookCard(book, 'big'))}</View>
+                )}
               </View>
             )}
 
-            {newBooks.length > 0 && (
+            {(loadingSections.newBooks || newBooks.length > 0) && (
               <View style={styles.section}>
                 <View style={styles.sectionHeader}>
                   <MaterialCommunityIcons name="new-box" size={22} color={colors.primary} />
                   <Text style={styles.sectionTitle}>New Releases</Text>
                 </View>
-                {newBooks.map((book) => (
-                  <TouchableOpacity key={book._id} style={styles.listItem} onPress={() => router.push(`/details?bookId=${book._id}`)}>
-                    <Image source={{ uri: book.image }} style={styles.listCover} />
-                    <View style={styles.listInfo}>
-                      <Text style={styles.listTitle} numberOfLines={1}>{book.title}</Text>
-                      <Text style={styles.listAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+                {loadingSections.newBooks ? (
+                  <NewReleasesSkeleton />
+                ) : (
+                  newBooks.map((book) => (
+                    <TouchableOpacity key={book._id} style={styles.listItem} onPress={() => router.push(`/details?bookId=${book._id}`)}>
+                      <Image source={{ uri: book.image }} style={styles.listCover} />
+                      <View style={styles.listInfo}>
+                        <Text style={styles.listTitle} numberOfLines={1}>{book.title}</Text>
+                        <Text style={styles.listAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            )}
+
+            {loadingSections.myBooks && (
+              <View style={styles.section}>
+                <LibraryBookGridSkeleton />
               </View>
             )}
 
