@@ -52,7 +52,8 @@ export const createBook = async (req, res, next) => {
       image,
       price,
       isbn,
-      publishedYear
+      publishedYear,
+      visibility
     } = req.body;
 
     console.log("Parsed fields:", {
@@ -65,7 +66,8 @@ export const createBook = async (req, res, next) => {
       image,
       price,
       isbn,
-      publishedYear
+      publishedYear,
+      visibility
     });
 
     // Validate required fields
@@ -103,10 +105,13 @@ export const createBook = async (req, res, next) => {
       });
     }
 
-    // Upload cover image
-    console.log("Uploading image to Cloudinary...");
-    const uploadResponse = await cloudinary.uploader.upload(image, { resource_type: "image" });
-    console.log("Upload response:", JSON.stringify(uploadResponse, null, 2));
+    let coverImage = "";
+    if (image) {
+      console.log("Uploading image to Cloudinary...");
+      const uploadResponse = await cloudinary.uploader.upload(image, { resource_type: "image" });
+      console.log("Upload response:", JSON.stringify(uploadResponse, null, 2));
+      coverImage = uploadResponse.secure_url;
+    }
 
     // Create book metadata
     console.log("Creating book in database...");
@@ -118,7 +123,7 @@ export const createBook = async (req, res, next) => {
       caption,
       description,
       genres,
-      image: uploadResponse.secure_url,
+      image: coverImage,
       price,
       publishedYear,
       user: userId,
@@ -131,6 +136,7 @@ export const createBook = async (req, res, next) => {
       
       // Content status
       hasContent: false, // Will be true after PDF upload
+      visibility: visibility === "private" ? "private" : "public",
     });
 
     console.log("Book created:", JSON.stringify(book, null, 2));
@@ -182,6 +188,7 @@ export const updateBook = async (req, res, next) => {
       "price",
       "isbn",
       "publishedYear",
+      "visibility",
     ];
 
     const updateFields = {};
@@ -273,7 +280,7 @@ export const getBooks = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const books = await bookModel
-      .find()
+      .find({ visibility: "public" })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -316,6 +323,10 @@ export const getSingleBook = async (req, res, next) => {
       return next({ statusCode: 404, message: "Book not found" });
     }
 
+    if (book.visibility === "private" && book.user._id.toString() !== userId.toString()) {
+      return next({ statusCode: 403, message: "This book is private" });
+    }
+
     // Get AI knowledge if exists
     const knowledge = await bookKnowledgeModel.findOne({ bookId: id }).lean();
 
@@ -341,6 +352,7 @@ export const getSingleBook = async (req, res, next) => {
         description: book.description,
         genres: book.genres,
         coverImage: book.image,
+        visibility: book.visibility,
         price: book.price,
         publishedYear: book.publishedYear,
 
@@ -767,14 +779,20 @@ export const getBooksForReading = async (req, res, next) => {
 
     // Get books that have content
     const booksWithContent = await bookModel
-      .find({ hasContent: true })
-      .select("_id title author genres image publishedYear")
+      .find({
+        hasContent: true,
+        $or: [{ visibility: "public" }, { user: userId }]
+      })
+      .select("_id title author genres image publishedYear visibility")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const totalBooks = await bookModel.countDocuments({ hasContent: true });
+    const totalBooks = await bookModel.countDocuments({
+      hasContent: true,
+      $or: [{ visibility: "public" }, { user: userId }],
+    });
 
     const bookIds = booksWithContent.map(b => b._id);
 
@@ -799,6 +817,7 @@ export const getBooksForReading = async (req, res, next) => {
         author: book.author,
         genres: book.genres,
         publishedYear: book.publishedYear,
+        visibility: book.visibility,
         coverImage: book.image,
         progressPercentage: state?.progressPercentage || 0,
         lastReadAt: state?.lastReadAt || null,
