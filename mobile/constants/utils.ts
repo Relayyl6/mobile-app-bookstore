@@ -262,3 +262,28 @@ export function buildSystemInstruction(aiContexts: string[] = []) {
   `;
 }
 
+
+export const validateFile = (file: DocumentPicker.DocumentPickerAsset | null) => {
+  if (!file) return { valid: false, error: 'No file selected' }
+  const maxBytes = 20 * 1024 * 1024
+  if ((file.size || 0) > maxBytes) {
+    return { valid: false, error: 'File is too large. Max 20MB.' }
+  }
+  return { valid: true }
+}
+
+export const validateImage = (base64Image: string | null) => {
+  if (!base64Image) return { valid: false, error: 'No image selected' }
+  const estimatedBytes = Math.ceil((base64Image.length * 3) / 4)
+  const maxBytes = 10 * 1024 * 1024
+  if (estimatedBytes > maxBytes) {
+    return { valid: false, error: 'Image is too large. Max 10MB.' }
+  }
+  return { valid: true }
+}
+
+export const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
