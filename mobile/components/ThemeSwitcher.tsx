@@ -1,83 +1,63 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAppContext } from '@/context/useAppContext';
 
-const themes: ThemeType[] = ['forest', 'retro', 'ocean', 'blossom', 'cyberpunk', 'homeColors', 'profileColors', 'libraryColors', 'greenTheme', 'purpleTheme', 'sunsetTheme', 'grayTheme', 'cyberpunkTheme'];
+const themes: ThemeType[] = [
+  'forest',
+  'retro',
+  'ocean',
+  'blossom',
+  'cyberpunk',
+  'homeColors',
+  'profileColors',
+  'libraryColors',
+  'greenTheme',
+  'purpleTheme',
+  'sunsetTheme',
+  'grayTheme',
+  'cyberpunkTheme',
+];
 
 export const ThemeSwitcher: React.FC = () => {
   const { colors, themeMode, currentTheme, setCurrentTheme, toggleThemeMode } = useAppContext();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Theme Mode Toggle */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.textPrimary }]}>Theme Mode</Text>
-        <TouchableOpacity
-          style={[
-            styles.modeButton,
-            { 
-              backgroundColor: colors.primary,
-              borderColor: colors.border,
-            }
-          ]}
-          onPress={toggleThemeMode}
-        >
-          <Text style={[styles.modeButtonText, { color: colors.white }]}>
-            {themeMode === 'light' ? '☀️ Light' : '🌙 Dark'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Theme Selector */}
-      <View style={styles.section}>
-        <Text style={[styles.label, { color: colors.textPrimary }]}>Color Theme</Text>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={[ styles.themeScroll, { gap: 20 } ]}
-        >
-          {themes.map((theme) => (
-            <TouchableOpacity
-              key={theme}
-              style={[
-                styles.themeButton,
-                {
-                  backgroundColor: colors.cardBackground,
-                  borderColor: currentTheme === theme ? colors.primary : colors.border,
-                  borderWidth: currentTheme === theme ? 3 : 1,
-                  height: 100
-                },
-              ]}
-              onPress={() => setCurrentTheme(theme)}
-            >
-              <Text style={[styles.themeButtonText, { color: colors.textPrimary }]}>
-                {theme.charAt(0).toUpperCase() + theme.slice(1)}
-              </Text>
-              <View
-                style={[
-                  styles.colorPreview,
-                  { backgroundColor: colors.primary },
-                ]}
-              />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Current Theme Info */}
-      <View
-        style={[
-          styles.infoBox,
-          { 
-            backgroundColor: colors.cardBackground,
-            borderColor: colors.border,
-          }
-        ]}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>      
+      <TouchableOpacity
+        style={[styles.modeToggle, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+        onPress={toggleThemeMode}
       >
-        <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Current Theme</Text>
-        <Text style={[styles.infoValue, { color: colors.textPrimary }]}>
-          {currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)} ({themeMode})
+        <Text style={[styles.modeText, { color: colors.textPrimary }]}>
+          {themeMode === 'light' ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </Text>
-      </View>
+      </TouchableOpacity>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.carouselContent}
+      >
+        {themes.map((theme) => (
+          <TouchableOpacity
+            key={theme}
+            onPress={() => setCurrentTheme(theme)}
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.cardBackground,
+                borderColor: currentTheme === theme ? colors.primary : 'transparent',
+              },
+            ]}
+          >
+            <View style={[styles.preview, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.themeName, { color: colors.textPrimary }]} numberOfLines={1}>
+              {theme}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <Text style={[styles.currentText, { color: colors.textSecondary }]}>Current: {currentTheme} ({themeMode})</Text>
     </View>
   );
 };
@@ -85,65 +65,40 @@ export const ThemeSwitcher: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    borderRadius: 12,
     gap: 20,
-    flex: 0,
   },
-  section: {
+  modeToggle: {
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  modeText: {
+    fontWeight: '700',
+  },
+  carouselContent: {
     gap: 12,
+    paddingRight: 8,
   },
-  label: {
-    fontSize: 14,
+  card: {
+    width: 108,
+    height: 128,
+    borderRadius: 14,
+    padding: 10,
+    borderWidth: 2,
+    justifyContent: 'space-between',
+  },
+  preview: {
+    height: 70,
+    borderRadius: 10,
+  },
+  themeName: {
+    fontSize: 13,
     fontWeight: '600',
+    textTransform: 'capitalize',
   },
-  modeButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  modeButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  themeScroll: {
-    marginHorizontal: -16,
-    paddingHorizontal: 16,
-  },
-  themeButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 100,
-    gap: 8,
-  },
-  themeButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  colorPreview: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
-  },
-  infoBox: {
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  infoLabel: {
-    fontSize: 12,
+  currentText: {
+    fontSize: 13,
     fontWeight: '500',
   },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginTop: 4,
-  },
 });
-

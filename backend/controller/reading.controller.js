@@ -8,6 +8,23 @@ import bookKnowledgeModel from "../models/knowledge.model.js";
 import userBookStateModel from "../models/userBookState.model.js";
 import bookModel from "../models/book.model.js";
 
+const mapBookmark = (bookmark) => ({
+  id: bookmark?._id?.toString?.() || null,
+  chapterNumber: bookmark.chapterNumber,
+  pageNumber: bookmark.pageNumber,
+  note: bookmark.note || "",
+  createdAt: bookmark.createdAt,
+});
+
+const mapNote = (note) => ({
+  id: note?._id?.toString?.() || null,
+  chapterNumber: note.chapterNumber,
+  pageNumber: note.pageNumber,
+  note: note.note || "",
+  highlight: note.highlight || "",
+  createdAt: note.createdAt,
+});
+
 /**
  * Get reading content for a specific chapter
  */
@@ -85,12 +102,18 @@ export const getChapterContent = async (req, res, next) => {
         summary: chapter.summary,
         themes: chapter.themes,
         tone: chapter.tone,
-        characters: chapter.characters
+        characters: chapter.characters,
+        insights: chapter.insights || []
       },
       userProgress: {
         currentChapter: state.currentChapter,
         currentPage: state.currentPage,
         maxUnlockedChapter: state.maxSpoilerChapterAllowed
+      },
+      readingMeta: {
+        lastReadAt: state.lastReadAt,
+        totalNotes: state.userNotes?.length || 0,
+        totalBookmarks: state.bookmarks?.length || 0
       }
     });
 
@@ -251,8 +274,8 @@ export const getReadingState = async (req, res, next) => {
         progressPercentage: state.progressPercentage,
         lastReadAt: state.lastReadAt,
         maxUnlockedChapter: state.maxSpoilerChapterAllowed,
-        bookmarks: state.bookmarks,
-        notes: state.userNotes,
+        bookmarks: (state.bookmarks || []).map(mapBookmark),
+        notes: (state.userNotes || []).map(mapNote),
         recentCharacters: state.recentCharactersViewed
       }
     });
@@ -298,7 +321,7 @@ export const addBookmark = async (req, res, next) => {
     res.json({
       success: true,
       message: "Bookmark added",
-      bookmarks: state.bookmarks
+      bookmarks: (state.bookmarks || []).map(mapBookmark)
     });
 
   } catch (err) {
@@ -333,7 +356,7 @@ export const removeBookmark = async (req, res, next) => {
     res.json({
       success: true,
       message: "Bookmark removed",
-      bookmarks: state.bookmarks
+      bookmarks: (state.bookmarks || []).map(mapBookmark)
     });
 
   } catch (err) {
@@ -378,7 +401,7 @@ export const addNote = async (req, res, next) => {
     res.json({
       success: true,
       message: "Note added",
-      notes: state.userNotes
+      notes: (state.userNotes || []).map(mapNote)
     });
 
   } catch (err) {
@@ -425,7 +448,7 @@ export const updateNote = async (req, res, next) => {
     res.json({
       success: true,
       message: "Note updated",
-      notes: state.userNotes
+      notes: (state.userNotes || []).map(mapNote)
     });
 
   } catch (err) {
@@ -460,7 +483,7 @@ export const deleteNote = async (req, res, next) => {
     res.json({
       success: true,
       message: "Note deleted",
-      notes: state.userNotes
+      notes: (state.userNotes || []).map(mapNote)
     });
 
   } catch (err) {
@@ -495,6 +518,8 @@ export const getTableOfContents = async (req, res, next) => {
       chapterNumber: ch.chapterNumber,
       title: ch.title,
       themes: ch.themes,
+      pages: ch.pages?.length || 0,
+      summary: ch.summary || "",
       isUnlocked: !state || ch.chapterNumber <= state.maxSpoilerChapterAllowed,
       isCurrentChapter: state && ch.chapterNumber === state.currentChapter
     }));

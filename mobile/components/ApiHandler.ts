@@ -80,6 +80,12 @@ class ApiHandler {
     })
   }
 
+  async toggleVisibility(bookId: string) {
+    return this.request(`/api/v1/books/${bookId}/visibility`, {
+      method: 'PATCH',
+    })
+  }
+
   async searchBooks(bookId: string, query: string) {
     return this.request(`/api/v1/books/search?question=${query}&id=${bookId}`)
   }

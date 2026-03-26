@@ -8,9 +8,9 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BookCover } from './BookCover';
 
 interface BookDetailsProps {
   coverImage?: any
@@ -94,7 +94,13 @@ const BookDetails: React.FC<BookDetailsProps> = ({
         {/* Book Cover and Info */}
         <View style={styles.bookSection}>
           <View style={styles.coverContainer}>
-            <Image source={coverImage} style={styles.coverImage} resizeMode="cover" />
+            <BookCover
+              title={title || 'Untitled'}
+              author={author}
+              coverUrl={typeof coverImage === 'string' ? coverImage : coverImage?.uri}
+              width={200}
+              height={280}
+            />
           </View>
 
           <Text style={styles.bookTitle}>{title}</Text>

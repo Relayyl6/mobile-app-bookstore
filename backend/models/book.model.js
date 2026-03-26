@@ -128,6 +128,13 @@ const bookSchema = new Schema(
        */
     },
 
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+      index: true,
+    },
+
     /* ------------------- OWNERSHIP ------------------- */
 
     user: {
