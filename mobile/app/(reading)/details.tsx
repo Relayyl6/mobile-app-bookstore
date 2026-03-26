@@ -169,8 +169,21 @@ const Details = () => {
           onBack={() => router.back()}
           onShare={() => Alert.alert('Share', 'Share functionality coming soon')}
           onMore={() =>
-            Alert.alert('More Options', 'Delete book?', [
+            Alert.alert('Book settings', 'Manage this book', [
               { text: 'Cancel', style: 'cancel' },
+              {
+                text: book.visibility === 'private' ? 'Make Public' : 'Make Private',
+                onPress: async () => {
+                  const nextVisibility = book.visibility === 'private' ? 'public' : 'private'
+                  const response = await api.toggleVisibility(bookId as string, nextVisibility)
+                  if (response.success) {
+                    setBook((prev) => (prev ? { ...prev, visibility: nextVisibility } : prev))
+                    Alert.alert('Updated', `Visibility set to ${nextVisibility}`)
+                  } else {
+                    Alert.alert('Error', response.error || 'Failed to update visibility')
+                  }
+                },
+              },
               {
                 text: 'Delete',
                 style: 'destructive',

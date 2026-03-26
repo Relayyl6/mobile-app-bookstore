@@ -49,7 +49,6 @@ export const createBook = async (req, res, next) => {
       caption,
       description,
       genres,
-      image,
       price,
       isbn,
       publishedYear,
@@ -63,7 +62,6 @@ export const createBook = async (req, res, next) => {
       caption,
       description,
       genres,
-      image,
       price,
       isbn,
       publishedYear,
@@ -94,7 +92,9 @@ export const createBook = async (req, res, next) => {
 
     // Check uniqueness
     console.log("Checking for existing book with same title or ISBN...");
-    const existingBook = await bookModel.findOne({ $or: [{ title }, { isbn }] });
+    const uniquenessQuery = [{ title }];
+    if (isbn) uniquenessQuery.push({ isbn });
+    const existingBook = await bookModel.findOne({ $or: uniquenessQuery });
     console.log("Existing book found:", existingBook);
 
     if (existingBook) {
@@ -105,10 +105,13 @@ export const createBook = async (req, res, next) => {
       });
     }
 
-    // Upload cover image
-    console.log("Uploading image to Cloudinary...");
-    const uploadResponse = await cloudinary.uploader.upload(image, { resource_type: "image" });
-    console.log("Upload response:", JSON.stringify(uploadResponse, null, 2));
+    let coverImageUrl = "";
+    if (req.body.image) {
+      console.log("Uploading image to Cloudinary...");
+      const uploadResponse = await cloudinary.uploader.upload(req.body.image, { resource_type: "image" });
+      console.log("Upload response:", JSON.stringify(uploadResponse, null, 2));
+      coverImageUrl = uploadResponse.secure_url;
+    }
 
     // Create book metadata
     console.log("Creating book in database...");
@@ -120,7 +123,7 @@ export const createBook = async (req, res, next) => {
       caption,
       description,
       genres,
-      image: uploadResponse.secure_url,
+      image: coverImageUrl,
       price,
       publishedYear,
       visibility,
@@ -857,7 +860,10 @@ export const toggleVisibility = async (req, res, next) => {
       return next({ statusCode: 403, message: 'Unauthorized' });
     }
 
-    const nextVisibility = book.visibility === 'public' ? 'private' : 'public';
+    const requestedVisibility = req.body?.visibility;
+    const nextVisibility = requestedVisibility === "public" || requestedVisibility === "private"
+      ? requestedVisibility
+      : (book.visibility === 'public' ? 'private' : 'public');
     book.visibility = nextVisibility;
     await book.save();
 

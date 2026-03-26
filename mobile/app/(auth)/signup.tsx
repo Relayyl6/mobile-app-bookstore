@@ -34,7 +34,7 @@ const SignUp = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const { user, isLoading, register } = useAuthStore()
+  const { isLoading, register } = useAuthStore()
   
   const handleSignUp = async () => {
     const result = await register(username, email, password);
@@ -44,7 +44,7 @@ const SignUp = () => {
       Alert.alert("Error", result.error)
     }
 
-    router.push('/(auth)')
+    router.replace('/(tabs)')
   }
   
   return (
@@ -147,7 +147,7 @@ const SignUp = () => {
                 <ActivityIndicator color={colors.primary }/>
               </View>
             ): (
-              <Text style={styles.buttonText}>Sign In</Text>
+              <Text style={styles.buttonText}>Sign Up</Text>
             )} 
           </TouchableOpacity>
           {/* // footer */}

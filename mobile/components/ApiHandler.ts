@@ -80,9 +80,29 @@ class ApiHandler {
     })
   }
 
-  async toggleVisibility(bookId: string) {
+  async toggleVisibility(bookId: string, visibility?: 'public' | 'private') {
     return this.request(`/api/v1/books/${bookId}/visibility`, {
       method: 'PATCH',
+      body: JSON.stringify(visibility ? { visibility } : {}),
+    })
+  }
+
+  async getMyProfile() {
+    return this.request('/api/v1/store/me')
+  }
+
+  async updateMyProfile(data: {
+    username?: string
+    bio?: string
+    preferredGenres?: string[]
+    favoriteAuthors?: string[]
+    readingGoalPerYear?: number
+    onboardingCompleted?: boolean
+    profileImage?: string
+  }) {
+    return this.request('/api/v1/store/me', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     })
   }
 

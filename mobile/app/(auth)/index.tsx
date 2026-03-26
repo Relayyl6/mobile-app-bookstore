@@ -110,7 +110,7 @@ const SignIn = () => {
               <Text style={styles.footerText}>Don't have an Account?</Text>
               <Link href="/signup" asChild>
                 <TouchableOpacity>
-                  {!isLoading ? <Text style={styles.link}>Log In</Text> : <View><Text>Loading </Text><ActivityIndicator color={colors.primary } size='small'/></View>}
+                  {!isLoading ? <Text style={styles.link}>Sign Up</Text> : <View><Text>Loading </Text><ActivityIndicator color={colors.primary } size='small'/></View>}
                 </TouchableOpacity>
               </Link>
             </View>

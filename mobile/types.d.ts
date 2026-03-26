@@ -53,6 +53,7 @@ declare interface SingleBook {
 
   // Content
   hasContent: boolean
+  visibility?: 'public' | 'private'
   totalPages: number
   
   // AI knowledge
@@ -114,6 +115,20 @@ declare interface BookForReading {
   currentChapter: number
   averageRating: number
   totalPages: number
+  visibility?: 'public' | 'private'
+}
+
+declare interface UserProfilePayload {
+  id: string
+  username: string
+  email: string
+  profileImage: string
+  preferredGenres: string[]
+  favoriteAuthors: string[]
+  bio: string
+  readingGoalPerYear: number
+  onboardingCompleted: boolean
+  createdAt: string
 }
 
 declare interface GetBooksForReadingResponse {

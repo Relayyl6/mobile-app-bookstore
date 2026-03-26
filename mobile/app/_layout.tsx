@@ -22,10 +22,13 @@ export default function RootLayout() {
     if (!isReady) return;
     
     const inAuthScreen = segments[0] === "(auth)";
+    const inOnboarding = segments[0] === "onboarding";
     const isSignedIn = user && token
 
     if (!isSignedIn && !inAuthScreen) {
       router.replace("/(auth)")
+    } else if (isSignedIn && !user?.onboardingCompleted && !inOnboarding) {
+      router.replace("/onboarding")
     } else if (isSignedIn && inAuthScreen) {
       router.replace("/(tabs)")
     }
@@ -87,9 +90,10 @@ export default function RootLayout() {
       <Safescreen>
         <Stack screenOptions={{ headerShown: false }}>
           {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)" />
-        </Stack>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="onboarding" />
+      </Stack>
       </Safescreen> 
 
       <StatusBar style="dark"/>
