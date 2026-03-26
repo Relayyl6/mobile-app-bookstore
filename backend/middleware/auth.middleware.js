@@ -34,8 +34,8 @@ export const authMiddleware = async (req, res, next) => {
         return next(errorMsg)
       }
 
-      if (!decoded | !decoded.userId) {
-          res.status(401).json({
+      if (!decoded || !decoded.userId) {
+          return res.status(401).json({
             message: "Inavlid or expired token"
           })
         }

@@ -51,6 +51,15 @@ bookRouter.get('/:id', authMiddleware, bookController.getSingleBook);
  */
 bookRouter.put('/:id', authMiddleware, bookController.updateBook);
 
+
+/**
+ * @route   PATCH /api/v1/books/:id/visibility
+ * @desc    Toggle book visibility (public/private)
+ * @access  Private (Owner only)
+ */
+bookRouter.patch('/:id/visibility', authMiddleware, bookController.toggleVisibility);
+
+
 /**
  * @route   DELETE /api/v1/books/:id
  * @desc    Delete book completely

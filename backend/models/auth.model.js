@@ -34,6 +34,23 @@ const userSchema = mongoose.Schema({
       default: [],
       index: true
     },
+    bio: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 280,
+    },
+    readingGoalPerYear: {
+      type: Number,
+      default: 12,
+      min: 1,
+      max: 500,
+    },
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     isDeleted: {
         type: Boolean,
         default: false

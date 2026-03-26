@@ -11,6 +11,24 @@
 import userBookStateModel from "../models/userBookState.model.js";
 
 
+const mapBookmark = (bookmark) => ({
+  id: bookmark?._id?.toString?.() || null,
+  chapterNumber: bookmark.chapterNumber,
+  pageNumber: bookmark.pageNumber,
+  note: bookmark.note || '',
+  createdAt: bookmark.createdAt,
+});
+
+const mapNote = (note) => ({
+  id: note?._id?.toString?.() || null,
+  chapterNumber: note.chapterNumber,
+  pageNumber: note.pageNumber,
+  note: note.note || '',
+  highlight: note.highlight || '',
+  createdAt: note.createdAt,
+});
+
+
 export const updateReadingProgress = async (req, res) => {
   const { bookId, currentChapter, currentPage, progressPercentage } = req.body;
   const userId = req.user._id;
@@ -98,7 +116,7 @@ export const getBookmarks = async (req, res, next) => {
     res.json({
       success: true,
       message: "Bookmarks fetched",
-      bookmarks: state.bookmarks
+      bookmarks: (state.bookmarks || []).map(mapBookmark)
     });
 
   } catch (err) {
@@ -127,7 +145,7 @@ export const getNotes = async (req, res, next) => {
     res.json({
       success: true,
       message: "Notes fetched",
-      notes: state.userNotes
+      notes: (state.userNotes || []).map(mapNote)
     });
 
   } catch (err) {

@@ -47,7 +47,7 @@ const bookSchema = new Schema(
 
     image: {
       type: String,
-      required: true,
+      default: "",
     },
 
     price: {
@@ -126,6 +126,13 @@ const bookSchema = new Schema(
        * Set to true after a PDF has been uploaded and processed.
        * Used to enable/disable AI chat feature on the frontend.
        */
+    },
+
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+      index: true,
     },
 
     /* ------------------- OWNERSHIP ------------------- */

@@ -53,6 +53,7 @@ declare interface SingleBook {
 
   // Content
   hasContent: boolean
+  visibility?: 'public' | 'private'
   totalPages: number
   
   // AI knowledge
@@ -114,6 +115,20 @@ declare interface BookForReading {
   currentChapter: number
   averageRating: number
   totalPages: number
+  visibility?: 'public' | 'private'
+}
+
+declare interface UserProfilePayload {
+  id: string
+  username: string
+  email: string
+  profileImage: string
+  preferredGenres: string[]
+  favoriteAuthors: string[]
+  bio: string
+  readingGoalPerYear: number
+  onboardingCompleted: boolean
+  createdAt: string
 }
 
 declare interface GetBooksForReadingResponse {
@@ -308,6 +323,7 @@ declare interface RecommendedBook {
   averageRating: number
   totalRatings: number
   hasContent: boolean
+  visibility?: 'public' | 'private'
   publishedYear: number
   totalPages: number
 }
@@ -326,6 +342,7 @@ declare interface PopularBook {
   totalPurchases: number
   totalViews: number
   hasContent: boolean
+  visibility?: 'public' | 'private'
   publishedYear: number
   totalPages: number
   createdAt: string
@@ -347,6 +364,7 @@ declare interface SimilarBook {
   totalRatings: number
   totalPurchases: number
   hasContent: boolean
+  visibility?: 'public' | 'private'
   publishedYear: number
 }
 

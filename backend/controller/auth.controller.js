@@ -3,6 +3,20 @@ import { generateToken } from "../lib/utils.js";
 import userModel from "../models/auth.model.js";
 import { NODE_ENV } from "../config/env.js";
 import { format } from "date-fns";
+import bookModel from "../models/book.model.js";
+
+const formatUserPayload = (user) => ({
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    profileImage: user.profileImage,
+    preferredGenres: user.preferredGenres || [],
+    favoriteAuthors: user.favoriteAuthors || [],
+    bio: user.bio || "",
+    readingGoalPerYear: user.readingGoalPerYear || 12,
+    onboardingCompleted: Boolean(user.onboardingCompleted),
+    createdAt: format(new Date(user.createdAt), 'MMM d, yyyy')
+});
 
 export const register = async (req, res, next) => {
     // const session = await mongoose.startSession();
@@ -98,13 +112,7 @@ export const register = async (req, res, next) => {
             message: "User successfully registered",
             data: {
                 token,
-                user: {
-                    id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    profileImage: user.profileImage,
-                    createdAt: format(new Date(user.createdAt), 'MMM d')
-                }
+                user: formatUserPayload(user)
             }
         })
     } catch (error) {
@@ -148,7 +156,7 @@ export const register = async (req, res, next) => {
 // await SecureStore.setItemAsync("token", token);
 
 
-export const logIn = async (req, res) => {
+export const logIn = async (req, res, next) => {
     // res.send("login")
     try {   
         const { email, password } = req.body;
@@ -182,7 +190,7 @@ export const logIn = async (req, res) => {
         }
 
         // check if password is correct
-        const isMatch = user.comparePassword(password);
+        const isMatch = await user.comparePassword(password);
 
         if (!isMatch) {
             res.status(400).json({
@@ -205,15 +213,10 @@ export const logIn = async (req, res) => {
             message: "User successfully logged in",
             data: {
                 token,
-                user: {
-                    id: user._id,
-                    username: user.username,
-                    email: user.email,
-                    profileImage: user.profileImage
-                }
+                user: formatUserPayload(user)
             }
         })
-    } catch {
+    } catch (error) {
         console.error("Error in logging route", error)
         res.status(500).json({
             message: "Internal Server Error"
@@ -290,3 +293,82 @@ export const softDeleteUser = async (req, res, next) => {
   }
 };
 
+export const getMyProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) return next({ statusCode: 401, message: "Unauthorized" });
+
+    const user = await userModel.findById(userId).select("-password").lean();
+    if (!user) return next({ statusCode: 404, message: "User not found" });
+
+    const uploadedBooks = await bookModel
+      .find({ user: userId })
+      .select("_id title author image visibility createdAt totalViews totalPurchases averageRating")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const publicCount = uploadedBooks.filter((book) => book.visibility === "public").length;
+    const privateCount = uploadedBooks.length - publicCount;
+
+    return res.status(200).json({
+      success: true,
+      profile: formatUserPayload(user),
+      stats: {
+        uploadedBooks: uploadedBooks.length,
+        publicBooks: publicCount,
+        privateBooks: privateCount,
+      },
+      uploadedBooks: uploadedBooks.map((book) => ({
+        id: book._id,
+        title: book.title,
+        author: book.author,
+        image: book.image || "",
+        visibility: book.visibility || "public",
+        createdAt: book.createdAt,
+        averageRating: book.averageRating || 0,
+        totalViews: book.totalViews || 0,
+        totalPurchases: book.totalPurchases || 0,
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateMyProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) return next({ statusCode: 401, message: "Unauthorized" });
+
+    const allowedFields = [
+      "username",
+      "bio",
+      "preferredGenres",
+      "favoriteAuthors",
+      "readingGoalPerYear",
+      "onboardingCompleted",
+      "profileImage",
+    ];
+
+    const update = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        update[field] = req.body[field];
+      }
+    }
+
+    const user = await userModel
+      .findByIdAndUpdate(userId, { $set: update }, { new: true, runValidators: true })
+      .select("-password");
+
+    if (!user) return next({ statusCode: 404, message: "User not found" });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated",
+      user: formatUserPayload(user),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
