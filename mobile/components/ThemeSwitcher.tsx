@@ -33,7 +33,6 @@ export const ThemeSwitcher: React.FC = () => {
       </TouchableOpacity>
 
       <ScrollView
-        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.carouselContent}
       >
@@ -77,11 +76,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   carouselContent: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: 12,
-    paddingRight: 8,
   },
   card: {
-    width: 108,
+    width: '30%', // or ~31–32% depending on spacing
     height: 128,
     borderRadius: 14,
     padding: 10,
