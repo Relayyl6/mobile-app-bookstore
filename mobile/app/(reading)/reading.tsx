@@ -22,7 +22,7 @@ const Reading = () => {
     <View style={{ flex: 1, justifyContent: 'center' }}>
       <ReadingPage
         onBack={() => router.back()}
-        onSettings={() => console.log('Settings pressed')}
+        onSettings={() => router.push("/profile")}
         onCast={() => console.log('Cast pressed')}
         onAnalyze={() => console.log('Analyze pressed')}
         onNotes={() => console.log('Notes pressed')}

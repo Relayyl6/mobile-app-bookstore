@@ -251,7 +251,7 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
   },
   floatingButton: {
     position: 'absolute',
-    bottom: 90,
+    bottom: 40,
     right: 10,
     flexDirection: 'row',
     alignItems: 'center',

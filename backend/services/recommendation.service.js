@@ -1,6 +1,7 @@
 import bookModel from "../models/book.model.js";
 import userModel from "../models/auth.model.js";
 import interactionModel from "../models/interaction.model.js";
+import bookKnowledgeModel from "../models/knowledge.model.js";
 
 class RecommendationService {
 
@@ -144,12 +145,34 @@ class RecommendationService {
 
   // ── STRATEGY 4: New releases ────────────────────────────────────
   async getNewReleases(excludeBookIds = [], limit = 10) {
-    return bookModel
+    const books = await bookModel
       .find({ _id: { $nin: excludeBookIds } })
-      .select("_id title author genres image price averageRating totalRatings totalPurchases totalViews hasContent publishedYear totalPages createdAt")
+      .select("_id title author genres image price averageRating totalRatings totalPurchases totalViews hasContent publishedYear createdAt")
       .sort({ createdAt: -1 })
       .limit(limit)
-      .populate("user", "username profileImage");
+      .populate("user", "username profileImage")
+      .lean();
+
+    // Get totalPages for each book from knowledge model
+    const bookIds = books.map(b => b._id);
+    const knowledgeList = await bookKnowledgeModel
+      .find({ bookId: { $in: bookIds } })
+      .select("bookId chapters.pages")
+      .lean();
+
+    // Build a map of bookId -> totalPages
+    const totalPagesMap = {};
+    for (const k of knowledgeList) {
+      totalPagesMap[k.bookId.toString()] = k.chapters?.reduce(
+        (sum, ch) => sum + (ch.pages?.length || 0), 0
+      ) || 0;
+    }
+
+    // Merge totalPages into each book
+    return books.map(book => ({
+      ...book,
+      totalPages: totalPagesMap[book._id.toString()] || 0
+    }));
   }
 
   // ── FALLBACK CHAIN ──────────────────────────────────────────────

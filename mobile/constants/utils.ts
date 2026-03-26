@@ -235,7 +235,7 @@ export async function uploadFile(
   }
 }
 
-export function buildSystemInstruction(aiContexts: AIContext[] = []) {
+export function buildSystemInstruction(aiContexts: string[] = []) {
   if (!aiContexts.length) return "";
 
   const rules = [];

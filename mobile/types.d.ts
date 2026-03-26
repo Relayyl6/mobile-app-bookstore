@@ -113,6 +113,7 @@ declare interface BookForReading {
   lastReadAt: string | null
   currentChapter: number
   averageRating: number
+  totalPages: number
 }
 
 declare interface GetBooksForReadingResponse {

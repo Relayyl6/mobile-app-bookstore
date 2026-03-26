@@ -125,6 +125,7 @@ const LibraryScreen = () => {
               totalPages: b.totalPages || 0,
             }))
           )
+          console.log(newBooks)
         }
         setLoadingSections((prev) => ({ ...prev, newBooks: false }))
       }
@@ -375,7 +376,7 @@ const LibraryScreen = () => {
                         onPress={() => router.push(`/details?bookId=${book._id}`)}
                       >
                         <Image
-                          source={{ uri: book.coverImage }}
+                          source={{ uri: book.image }}
                           style={styles.listCover}
                         />
                         <View style={styles.listInfo}>
@@ -460,7 +461,7 @@ const LibraryScreen = () => {
           ) : (
             <View style={styles.listItem}>
               <TouchableOpacity
-                onPress={() => router.push(`/details?bookId=${item._id}`)}
+                onPress={() => router.push(`/details?bookId=${item.bookId}`)}
                 style={{ flexDirection: 'row', flex: 1 }}
               >
                 <Image source={{ uri: item.coverImage }} style={styles.listCover} />

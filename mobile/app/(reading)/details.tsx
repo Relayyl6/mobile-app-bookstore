@@ -186,7 +186,7 @@ const Details = () => {
               },
             ])
           }
-          onReadNow={() => router.push(`/reading?bookId=${bookId}`)}
+          onReadNow={() => router.push(`/reading?bookId=${bookId}&chapter=1`)}
           onAIAnalysis={() => router.push(`/chat?bookId=${bookId}`)}
         />
       )
