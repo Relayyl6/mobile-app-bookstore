@@ -119,6 +119,14 @@ const bookSchema = new Schema(
        */
     },
 
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "private",
+      index: true,
+    },
+
+
     hasContent: {
       type: Boolean,
       default: false,

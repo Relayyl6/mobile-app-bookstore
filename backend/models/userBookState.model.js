@@ -74,6 +74,11 @@ const UserBookStateSchema = new Schema(
       type: String,
       default: "",
     },
+
+    offlineChapters: {
+      type: [Number],
+      default: [],
+    },
   },
   { timestamps: true }
 );

@@ -262,6 +262,19 @@ bookRouter.put(
   readingController.updateReadingProgress
 );
 
+
+/**
+ * @route   PUT /api/v1/books/:bookId/reading/offline
+ * @desc    Mark chapter as available offline
+ * @access  Private
+ * @body    { chapterNumber }
+ */
+bookRouter.put(
+  '/:bookId/reading/offline',
+  authMiddleware,
+  readingController.markChapterOffline
+);
+
 /**
  * @route   GET /api/v1/books/:bookId/chapters/:chapterNumber
  * @desc    Get chapter content
