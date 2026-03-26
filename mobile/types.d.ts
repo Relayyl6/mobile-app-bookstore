@@ -44,6 +44,7 @@ declare interface SingleBook {
   coverImage: string
   price?: number | string | undefined
   publishedYear?: number
+  visibility?: "public" | "private"
 
   // Stats
   averageRating: number
@@ -108,6 +109,7 @@ declare interface BookForReading {
   author: string
   genres: string[]
   publishedYear: number
+  visibility?: "public" | "private"
   coverImage: string
   progressPercentage: number
   lastReadAt: string | null

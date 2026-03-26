@@ -75,6 +75,18 @@ export const getChapterContent = async (req, res, next) => {
       { $set: { lastReadAt: new Date() } }
     );
 
+    const chapterBookmarks = (state.bookmarks || []).filter(
+      (bookmark) => bookmark.chapterNumber === chapter.chapterNumber
+    );
+    const chapterNotes = (state.userNotes || []).filter(
+      (note) => note.chapterNumber === chapter.chapterNumber
+    );
+
+    const chapterText = (chapter.pages || []).map((page) => page?.text || "").join(" ");
+    const estimatedMinutes = chapterText
+      ? Math.max(1, Math.ceil(chapterText.split(/\s+/).length / 220))
+      : 1;
+
     res.json({
       success: true,
       chapter: {
@@ -85,13 +97,22 @@ export const getChapterContent = async (req, res, next) => {
         summary: chapter.summary,
         themes: chapter.themes,
         tone: chapter.tone,
-        characters: chapter.characters
+        characters: chapter.characters,
+        chapterInsights: {
+          estimatedMinutes,
+          notesCount: chapterNotes.length,
+          bookmarksCount: chapterBookmarks.length,
+        },
       },
       userProgress: {
         currentChapter: state.currentChapter,
         currentPage: state.currentPage,
-        maxUnlockedChapter: state.maxSpoilerChapterAllowed
-      }
+        maxUnlockedChapter: state.maxSpoilerChapterAllowed,
+      },
+      offline: {
+        chapterText,
+        exportFormat: "txt",
+      },
     });
 
   } catch (err) {

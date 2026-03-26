@@ -47,7 +47,7 @@ const bookSchema = new Schema(
 
     image: {
       type: String,
-      required: true,
+      default: "",
     },
 
     price: {
@@ -117,6 +117,14 @@ const bookSchema = new Schema(
        * Can be overridden if the book is older
        * Useful for "new releases" & freshness ranking
        */
+    },
+
+
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+      index: true,
     },
 
     hasContent: {
