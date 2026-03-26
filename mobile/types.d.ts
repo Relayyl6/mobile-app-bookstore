@@ -308,6 +308,7 @@ declare interface RecommendedBook {
   averageRating: number
   totalRatings: number
   hasContent: boolean
+  visibility?: 'public' | 'private'
   publishedYear: number
   totalPages: number
 }
@@ -326,6 +327,7 @@ declare interface PopularBook {
   totalPurchases: number
   totalViews: number
   hasContent: boolean
+  visibility?: 'public' | 'private'
   publishedYear: number
   totalPages: number
   createdAt: string
@@ -347,6 +349,7 @@ declare interface SimilarBook {
   totalRatings: number
   totalPurchases: number
   hasContent: boolean
+  visibility?: 'public' | 'private'
   publishedYear: number
 }
 

@@ -52,7 +52,8 @@ export const createBook = async (req, res, next) => {
       image,
       price,
       isbn,
-      publishedYear
+      publishedYear,
+      visibility = "public"
     } = req.body;
 
     console.log("Parsed fields:", {
@@ -65,7 +66,8 @@ export const createBook = async (req, res, next) => {
       image,
       price,
       isbn,
-      publishedYear
+      publishedYear,
+      visibility
     });
 
     // Validate required fields
@@ -121,6 +123,7 @@ export const createBook = async (req, res, next) => {
       image: uploadResponse.secure_url,
       price,
       publishedYear,
+      visibility,
       user: userId,
 
       // Recommendation metrics
@@ -182,6 +185,7 @@ export const updateBook = async (req, res, next) => {
       "price",
       "isbn",
       "publishedYear",
+      "visibility",
     ];
 
     const updateFields = {};
@@ -272,15 +276,23 @@ export const getBooks = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
+    const userId = req.user?._id;
+    const visibilityQuery = {
+      $or: [
+        { visibility: 'public' },
+        ...(userId ? [{ user: userId }] : []),
+      ],
+    };
+
     const books = await bookModel
-      .find()
+      .find(visibilityQuery)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate("user", "username profileImage")
       .lean();
 
-    const totalBooks = await bookModel.countDocuments();
+    const totalBooks = await bookModel.countDocuments(visibilityQuery);
 
     res.status(200).json({
       success: true,
@@ -352,6 +364,7 @@ export const getSingleBook = async (req, res, next) => {
 
         // Content availability
         hasContent: book.hasContent,
+        visibility: book.visibility || 'public',
         totalPages,
 
         // AI knowledge (if available)
@@ -767,14 +780,20 @@ export const getBooksForReading = async (req, res, next) => {
 
     // Get books that have content
     const booksWithContent = await bookModel
-      .find({ hasContent: true })
-      .select("_id title author genres image publishedYear")
+      .find({
+        hasContent: true,
+        $or: [{ visibility: 'public' }, { user: userId }],
+      })
+      .select("_id title author genres image publishedYear visibility")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const totalBooks = await bookModel.countDocuments({ hasContent: true });
+    const totalBooks = await bookModel.countDocuments({
+      hasContent: true,
+      $or: [{ visibility: 'public' }, { user: userId }],
+    });
 
     const bookIds = booksWithContent.map(b => b._id);
 
@@ -804,6 +823,7 @@ export const getBooksForReading = async (req, res, next) => {
         lastReadAt: state?.lastReadAt || null,
         currentChapter: state?.currentChapter || 1,
         averageRating: book.averageRating || 0,
+        visibility: book.visibility || 'public',
       };
     });
 
@@ -818,6 +838,36 @@ export const getBooksForReading = async (req, res, next) => {
   } catch (err) {
     console.error("❌ Failed to fetch reading books:", err);
     next(err);
+  }
+};
+
+
+export const toggleVisibility = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const book = await bookModel.findById(id);
+
+    if (!book) {
+      return next({ statusCode: 404, message: 'Book not found' });
+    }
+
+    if (book.user.toString() !== userId.toString()) {
+      return next({ statusCode: 403, message: 'Unauthorized' });
+    }
+
+    const nextVisibility = book.visibility === 'public' ? 'private' : 'public';
+    book.visibility = nextVisibility;
+    await book.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Visibility changed to ${nextVisibility}`,
+      visibility: nextVisibility,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
