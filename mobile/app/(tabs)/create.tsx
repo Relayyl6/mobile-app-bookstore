@@ -9,8 +9,10 @@ import {
   Alert,
   Pressable,
   ActivityIndicator,
+  Switch,
 } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
+import { resolveBookImage } from '@/utils/bookImageLookup'
 import { useRouter } from 'expo-router'
 import createStyles from '@/constants/create.styles'
 import { useAppContext } from '@/context/useAppContext'
@@ -47,6 +49,8 @@ const Create = () => {
   const [showIsbnModal, setShowIsbnModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [mode, setMode] = useState<'Recommendation' | 'Upload'>('Recommendation')
+  const [enableRecommendations, setEnableRecommendations] = useState(true)
+  const [allowAIUploadAssist, setAllowAIUploadAssist] = useState(true)
 
   const CURRENT_YEAR = new Date().getFullYear().toString()
   const autoFillTimer = useRef<NodeJS.Timeout | null>(null)
@@ -92,6 +96,8 @@ const Create = () => {
     setRating(3)
     setIsbn('')
     setPublishedYear('')
+    setEnableRecommendations(true)
+    setAllowAIUploadAssist(true)
   }
 
   const handleSubmit = async () => {
@@ -108,6 +114,8 @@ const Create = () => {
     try {
       setIsLoading(true)
 
+      const suggestedImage = await resolveBookImage(title, author)
+
       const createRes = await api.createBook({
         title,
         subTitle,
@@ -119,6 +127,7 @@ const Create = () => {
         isbn,
         publishedYear,
         visibility,
+        image: suggestedImage || undefined,
       })
 
       if (!createRes.success) throw new Error(createRes.error || 'Book creation failed')
@@ -175,26 +184,15 @@ const Create = () => {
         <View style={styles.card}>
           <View style={styles.header}>
             <Text style={[styles.title, { textAlign: 'center', width: '100%' }]}>Add Book{"\n"}{mode}</Text>
-            <Text style={styles.subtitle}>Cover image is generated automatically from title initials.</Text>
+            <Text style={styles.subtitle}>Cover image is auto-suggested from Open Library/Unsplash with smart fallback.</Text>
           </View>
 
           <View style={styles.segmentContainer}>
             <View style={[styles.segmentedControl, { backgroundColor: colors.border + '30', borderColor: colors.border }]}>
-              <TouchableOpacity
-                onPress={() => setMode('Recommendation')}
-                activeOpacity={0.7}
-                style={[styles.segment, { backgroundColor: mode === 'Recommendation' ? colors.primary : 'transparent' }]}
-              >
-                <Text style={[styles.segmentText, { color: mode === 'Recommendation' ? '#fff' : colors.textPrimary }]}>Recommend</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setMode('Upload')}
-                activeOpacity={0.7}
-                style={[styles.segment, { backgroundColor: mode === 'Upload' ? colors.primary : 'transparent' }]}
-              >
-                <Text style={[styles.segmentText, { color: mode === 'Upload' ? '#fff' : colors.textPrimary }]}>Upload</Text>
-              </TouchableOpacity>
+              <View style={[styles.segment, { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: 'transparent' }]}>
+                <Text style={[styles.segmentText, { color: colors.textPrimary }]}>Recommendation mode</Text>
+                <Switch value={mode === 'Recommendation'} onValueChange={(value) => setMode(value ? 'Recommendation' : 'Upload')} trackColor={{ false: colors.border, true: colors.primary + '80' }} thumbColor={mode === 'Recommendation' ? colors.primary : colors.textSecondary} />
+              </View>
             </View>
           </View>
 
@@ -231,23 +229,42 @@ const Create = () => {
               </View>
             </View>
 
+
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Visibility</Text>
-              <View style={[styles.segmentedControl, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
-                <TouchableOpacity
-                  style={[styles.segment, { backgroundColor: visibility === 'public' ? colors.primary : 'transparent' }]}
-                  onPress={() => setVisibility('public')}
-                >
-                  <Text style={[styles.segmentText, { color: visibility === 'public' ? colors.white : colors.textPrimary }]}>🌍 Public</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.segment, { backgroundColor: visibility === 'private' ? colors.primary : 'transparent' }]}
-                  onPress={() => setVisibility('private')}
-                >
-                  <Text style={[styles.segmentText, { color: visibility === 'private' ? colors.white : colors.textPrimary }]}>🔒 Private</Text>
-                </TouchableOpacity>
+              <Text style={styles.label}>Smart Options</Text>
+              <View style={[styles.segmentedControl, { backgroundColor: colors.inputBackground, borderColor: colors.border, padding: 10, flexDirection: 'column', gap: 12 }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: colors.textPrimary, flex: 1 }}>Personalized recommendations after publish</Text>
+                  <Switch
+                    value={enableRecommendations}
+                    onValueChange={setEnableRecommendations}
+                    trackColor={{ false: colors.border, true: colors.primary + '80' }}
+                    thumbColor={enableRecommendations ? colors.primary : colors.textSecondary}
+                  />
+                </View>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: colors.textPrimary, flex: 1 }}>Use AI assist during upload</Text>
+                  <Switch
+                    value={allowAIUploadAssist}
+                    onValueChange={setAllowAIUploadAssist}
+                    trackColor={{ false: colors.border, true: colors.primary + '80' }}
+                    thumbColor={allowAIUploadAssist ? colors.primary : colors.textSecondary}
+                  />
+                </View>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: colors.textPrimary, flex: 1 }}>Visibility: {visibility === 'public' ? 'Public' : 'Private'}</Text>
+                  <Switch
+                    value={visibility === 'public'}
+                    onValueChange={(value) => setVisibility(value ? 'public' : 'private')}
+                    trackColor={{ false: colors.border, true: colors.primary + '80' }}
+                    thumbColor={visibility === 'public' ? colors.primary : colors.textSecondary}
+                  />
+                </View>
               </View>
             </View>
+
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Rating</Text>
@@ -291,11 +308,18 @@ const Create = () => {
                   </TouchableOpacity>
                 ))}
               </View>
-              {displayedGenresCount < GENRES.length && (
-                <TouchableOpacity onPress={() => setDisplayedGenresCount(displayedGenresCount + 5)} style={{ marginTop: 10, alignSelf: 'center' }}>
-                  <Text style={{ color: colors.primary, fontSize: 16, fontWeight: 'bold' }}>...</Text>
-                </TouchableOpacity>
-              )}
+              <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 10, gap: 16 }}>
+                {displayedGenresCount < GENRES.length && (
+                  <TouchableOpacity onPress={() => setDisplayedGenresCount((count) => Math.min(count + 5, GENRES.length))}>
+                    <Text style={{ color: colors.primary, fontSize: 14, fontWeight: '700' }}>Show more</Text>
+                  </TouchableOpacity>
+                )}
+                {displayedGenresCount > 5 && (
+                  <TouchableOpacity onPress={() => setDisplayedGenresCount(5)}>
+                    <Text style={{ color: colors.textSecondary, fontSize: 14, fontWeight: '700' }}>Show less</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             <View style={styles.formGroup}>

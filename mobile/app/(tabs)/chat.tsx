@@ -48,8 +48,10 @@ const Chat = () => {
   const { user } = useAuthStore()
 
   useEffect(() => {
-    setUserId(user.id)
-  }, [])
+    if (user?.id || user?._id) {
+      setUserId((user.id || user._id) as string)
+    }
+  }, [setUserId, user])
 
   const generateId = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
 
@@ -80,17 +82,7 @@ const Chat = () => {
       }
       
       if (selectedItems.fileTypes.includes('document')) {
-        const pickedFile = await pickFile(setFile)
-        if (pickedFile) {
-          const validation = validateFile(pickedFile)
-          if (!validation.valid) {
-            Alert.alert('Invalid File', validation.error || 'File validation failed')
-            setPendingAttachments(null)
-            setFile(null)
-            return
-          }
-          console.log(`✅ Valid file: ${pickedFile?.name} (${formatFileSize(pickedFile.size || 0)})`)
-        }
+        await pickFile(setFile)
       }
       
       if (selectedItems.fileTypes.includes('audio')) {
@@ -110,7 +102,16 @@ const Chat = () => {
     if (!file && !imageBase64) return null
 
     console.log('📤 Starting file upload...')
-    
+
+    if (file) {
+      const validation = validateFile(file)
+      if (!validation.valid) {
+        Alert.alert('Invalid File', validation.error || 'File validation failed')
+        return null
+      }
+      console.log(`✅ Valid file: ${file.name} (${formatFileSize(file.size || 0)})`)
+    }
+
     // Create a message object with contexts
     const messageData = {
       text: inputText.trim() || 'File upload',
@@ -176,6 +177,17 @@ const Chat = () => {
 
       // 💬 SEND CHAT MESSAGE
       console.log('💬 Sending chat request...')
+      if (!finalUserId) {
+        const fallbackMsg: ChatMessage = {
+          id: generateId(),
+          role: 'assistant',
+          text: 'You are in guest chat mode. Upload a book or sign in to unlock personalized memory.',
+          timestamp: new Date(),
+        }
+        setMessages((prev) => [...prev, fallbackMsg])
+        return
+      }
+
       const chatResponse = await api.sendChatMessage(
         finalUserId as string,
         finalBookId,
@@ -187,7 +199,7 @@ const Chat = () => {
         throw new Error(chatResponse.error || 'Chat request failed')
       }
 
-      const aiText = chatResponse.data?.result || 'No response text returned.'
+      const aiText = (chatResponse.data as any)?.result || 'No response text returned.'
       console.log('🤖 AI reply:', aiText)
 
       const aiMsg: ChatMessage = {
