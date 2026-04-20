@@ -18,21 +18,21 @@ export default function RootLayout() {
   }, [])
 
   // // handle navigation based on auth state
-  // useEffect(() => {
-  //   if (!isReady) return;
+  useEffect(() => {
+    if (!isReady) return;
     
-  //   const inAuthScreen = segments[0] === "(auth)";
-  //   const inOnboarding = segments[0] === "onboarding";
-  //   const isSignedIn = user && token
+    const inAuthScreen = segments[0] === "(auth)";
+    const inOnboarding = segments[0] === "onboarding";
+    const isSignedIn = user && token
 
-  //   if (!isSignedIn && !inAuthScreen) {
-  //     router.replace("/(auth)")
-  //   } else if (isSignedIn && !user?.onboardingCompleted && !inOnboarding) {
-  //     router.replace("/onboarding")
-  //   } else if (isSignedIn && inAuthScreen) {
-  //     router.replace("/(tabs)")
-  //   }
-  // }, [isReady, user, token, segments, router])
+    if (!isSignedIn && !inAuthScreen) {
+      router.replace("/(auth)")
+    } else if (isSignedIn && !user?.onboardingCompleted && !inOnboarding) {
+      router.replace("/onboarding")
+    } else if (isSignedIn && inAuthScreen) {
+      router.replace("/(tabs)")
+    }
+  }, [isReady, user, token, segments, router])
   
   const [fontLoaded, error] = useFonts({
     // JetBrains Mono
@@ -92,6 +92,7 @@ export default function RootLayout() {
           {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(reading)" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" />
       </Stack>
       </Safescreen> 

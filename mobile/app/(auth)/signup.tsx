@@ -37,7 +37,8 @@ const SignUp = () => {
   const { isLoading, register } = useAuthStore()
   
   const handleSignUp = async () => {
-    const result = await register(username, email, password);
+    const newUserName = username.split(" ").join("")
+    const result = await register(newUserName, email, password);
 
     console.log(result)
     if (!result.success) {

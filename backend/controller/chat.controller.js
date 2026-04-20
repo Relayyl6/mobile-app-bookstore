@@ -160,7 +160,7 @@ export const chatWithBook = async (req, res, next) => {
 
     // Generate embedding for vector search
     console.log("🧠 [CHAT] Generating embedding...");
-    const queryEmbedding = await embedText(message);
+    const queryEmbedding = await embedText(genAI, message);
 
     // Vector search for relevant characters
     console.log("👥 [CHAT] Searching for relevant characters...");

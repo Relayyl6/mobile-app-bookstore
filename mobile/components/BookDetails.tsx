@@ -69,10 +69,9 @@ const BookDetails: React.FC<BookDetailsProps> = ({
   const styles = detailStyles(colors)
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.cardBackground} />
-
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.cardBackground} />
+      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onBack} style={styles.headerButton}>
@@ -210,51 +209,57 @@ const BookDetails: React.FC<BookDetailsProps> = ({
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Book Details</Text>
           <View style={styles.themesGrid}>
-            {theme && (
-              <View style={styles.themeCard}>
-                <Text style={styles.themeIcon}>💭</Text>
-                <View>
-                  <Text style={styles.themeLabel}>THEME</Text>
-                  <Text style={styles.themeValue}>{theme}</Text>
+            <View style={styles.column}>
+              {theme && (
+                <View style={styles.themeCard}>
+                  <Text style={styles.themeIcon}>💭</Text>
+                  <View>
+                    <Text style={styles.themeLabel}>THEME</Text>
+                    <Text style={styles.themeValue}>{theme}</Text>
+                  </View>
                 </View>
-              </View>
-            )}
-            {tone && (
-              <View style={styles.themeCard}>
-                <Text style={styles.themeIcon}>🎭</Text>
-                <View>
-                  <Text style={styles.themeLabel}>TONE</Text>
-                  <Text style={styles.themeValue} numberOfLines={1} ellipsizeMode="tail">
-                    {tone}
-                  </Text>
+              )}
+              {tone && (
+                <View style={styles.themeCard}>
+                  <Text style={styles.themeIcon}>🎭</Text>
+                  <View>
+                    <Text style={styles.themeLabel}>TONE</Text>
+                    <Text style={styles.themeValue} ellipsizeMode="tail">
+                      {tone}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            )}
-            {pacing && (
-              <View style={styles.themeCard}>
-                <Text style={styles.themeIcon}>⚡</Text>
-                <View>
-                  <Text style={styles.themeLabel}>PACING</Text>
-                  <Text style={styles.themeValue}>{pacing}</Text>
+              )}
+            </View>
+            <View style={styles.column}>
+              {pacing && (
+                <View style={styles.themeCard}>
+                  <Text style={styles.themeIcon}>⚡</Text>
+                  <View>
+                    <Text style={styles.themeLabel}>PACING</Text>
+                    <Text style={styles.themeValue}>{pacing}</Text>
+                  </View>
                 </View>
-              </View>
-            )}
-            {isbn && (
-              <View style={styles.themeCard}>
-                <Text style={styles.themeIcon}>📚</Text>
-                <View>
-                  <Text style={styles.themeLabel}>ISBN</Text>
-                  <Text style={styles.themeValue}>{isbn}</Text>
+              )}
+              {isbn && (
+                <View style={styles.themeCard}>
+                  <Text style={styles.themeIcon}>📚</Text>
+                  <View>
+                    <Text style={styles.themeLabel}>ISBN</Text>
+                    <Text style={[styles.themeValue, {  }]}>
+                      {isbn && isbn.length > 9 ? `${isbn.slice(0, 7)}...` : isbn}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
+            </View>
           </View>
         </View>
 
         {/* Bottom Padding */}
         <View style={styles.bottomPadding} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }
 

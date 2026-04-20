@@ -103,7 +103,7 @@ export const getChapterContent = async (req, res, next) => {
         themes: chapter.themes,
         tone: chapter.tone,
         characters: chapter.characters,
-        insights: chapter.insights || []
+        insights: chapter.insights || chapter.narrativeSignificance || []
       },
       userProgress: {
         currentChapter: state.currentChapter,

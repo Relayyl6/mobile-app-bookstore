@@ -18,7 +18,7 @@ import { api } from '@/components/ApiHandler'
 import { GENRES } from '@/constants/data'
 import { ContinueReadingSkeleton, CommunityUploadsSkeleton, AiPicksSkeleton, PopularBooksSkeleton } from '@/components/SkeletonLoaders'
 
-const GUEST_BOOKS: Book[] = [
+export const GUEST_BOOKS: Book[] = [
   {
     _id: 'guest-1',
     bookId: 'guest-1',
@@ -68,7 +68,7 @@ const GUEST_BOOKS: Book[] = [
 
 
 
-const withTimeout = async <T,>(promise: Promise<T>, ms = 6500): Promise<T> => {
+const withTimeout = async <T,>(promise: Promise<T>, ms = 9500): Promise<T> => {
   return await Promise.race([
     promise,
     new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
@@ -99,10 +99,10 @@ const HomeScreen = () => {
   const loadHomeData = async () => {
     try {
       const [readingRes, aiRes, trendingRes, communityRes] = await Promise.all([
-        withTimeout(api.getReadingLibrary(1)),
-        withTimeout(api.getPersonalizedRecommendations(5)),
-        withTimeout(api.getPopularBooks(5)),
-        withTimeout(api.getBooks(1, 6)),
+        withTimeout(api.getReadingLibrary(3)),
+        withTimeout(api.getPersonalizedRecommendations(10)),
+        withTimeout(api.getPopularBooks(7)),
+        withTimeout(api.getBooks(1, 8)),
       ])
 
       setContinueReading(readingRes.success ? (((readingRes.data as any)?.books as any) || []) : [])
@@ -137,6 +137,7 @@ const HomeScreen = () => {
   }
 
   const openBook = async (bookId: string) => {
+    console.log(bookId)
     if (!bookId.startsWith('guest-')) {
       await api.trackBookView(bookId)
     }
@@ -220,7 +221,7 @@ const HomeScreen = () => {
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
                 {(guestMode ? GUEST_BOOKS : filterByGenre(continueReading)).map((book) => (
-                  <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book.bookId || book._id)}>
+                  <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book.bookId || book.id || book._id)}>
                     <Image source={{ uri: book.coverImage || book.image }} style={styles.bookCover} />
                     <View style={styles.progressBar}>
                       <View style={[styles.progressFill, { width: `${book.progressPercentage || 0}%` }]} />
@@ -245,7 +246,7 @@ const HomeScreen = () => {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
               {filterByGenre(aiPicks.length ? aiPicks : GUEST_BOOKS).map((book) => (
-                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id)}>
+                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id || book.id || book.bookId)}>
                   <Image source={{ uri: book.image || book.coverImage }} style={styles.bookCover} />
                   <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
                   <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
@@ -264,7 +265,7 @@ const HomeScreen = () => {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
               {filterByGenre(trending.length ? trending : GUEST_BOOKS).map((book) => (
-                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id)}>
+                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id || book.id || book.bookId)}>
                   <Image source={{ uri: book.image || book.coverImage }} style={styles.bookCover} />
                   <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
                   <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
@@ -288,7 +289,7 @@ const HomeScreen = () => {
             ) : (
               <View style={styles.communityGrid}>
                 {filterByGenre(community.length ? community : GUEST_BOOKS).map((book) => (
-                  <TouchableOpacity key={book._id} style={styles.communityCard} onPress={() => openBook(book._id)}>
+                  <TouchableOpacity key={book._id} style={styles.communityCard} onPress={() => openBook(book._id || book.id || book.bookId)}>
                     <View style={styles.communityImageContainer}>
                       <Image source={{ uri: book.image || book.coverImage }} style={styles.communityImage} />
                       <View style={styles.communityImageOverlay} />
@@ -321,7 +322,7 @@ const HomeScreen = () => {
 }
 
 const FlatGenreRow = ({ styles, colors, genres, selectedGenre, setSelectedGenre }: any) => (
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 12 }}>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 12, alignItems: "flex-start" }}>
     {genres.map((genre: string) => (
       <TouchableOpacity
         key={genre}
@@ -330,6 +331,7 @@ const FlatGenreRow = ({ styles, colors, genres, selectedGenre, setSelectedGenre 
           paddingHorizontal: 12,
           paddingVertical: 8,
           borderRadius: 20,
+          alignSelf: "flex-start",
           backgroundColor: selectedGenre === genre ? colors.primary : colors.inputBackground,
         }}
       >

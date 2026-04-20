@@ -409,6 +409,7 @@ declare interface ChapterContentResponse {
   success: boolean
   chapter: any
   userProgress: any
+  readingMeta: any
 }
 
 declare interface AddNoteResponse {

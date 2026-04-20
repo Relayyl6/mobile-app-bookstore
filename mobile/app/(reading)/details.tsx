@@ -13,9 +13,11 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { api } from '@/components/ApiHandler'
-import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router'
 import BookDetails from '@/components/BookDetails'
 import Skeleton, { BookDetailsSkeleton } from '@/components/SkeletonLoaders'
+import { GUEST_BOOKS } from '@/components/data'
+// import { GUEST_BOOKS } from '../(tabs)'
 
 // Wrapper component that fetches data from API
 export const BookDetailsExample = () => {
@@ -37,11 +39,19 @@ const Details = () => {
   }, [bookId])
 
   const loadBookDetails = async () => {
-    if (!bookId) {
-      Alert.alert('Error', 'No book ID provided')
-      router.back()
-      return
-    }
+    if (!bookId || bookId === 'undefined') {
+        console.error("Invalid Book ID passed to details page.");
+        return; 
+      }
+
+      // 3. Catch the Guest Books before they hit the backend
+      if (bookId.startsWith('guest-')) {
+        console.log("Loading guest book locally, skipping backend.");
+        // Find the book from your local array instead
+        const localBook = GUEST_BOOKS.find(b => b._id === bookId || b.bookId === bookId);
+        if (localBook) setBook(localBook);
+        return; // STOP execution here so the API isn't called
+      }
   
     try {
       setIsLoading(true)
@@ -135,7 +145,8 @@ const Details = () => {
     },
   ]
   return (
-    <View style={{ flex: 1, justifyContent: 'center' }}>
+    <View style={{ flex: 1, alignContent: "flex-start"}}>
+        <Stack.Screen options={{headerShown: false}} />
         <BookDetails
           coverImage={{ uri: book.coverImage }}
           title={book.title}
