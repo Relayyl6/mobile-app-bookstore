@@ -205,9 +205,16 @@ export function isTextExtractionUsable(text) {
 }
 
 export async function embedText(genAI, text) {
-  const embeddingModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
+  const embeddingModel = genAI.getGenerativeModel({ 
+    model: "gemini-embedding-001" 
+  });
 
-  const result = await embeddingModel.embedContent(text);
+  // Force the massive model to output smaller 768-dimension vectors
+  const result = await embeddingModel.embedContent({
+    content: { role: "user", parts: [{ text }] },
+    outputDimensionality: 768 
+  });
+  
   return result.embedding.values;
 }
 
