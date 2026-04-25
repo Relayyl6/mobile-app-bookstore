@@ -7,87 +7,76 @@ import {
   RefreshControl,
   StatusBar,
   TextInput,
+  StyleSheet,
+  Dimensions,
 } from 'react-native'
 import { Image } from 'expo-image'
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'
+import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useAuthStore } from '@/store/authStore'
 import { useAppContext } from '@/context/useAppContext'
-import homePageStyle from '@/constants/homepage.styles'
 import { api } from '@/components/ApiHandler'
 import { GENRES } from '@/constants/data'
-import { ContinueReadingSkeleton, CommunityUploadsSkeleton, AiPicksSkeleton, PopularBooksSkeleton } from '@/components/SkeletonLoaders'
+import {
+  ContinueReadingSkeleton,
+  CommunityUploadsSkeleton,
+  AiPicksSkeleton,
+  PopularBooksSkeleton,
+} from '@/components/SkeletonLoaders'
+import { GUEST_BOOKS } from '@/components/data'
 
-export const GUEST_BOOKS: Book[] = [
-  {
-    _id: 'guest-1',
-    bookId: 'guest-1',
-    coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=500&q=60',
-    progressPercentage: 42,
-    title: 'Atomic Habits',
-    author: 'James Clear',
-    image: 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=500&q=60',
-    genre: 'Self-Help',
-    genres: ['Self-Help'],
-    price: '0',
-    user: { _id: 'g1', username: 'Guest Shelf', profileImage: 'https://i.pravatar.cc/100?img=14' },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    _id: 'guest-2',
-    bookId: 'guest-2',
-    coverImage: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=500&q=60',
-    progressPercentage: 0,
-    title: 'The Silent Patient',
-    author: 'Alex Michaelides',
-    image: 'https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=500&q=60',
-    genre: 'Mystery',
-    genres: ['Mystery'],
-    price: '0',
-    user: { _id: 'g2', username: 'Mystery Club', profileImage: 'https://i.pravatar.cc/100?img=9' },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    _id: 'guest-3',
-    bookId: 'guest-3',
-    coverImage: 'https://images.unsplash.com/photo-1474932430478-367dbb6832c1?auto=format&fit=crop&w=500&q=60',
-    progressPercentage: 0,
-    title: 'Dune',
-    author: 'Frank Herbert',
-    image: 'https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&w=500&q=60',
-    genre: 'Science Fiction',
-    genres: ['Science Fiction'],
-    price: '0',
-    user: { _id: 'g3', username: 'Sci-Fi Fan', profileImage: 'https://i.pravatar.cc/100?img=3' },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
 
 
-const withTimeout = async <T,>(promise: Promise<T>, ms = 9500): Promise<T> => {
-  return await Promise.race([
+// Safe guest fallbacks — filter out any undefined slots in GUEST_BOOKS
+const ALL_GUEST = (GUEST_BOOKS || []).filter(Boolean)
+const AI_PICKS_GUEST = ALL_GUEST.slice(2, 4)
+const TRENDING_GUEST = ALL_GUEST.slice(4, 7)
+const READING_GUEST  = ALL_GUEST.slice(0, 2)
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const withTimeout = async <T,>(promise: Promise<T>, ms = 9500): Promise<T> =>
+  Promise.race([
     promise,
-    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), ms),
+    ),
   ])
+
+export const REASON_LABELS: Record<string, string> = {
+  'Science Fiction': 'BECAUSE YOU LIKED SCI-FI',
+  Fiction: 'BECAUSE YOU LIKED FICTION',
+  Thriller: 'TRENDING IN THRILLER',
+  Fantasy: 'BECAUSE YOU LIKED FANTASY',
+  Classic: 'TIMELESS CLASSIC',
+  Mystery: 'BECAUSE YOU LIKED MYSTERY',
+  'Self-Help': 'POPULAR IN SELF-HELP',
 }
 
+// Always returns a string — never crashes on malformed book objects
+const reasonFor = (book: Book): string => {
+  if (!book) return 'RECOMMENDED FOR YOU'
+  const genre = book.genre ?? (Array.isArray(book.genres) ? book.genres[0] : '') ?? ''
+  return REASON_LABELS[genre] ?? 'RECOMMENDED FOR YOU'
+}
+
+// Safe id helper — book.bookId or book._id, never undefined
+const getId = (book: Book): string => (book as any).bookId || book._id || (book as any).id || ''
+
+// ─── Component ───────────────────────────────────────────────────────────────
 const HomeScreen = () => {
-  const { colors } = useAppContext()
-  const styles = homePageStyle(colors)
+  const { colors, setBookId } = useAppContext()
   const router = useRouter()
   const { user } = useAuthStore()
+  console.log(user)
 
   const [continueReading, setContinueReading] = useState<Book[]>([])
-  const [aiPicks, setAiPicks] = useState<Book[]>([])
-  const [trending, setTrending] = useState<Book[]>([])
-  const [community, setCommunity] = useState<Book[]>([])
-  const [selectedGenre, setSelectedGenre] = useState<string>('All')
-  const [offlineMode, setOfflineMode] = useState(false)
-
+  const [aiPicks, setAiPicks]                 = useState<Book[]>([])
+  const [trending, setTrending]               = useState<Book[]>([])
+  const [community, setCommunity]             = useState<Book[]>([])
+  const [selectedGenre, setSelectedGenre]     = useState<string>('All')
+  const [offlineMode, setOfflineMode]         = useState(false)
   const [loadingSections, setLoadingSections] = useState({
     continueReading: true,
     aiPicks: true,
@@ -97,216 +86,419 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false)
 
   const loadHomeData = async () => {
+    setLoadingSections({ continueReading: true, aiPicks: true, trending: true, community: true })
     try {
       const [readingRes, aiRes, trendingRes, communityRes] = await Promise.all([
-        withTimeout(api.getReadingLibrary(3)),
-        withTimeout(api.getPersonalizedRecommendations(10)),
-        withTimeout(api.getPopularBooks(7)),
-        withTimeout(api.getBooks(1, 8)),
+        withTimeout(api.getReadingLibrary()),
+        withTimeout(api.getPersonalizedRecommendations(5)),
+        withTimeout(api.getPopularBooks(5)),
+        withTimeout(api.getBooks(1, 6)),
       ])
 
-      setContinueReading(readingRes.success ? (((readingRes.data as any)?.books as any) || []) : [])
-      setAiPicks(aiRes.success ? (aiRes.data?.recommendations as any) || [] : [])
-      setTrending(trendingRes.success ? (trendingRes.data?.popularBooks as any) || [] : [])
-      setCommunity(communityRes.success ? (((communityRes.data as any)?.books as any) || []) : [])
+      console.log(JSON.stringify(readingRes, null, 2))
+      console.log(JSON.stringify(aiRes, null, 2))
+      console.log(JSON.stringify(trendingRes, null, 2))
+      console.log(JSON.stringify(communityRes, null, 2))
 
-      const hadNetworkFailure = [readingRes, aiRes, trendingRes, communityRes].some((res) => !res.success)
-      setOfflineMode(hadNetworkFailure)
+      setContinueReading(readingRes.success ? ((readingRes.data  as any)?.books ?? []) : [])
+      setAiPicks(aiRes.success ? ((aiRes.data as any)?.recommendations ?? []) : [])
+      setTrending(trendingRes.success ? ((trendingRes.data as any)?.popularBooks ?? []) : [])
+      setCommunity(communityRes.success ? ((communityRes.data as any)?.books ?? []) : [])
 
-      setLoadingSections({ continueReading: false, aiPicks: false, trending: false, community: false })
+      setOfflineMode(
+        [readingRes, aiRes, trendingRes, communityRes].some((r) => !r.success),
+      )
     } catch (err) {
       console.error('Home load error:', err)
       setOfflineMode(true)
       setContinueReading([])
-      setAiPicks(GUEST_BOOKS)
-      setTrending(GUEST_BOOKS)
-      setCommunity(GUEST_BOOKS)
+      setAiPicks(AI_PICKS_GUEST)
+      setTrending(TRENDING_GUEST)
+      setCommunity(ALL_GUEST)
+    } finally {
+      // Guaranteed to clear loading regardless of success or failure
       setLoadingSections({ continueReading: false, aiPicks: false, trending: false, community: false })
     }
   }
 
-  useEffect(() => {
-    loadHomeData()
-  }, [])
+  useEffect(() => { loadHomeData() }, [])
 
   const onRefresh = async () => {
     setRefreshing(true)
-    setLoadingSections({ continueReading: true, aiPicks: true, trending: true, community: true })
     await loadHomeData()
     setRefreshing(false)
   }
 
-  const openBook = async (bookId: string) => {
-    console.log(bookId)
-    if (!bookId.startsWith('guest-')) {
-      await api.trackBookView(bookId)
-    }
-    router.push(`/details?bookId=${bookId}`)
+  const openBook = async (id: string) => {
+    if (!id) return
+    if (!id.startsWith('guest-')) await api.trackBookView(id)
+    setBookId(id)
+    router.push(`/details?bookId=${id}`)
   }
 
-  const allBooks = useMemo(() => [...continueReading, ...aiPicks, ...trending, ...community], [continueReading, aiPicks, trending, community])
+  const allBooks = useMemo(
+    () => [...continueReading, ...aiPicks, ...trending, ...community].filter(Boolean),
+    [continueReading, aiPicks, trending, community],
+  )
 
   const topGenres = useMemo(() => {
     const freq: Record<string, number> = {}
-    allBooks.forEach((book) => {
-      ;(book.genres || [book.genre || 'Fiction']).forEach((g) => {
-        if (!g) return
-        freq[g] = (freq[g] || 0) + 1
-      })
+    allBooks.forEach((b) => {
+      const gs = Array.isArray(b.genres) && b.genres.length ? b.genres : [b.genre || 'Fiction']
+      gs.forEach((g) => { if (g) freq[g] = (freq[g] || 0) + 1 })
     })
-
-    const ranked = Object.entries(freq)
-      .sort((a, b) => b[1] - a[1])
-      .map(([g]) => g)
-
+    const ranked = Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([g]) => g)
     return ['All', ...ranked, ...GENRES.filter((g) => !ranked.includes(g)).slice(0, 8)].slice(0, 10)
   }, [allBooks])
 
   const filterByGenre = (books: Book[]) => {
-    if (selectedGenre === 'All') return books
-    return books.filter((book) => (book.genres || [book.genre]).includes(selectedGenre))
+    const safe = books.filter(Boolean)
+    if (selectedGenre === 'All') return safe
+    return safe.filter((b) => {
+      const gs = Array.isArray(b.genres) && b.genres.length ? b.genres : [b.genre]
+      return gs.includes(selectedGenre)
+    })
   }
 
   const guestMode = !user || offlineMode
+  console.log(offlineMode)
+
+  const readingBooks   = filterByGenre(continueReading.filter(Boolean))
+  const aiPickBooks    = filterByGenre((aiPicks.length  ? aiPicks  : AI_PICKS_GUEST).filter(Boolean))
+  const trendingBooks  = filterByGenre((trending.length ? trending : TRENDING_GUEST).filter(Boolean))
+  const communityBooks = filterByGenre((community.length ? community : ALL_GUEST).filter(Boolean))
+
+  const ACCENT2 = '#f4a261'
+  const DANGER  = '#ff4444'
+
+  const s = StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.background, width: '100%' },
+
+    header: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+      margin: 12, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8, backgroundColor: colors.cardBackground, borderRadius: 24,
+    },
+    headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    avatar: { width: 40, height: 40, borderRadius: 20, borderWidth: 2, borderColor: colors.primary },
+    welcomeText: { color: colors.textSecondary, fontSize: 12, fontWeight: '500' },
+    userName: { color: colors.textPrimary, fontSize: 17, fontWeight: '700', letterSpacing: 0.2 },
+    bellBtn: {
+      width: 40, height: 40, borderRadius: 20,
+      backgroundColor: colors.cardBackground, alignItems: 'center', justifyContent: 'center',
+    },
+
+    searchWrap: { paddingHorizontal: 20, marginBottom: 16 },
+    searchBar: {
+      flexDirection: 'row', alignItems: 'center',
+      backgroundColor: colors.inputBackground, borderRadius: 32,
+      paddingHorizontal: 12, paddingVertical: 4,
+      gap: 10, borderWidth: 1, borderColor: colors.border,
+    },
+    searchInput: { flex: 1, color: colors.textPrimary, fontSize: 14, flexWrap: 'wrap', height: 'auto' },
+
+    // FIX: flexDirection:'row' + marginRight on chip — gap doesn't work in ScrollView contentContainerStyle
+    genreScrollContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      paddingBottom: 14,
+    },
+    chip: {
+      paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, marginRight: 8,
+      backgroundColor: colors.cardBackground, borderWidth: 1, borderColor: colors.border,
+    },
+    chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+    chipText: { color: colors.textSecondary, fontWeight: '600', fontSize: 13 },
+    chipTextActive: { color: colors.white },
+
+    section: { marginBottom: 28 },
+    sectionHeader: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+      paddingHorizontal: 20, marginBottom: 14,
+    },
+    sectionTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: '700' },
+    seeAll: { color: colors.primary, fontSize: 13, fontWeight: '600' },
+    emptyText: { color: colors.textSecondary, paddingHorizontal: 20, fontSize: 13 },
+
+    hotBadge: {
+      flexDirection: 'row', alignItems: 'center', backgroundColor: DANGER,
+      borderRadius: 10, paddingHorizontal: 7, paddingVertical: 3, gap: 3, marginLeft: 8,
+    },
+    hotText: { color: colors.white, fontSize: 10, fontWeight: '800' },
+
+    continueCard: { width: (SCREEN_WIDTH - 60) / 2.1, marginLeft: 20, borderRadius: 14 },
+    continueCover:  { width: '100%', height: 160, borderRadius: 14 },
+    progressTrack: { height: 3, backgroundColor: colors.border, borderRadius: 2, marginTop: 8 },
+    progressFill: { height: 3, backgroundColor: colors.primary, borderRadius: 2 },
+    progressPct: { color: colors.textSecondary, fontSize: 11, marginTop: 4 },
+    continueTitle: { color: colors.textPrimary, fontSize: 13, fontWeight: '700', marginTop: 4 },
+    continueAuthor: { color: colors.textSecondary, fontSize: 11 },
+
+    aiCard: {
+      marginHorizontal: 20, marginBottom: 12, backgroundColor: colors.cardBackground,
+      borderRadius: 16, flexDirection: 'row', alignItems: 'center',
+      padding: 14, gap: 14, borderWidth: 1, borderColor: colors.border,
+    },
+    aiCover: { width: 72, height: 96, borderRadius: 10 },
+    aiCardContent: { flex: 1 },
+    aiReasonBadge: { color: colors.primary, fontSize: 9, fontWeight: '800', letterSpacing: 0.8, marginBottom: 5 },
+    aiReasonBadgeAccent2: { color: ACCENT2 },
+    aiTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: '700', marginBottom: 3 },
+    aiDesc: { color: colors.textSecondary, fontSize: 12, lineHeight: 17, marginBottom: 10 },
+    aiBtn: {
+      backgroundColor: colors.primary, borderRadius: 8,
+      paddingHorizontal: 14, paddingVertical: 8,
+      alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 4,
+    },
+    aiBtnText: { color: colors.white, fontSize: 12, fontWeight: '700' },
+
+    trendCard: { width: 110, marginLeft: 20 },
+    trendCover: { width: 110, height: 150, borderRadius: 12 },
+    trendRankBadge: {
+      position: 'absolute', top: 8, left: 8, backgroundColor: colors.primary,
+      borderRadius: 8, width: 22, height: 22, alignItems: 'center', justifyContent: 'center',
+    },
+    trendRank: { color: colors.white, fontSize: 10, fontWeight: '800' },
+    trendTitle: { color: colors.textPrimary, fontSize: 12, fontWeight: '600', marginTop: 7 },
+    trendAuthor: { color: colors.textSecondary, fontSize: 10 },
+
+    communityGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 20, gap: 12 },
+    communityCard: {
+      width: (SCREEN_WIDTH - 52) / 2, borderRadius: 14, overflow: 'hidden',
+      backgroundColor: colors.cardBackground,
+    },
+    communityImg:{ width: '100%', height: 130 },
+    communityOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: '#00000066' },
+    communityGenreTag: {
+      position: 'absolute', bottom: 8, left: 8,
+      backgroundColor: colors.border + '99', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+    },
+    communityGenreText: { color: colors.white, fontSize: 10, fontWeight: '700' },
+    communityCardInfo: { padding: 10 },
+    communityTitle: { color: colors.textPrimary, fontSize: 13, fontWeight: '700' },
+    communityAuthor: { color: colors.textSecondary, fontSize: 11 },
+    communityUserRow: {
+      position: 'absolute', top: 8, right: 8,
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+    },
+    communityUserAvatar: { width: 20, height: 20, borderRadius: 10 },
+    communityUserName: { color: colors.white, fontSize: 9, fontWeight: '600', maxWidth: 55 },
+  })
 
   return (
-    <View style={styles.container}>
+    <View style={s.root}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image source={{ uri: user?.profileImage || 'https://i.pravatar.cc/100?img=32' }} style={styles.avatar} />
+      {/* Header */}
+      <View style={s.header}>
+        <View style={s.headerLeft}>
+          <Image
+            source={{ uri: user?.profileImage || 'https://i.pravatar.cc/100?img=32' }}
+            style={s.avatar}
+          />
           <View>
-            <Text style={styles.welcomeText}>{guestMode ? 'Offline / Guest mode' : 'Welcome back,'}</Text>
-            <Text style={styles.userName}>{user?.username || 'Reader'}</Text>
+            <Text style={s.welcomeText}>{guestMode ? 'Offline / Guest mode' : 'Welcome back,'}</Text>
+            <Text style={s.userName}>{user?.username || 'Reader'}</Text>
           </View>
         </View>
-        <Feather name="bell" size={22} color={colors.white} />
+        <TouchableOpacity style={s.bellBtn}>
+          <Feather name="bell" size={18} color={colors.textPrimary} />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <MaterialCommunityIcons name="star" size={20} color={colors.primary} />
+      {/* Search */}
+      <View style={s.searchWrap}>
+        <View style={s.searchBar}>
+          <MaterialCommunityIcons name="star-four-points" size={18} color={colors.primary} />
           <TextInput
-            style={styles.searchInput}
-            placeholder={guestMode ? 'Browse offline picks...' : 'Ask AI about your next book...'}
+            style={s.searchInput}
+            placeholder={guestMode ? 'Browse offline picks...' : 'Ask AI about your book...'}
             placeholderTextColor={colors.placeholderText}
             onFocus={() => router.push('/chat')}
           />
           <TouchableOpacity>
-            <Feather name="mic" size={20} color={colors.textSecondary} />
+            <Feather name="mic" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <FlatGenreRow colors={colors} styles={styles} genres={topGenres} selectedGenre={selectedGenre} setSelectedGenre={setSelectedGenre} />
-
+      {/* Genre chips */}
       <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexShrink: 0 }}
+        contentContainerStyle={s.genreScrollContent}
       >
-        {(guestMode || continueReading.length > 0) && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{guestMode ? 'Start here' : 'Continue Reading'}</Text>
-              <TouchableOpacity onPress={() => router.push('/books')}>
-                <Text style={styles.seeAllButton}>See all</Text>
-              </TouchableOpacity>
+        {topGenres.map((genre) => (
+          <TouchableOpacity
+            key={genre}
+            onPress={() => setSelectedGenre(genre)}
+            style={[s.chip, selectedGenre === genre && s.chipActive]}
+          >
+            <Text style={[s.chipText, selectedGenre === genre && s.chipTextActive]} numberOfLines={1}>
+              {genre}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Main scroll */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
+        {/* ── Continue Reading (always shown) ── */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>{guestMode ? 'Start Here' : 'Continue Reading'}</Text>
+            <TouchableOpacity onPress={() => router.push('/books')}>
+              <Text style={s.seeAll}>See all</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loadingSections.continueReading ? (
+            <ContinueReadingSkeleton />
+          ) : readingBooks.length === 0 ? (
+            <Text style={s.emptyText}>No books yet — start exploring!</Text>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 20 }}>
+              {readingBooks.map((book) => (
+                <TouchableOpacity key={getId(book) || book.title}
+                  style={s.continueCard} onPress={() => openBook(getId(book))}>
+                  <Image source={{ uri: book.coverImage || book.image }}
+                    style={s.continueCover} contentFit="cover" />
+                  <View style={s.progressTrack}>
+                    <View style={[s.progressFill, { width: `${book.progressPercentage || 0}%` }]} />
+                  </View>
+                  <Text style={s.progressPct}>{book.progressPercentage || 0}% complete</Text>
+                  <Text style={s.continueTitle} numberOfLines={1}>{book.title}</Text>
+                  <Text style={s.continueAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* ── AI Picks ── */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="location" size={16} color={colors.primary} style={{ marginRight: 5 }} />
+              <Text style={s.sectionTitle}>AI Picks for You</Text>
             </View>
-
-            {loadingSections.continueReading ? (
-              <ContinueReadingSkeleton />
-            ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-                {(guestMode ? GUEST_BOOKS : filterByGenre(continueReading)).map((book) => (
-                  <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book.bookId || book.id || book._id)}>
-                    <Image source={{ uri: book.coverImage || book.image }} style={styles.bookCover} />
-                    <View style={styles.progressBar}>
-                      <View style={[styles.progressFill, { width: `${book.progressPercentage || 0}%` }]} />
-                    </View>
-                    <Text style={styles.progressText}>{book.progressPercentage || 0}% complete</Text>
-                    <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
-                    <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
           </View>
-        )}
 
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>AI Picks</Text>
-          </View>
           {loadingSections.aiPicks ? (
             <AiPicksSkeleton />
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-              {filterByGenre(aiPicks.length ? aiPicks : GUEST_BOOKS).map((book) => (
-                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id || book.id || book.bookId)}>
-                  <Image source={{ uri: book.image || book.coverImage }} style={styles.bookCover} />
-                  <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
-                  <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
+            aiPickBooks.map((book) => {
+              const reason     = reasonFor(book)          // always a string, never undefined
+              const isTrending = reason.startsWith('TRENDING')
+              const id         = getId(book)
+              return (
+                <TouchableOpacity key={id || book.title} style={s.aiCard} onPress={() => openBook(id)}>
+                  <Image source={{ uri: book.coverImage || book.image }}
+                    style={s.aiCover} contentFit="cover" />
+                  <View style={s.aiCardContent}>
+                    <Text style={[s.aiReasonBadge, isTrending && s.aiReasonBadgeAccent2]}>
+                      {reason}
+                    </Text>
+                    <Text style={s.aiTitle} numberOfLines={1}>{book.title}</Text>
+                    <Text style={s.aiDesc} numberOfLines={2}>
+                      {(book as any).description || 'A compelling read handpicked for your taste.'}
+                    </Text>
+                    <TouchableOpacity
+                      style={[s.aiBtn, isTrending && { backgroundColor: ACCENT2 }]}
+                      onPress={() => openBook(id)}>
+                      <Text style={s.aiBtnText}>Start Reading</Text>
+                      <Feather name="arrow-right" size={12} color={colors.white} />
+                    </TouchableOpacity>
+                  </View>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              )
+            })
           )}
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Trending Now</Text>
+        {/* ── Trending Now ── */}
+        <View style={s.section}>
+          <View style={s.sectionHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={s.sectionTitle}>Trending Now</Text>
+              <View style={s.hotBadge}>
+                <Ionicons name="flame" size={10} color={colors.white} />
+                <Text style={s.hotText}>HOT</Text>
+              </View>
+            </View>
           </View>
+
           {loadingSections.trending ? (
             <PopularBooksSkeleton />
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScroll}>
-              {filterByGenre(trending.length ? trending : GUEST_BOOKS).map((book) => (
-                <TouchableOpacity key={book._id} style={styles.bookCard} onPress={() => openBook(book._id || book.id || book.bookId)}>
-                  <Image source={{ uri: book.image || book.coverImage }} style={styles.bookCover} />
-                  <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
-                  <Text style={styles.bookAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 20 }}>
+              {trendingBooks.map((book, idx) => (
+                <TouchableOpacity key={getId(book) || book.title}
+                  style={s.trendCard} onPress={() => openBook(getId(book))}>
+                  <View>
+                    <Image source={{ uri: book.coverImage || book.image }}
+                      style={s.trendCover} contentFit="cover" />
+                    <View style={s.trendRankBadge}>
+                      <Text style={s.trendRank}>#{idx + 1}</Text>
+                    </View>
+                  </View>
+                  <Text style={s.trendTitle} numberOfLines={2}>{book.title}</Text>
+                  <Text style={s.trendAuthor} numberOfLines={1}>{book.author || 'Unknown'}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           )}
         </View>
 
-        {filterByGenre(community.length ? community : GUEST_BOOKS).length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Community Uploads</Text>
+        {/* ── Community Uploads ── */}
+        {communityBooks.length > 0 && (
+          <View style={s.section}>
+            <View style={s.sectionHeader}>
+              <Text style={s.sectionTitle}>Community Uploads</Text>
               <TouchableOpacity onPress={() => router.push('/books')}>
-                <Text style={styles.seeAllButton}>See all</Text>
+                <Text style={s.seeAll}>See all</Text>
               </TouchableOpacity>
             </View>
 
             {loadingSections.community ? (
               <CommunityUploadsSkeleton />
             ) : (
-              <View style={styles.communityGrid}>
-                {filterByGenre(community.length ? community : GUEST_BOOKS).map((book) => (
-                  <TouchableOpacity key={book._id} style={styles.communityCard} onPress={() => openBook(book._id || book.id || book.bookId)}>
-                    <View style={styles.communityImageContainer}>
-                      <Image source={{ uri: book.image || book.coverImage }} style={styles.communityImage} />
-                      <View style={styles.communityImageOverlay} />
-                      <View style={styles.communityUserBadge}>
-                        <Image source={{ uri: book.user?.profileImage || 'https://i.pravatar.cc/100' }} style={styles.communityUserAvatar} />
-                        <Text style={styles.communityUserName} numberOfLines={1}>{book.user?.username || 'Anonymous'}</Text>
+              <View style={s.communityGrid}>
+                {communityBooks.map((book) => (
+                  <TouchableOpacity key={getId(book) || book.title}
+                    style={s.communityCard} onPress={() => openBook(getId(book))}>
+                    <View>
+                      <Image source={{ uri: book.coverImage || book.image }}
+                        style={s.communityImg} contentFit="cover" />
+                      <View style={s.communityOverlay} />
+                      <View style={s.communityUserRow}>
+                        <Image
+                          source={{ uri: book.user?.profileImage || 'https://i.pravatar.cc/100' }}
+                          style={s.communityUserAvatar} />
+                        <Text style={s.communityUserName} numberOfLines={1}>
+                          {book.user?.username || 'Anon'}
+                        </Text>
                       </View>
                       {!!book.genre && (
-                        <View style={styles.communityGenreTag}>
-                          <Text style={styles.communityGenreText}>{book.genre}</Text>
+                        <View style={s.communityGenreTag}>
+                          <Text style={s.communityGenreText}>{book.genre}</Text>
                         </View>
                       )}
                     </View>
-
-                    <View style={styles.communityCardContent}>
-                      <Text style={styles.communityTitle} numberOfLines={2}>{book.title}</Text>
-                      <Text style={styles.communityAuthor} numberOfLines={1}>{book.author || 'Unknown Author'}</Text>
+                    <View style={s.communityCardInfo}>
+                      <Text style={s.communityTitle} numberOfLines={2}>{book.title}</Text>
+                      <Text style={s.communityAuthor} numberOfLines={1}>
+                        {book.author || 'Unknown Author'}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 ))}
@@ -314,31 +506,9 @@ const HomeScreen = () => {
             )}
           </View>
         )}
-
-        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   )
 }
-
-const FlatGenreRow = ({ styles, colors, genres, selectedGenre, setSelectedGenre }: any) => (
-  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 10, paddingBottom: 12, alignItems: "flex-start" }}>
-    {genres.map((genre: string) => (
-      <TouchableOpacity
-        key={genre}
-        onPress={() => setSelectedGenre(genre)}
-        style={{
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          borderRadius: 20,
-          alignSelf: "flex-start",
-          backgroundColor: selectedGenre === genre ? colors.primary : colors.inputBackground,
-        }}
-      >
-        <Text style={{ color: selectedGenre === genre ? colors.white : colors.textSecondary, fontWeight: '700' }}>{genre}</Text>
-      </TouchableOpacity>
-    ))}
-  </ScrollView>
-)
 
 export default HomeScreen

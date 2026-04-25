@@ -124,6 +124,7 @@ const libraryStyles = (colors: ColorScheme) => StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     padding: 5,
+    marginRight: 12,
     backgroundColor: colors.cardBackground,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },

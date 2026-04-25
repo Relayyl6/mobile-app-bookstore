@@ -30,12 +30,12 @@ const upload = multer({ storage });
 bookRouter.post('/', authMiddleware, bookController.createBook);
 
 /**
- * @route   GET /api/v1/books
+ * @route   GET /api/v1/books/:id
  * @desc    Get paginated books from catalog
  * @access  Public
  * @query   page, limit
  */
-bookRouter.get('/', bookController.getBooks);
+bookRouter.get('/', authMiddleware, bookController.getBooks);
 
 /**
  * @route   GET /api/v1/books/:id
@@ -81,6 +81,19 @@ bookRouter.post(
   authMiddleware,
   upload.single('file'),
   bookController.uploadBookContent
+);
+
+/**
+ * @route   POST /api/v1/books/extract-metadata
+ * @desc    Extract metadata from uploaded PDF without creating a book (for pre-filling form)
+ * @access  Private (Owner only)
+ * @query   file (PDF file upload)
+ */
+bookRouter.post(
+  '/extract-metadata',
+  authMiddleware,
+  upload.single('file'),
+  bookController.extractBookMetadata
 );
 
 /**

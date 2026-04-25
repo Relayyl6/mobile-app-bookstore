@@ -51,6 +51,8 @@ const Create = () => {
   const [mode, setMode] = useState<'Recommendation' | 'Upload'>('Recommendation')
   const [enableRecommendations, setEnableRecommendations] = useState(true)
   const [allowAIUploadAssist, setAllowAIUploadAssist] = useState(true)
+  const [isExtractingMetadata, setIsExtractingMetadata] = useState(false)
+  const [resolvedCoverImage, setResolvedCoverImage] = useState<string | null>(null)
 
   const CURRENT_YEAR = new Date().getFullYear().toString()
   const autoFillTimer = useRef<NodeJS.Timeout | null>(null)
@@ -71,16 +73,39 @@ const Create = () => {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
         copyToCacheDirectory: true,
-      })
+      });
 
       if (!result.canceled) {
-        setFile(result.assets[0])
-        setFileName(result.assets[0].name)
+        const picked = result.assets[0];
+        setFile(picked);
+        setFileName(picked.name);
+
+        // ✨ Auto-extract metadata as soon as file is picked
+        setIsExtractingMetadata(true);
+        try {
+          const metaRes = await api.extractBookMetadata(picked);
+          console.log("Extraction successful")
+          if (metaRes.success && metaRes.data) {
+            const m = metaRes.data.data;
+            // Only pre-fill fields the user hasn't already typed in
+            if (m.title && !title) setTitle(m.title);
+            if (m.author && !author) setAuthor(m.author);
+            if (m.isbn && !isbn) setIsbn(m.isbn);
+            if (m.publishedYear && !publishedYear) setPublishedYear(String(m.publishedYear));
+            if (m.description && !description) setDescription(m.description);
+            if (m.genres?.length && genres.length === 0) setGenres(m.genres);
+            if (m.coverImage) setResolvedCoverImage(m.coverImage); // new state for preview
+          }
+        } catch (e) {
+          console.warn("Metadata extraction failed, user fills manually:", e);
+        } finally {
+          setIsExtractingMetadata(false);
+        }
       }
     } catch {
-      Alert.alert('Error', 'File selection failed')
+      Alert.alert('Error', 'File selection failed');
     }
-  }
+  };
 
   const resetForm = () => {
     setTitle('')
@@ -114,7 +139,7 @@ const Create = () => {
     try {
       setIsLoading(true)
 
-      const suggestedImage = await resolveBookImage(title, author)
+      const suggestedImage = resolvedCoverImage || await resolveBookImage(title, author)
 
       const createRes = await api.createBook({
         title,
@@ -350,6 +375,17 @@ const Create = () => {
             </View>
           </View>
         </View>
+
+
+
+        {isExtractingMetadata && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+              Reading book details...
+            </Text>
+          </View>
+        )}
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isLoading}>
           {isLoading ? (

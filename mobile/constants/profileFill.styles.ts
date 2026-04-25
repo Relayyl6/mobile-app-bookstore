@@ -4,6 +4,7 @@ const profileFillStyle = (colors: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    marginBottom: 20
   },
   header: {
     flexDirection: 'row',
@@ -43,9 +44,12 @@ const profileFillStyle = (colors: ColorScheme) => StyleSheet.create({
     borderWidth: 4,
     borderColor: '#8b6f47',
     padding: 6,
+    overflow: 'hidden',  // ← clips the SVG to the circle
   },
   avatar: {
-    borderRadius: 72,
+    width: '100%',
+    height: '100%',
+    borderRadius: 74,  // (80 - 6 padding)
   },
   name: {
     fontSize: 28,
@@ -58,6 +62,7 @@ const profileFillStyle = (colors: ColorScheme) => StyleSheet.create({
     color: colors.primary,
     marginBottom: 8,
     fontWeight: '500',
+    textAlign: "center"
   },
   memberSince: {
     fontSize: 14,
@@ -84,6 +89,7 @@ const profileFillStyle = (colors: ColorScheme) => StyleSheet.create({
     marginTop: 12,
     marginBottom: 4,
     fontWeight: '600',
+    textAlign: "center"
   },
   statValue: {
     fontSize: 24,

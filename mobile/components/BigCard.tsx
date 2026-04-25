@@ -10,13 +10,15 @@ const BigCard = ({
     title,
     author,
     rating,
-    genre
+    genre,
+    image
 }: { 
     toptext: string,
     title: string,
     author: string,
     rating: number,
-    genre: string
+    genre: string,
+    image: string
  }) => {
     const { colors } = useAppContext()
     const styles = libraryStyles(colors)
@@ -24,7 +26,7 @@ const BigCard = ({
     <View style={styles.recommendedCard}>
       <View style={styles.recommendedCover}>
         <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300' }}
+          source={{ uri: image || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300' }}
           style={styles.coverImage}
           contentFit='cover'
         />

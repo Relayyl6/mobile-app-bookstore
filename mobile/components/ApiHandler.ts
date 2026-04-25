@@ -17,6 +17,7 @@ class ApiHandler {
   ): Promise<ApiResponse<T>> {
     try {
       const token = this.getToken()
+      console.log(token)
       const url = `${EXPO_PUBLIC_API_URL}${endpoint}`
 
       const headers: HeadersInit = {
@@ -60,10 +61,11 @@ class ApiHandler {
   }
 
   async getBooks(page = 1, limit = 10) {
-    return this.request(`/api/v1/books?page=${page}&limit=${limit}`)
+    return this.request(`/api/v1/books/?page=${page}&limit=${limit}`)
   }
 
-  async getBookById(bookId: string) {
+  async getBookById(bookId: string): Promise<ApiResponse<SingleBookResponse>> {
+    console.log("REquet for a single book triggered")
     return this.request(`/api/v1/books/${bookId}`)
   }
 
@@ -72,6 +74,21 @@ class ApiHandler {
       method: 'PUT',
       body: JSON.stringify(updates),
     })
+  }
+
+  async extractBookMetadata(file: any): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: file.uri,
+      name: file.name,
+      type: file.mimeType || 'application/pdf',
+    } as any);
+
+    return this.request('/api/v1/books/extract-metadata', {
+      method: 'POST',
+      headers: { 'Content-Type': 'multipart/form-data' },
+      body: formData,
+    });
   }
 
   async deleteBook(bookId: string) {

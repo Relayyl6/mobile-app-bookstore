@@ -6,6 +6,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Safescreen from "@/components/Safescreen";
 import { StatusBar } from "expo-status-bar";
 import { useAuthStore } from "@/store/authStore";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 
 export default function RootLayout() {
   const router = useRouter();
@@ -87,6 +89,7 @@ export default function RootLayout() {
 
   return (
     <AppContextProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
       <Safescreen>
         <Stack screenOptions={{ headerShown: false }}>
           {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
@@ -98,6 +101,7 @@ export default function RootLayout() {
       </Safescreen> 
 
       <StatusBar style="dark"/>
+      </GestureHandlerRootView>
     </AppContextProvider>
   )
 }

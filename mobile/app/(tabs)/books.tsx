@@ -9,6 +9,7 @@ import {
   RefreshControl,
   FlatList,
   Dimensions,
+  ScrollView,
 } from 'react-native'
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useAppContext } from '@/context/useAppContext'
@@ -75,9 +76,9 @@ const LibraryScreen = () => {
       if (page !== 1) return
 
       const [recResponse, popularResponse, newResponse] = await Promise.all([
-        api.getPersonalizedRecommendations(6),
-        api.getPopularBooks(6),
-        api.getNewBooks(6),
+        api.getPersonalizedRecommendations(4),
+        api.getPopularBooks(8),
+        api.getNewBooks(12),
       ])
 
       if (recResponse.success && recResponse.data?.recommendations) {
@@ -154,6 +155,7 @@ const LibraryScreen = () => {
             author={(book as any).author || 'Unknown Author'}
             rating={(book as any).averageRating || 0}
             genre={(book as any).genres?.[0] || 'Fiction'}
+            image={(book as any).coverImage}
           />
         ) : (
           <SmallCard
@@ -204,6 +206,7 @@ const LibraryScreen = () => {
         horizontal
         data={genreOptions}
         keyExtractor={(item) => item}
+        style={{ flexShrink: 0 }}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 12, gap: 10 }}
         renderItem={({ item }) => (
@@ -251,7 +254,7 @@ const LibraryScreen = () => {
                 {loadingSections.recommended ? (
                   <LibrarySectionSkeleton title="Recommended for You" />
                 ) : (
-                  <View style={styles.recommendedGrid}>{recommendedBooks.map((book) => renderBookCard(book, 'big'))}</View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedGrid}>{recommendedBooks.map((book) => renderBookCard(book, 'big'))}</ScrollView>
                 )}
               </View>
             )}
@@ -265,7 +268,7 @@ const LibraryScreen = () => {
                 {loadingSections.popular ? (
                   <LibrarySectionSkeleton title="Popular Books" />
                 ) : (
-                  <View style={styles.recommendedGrid}>{popularBooks.map((book) => renderBookCard(book, 'big'))}</View>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedGrid}>{popularBooks.map((book) => renderBookCard(book, 'big'))}</ScrollView>
                 )}
               </View>
             )}

@@ -87,7 +87,13 @@ const ProfileScreen = () => {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatarBorder}>
-              <SvgUri uri={user?.profileImage} width='100%' height='100%' style={styles.avatar} />
+              <View style={{ width: '100%', height: '100%', borderRadius: 74, overflow: 'hidden' }}>
+                <SvgUri 
+                  uri={user?.profileImage} 
+                  width="100%" 
+                  height="100%" 
+                />
+              </View>
             </View>
           </View>
           <Text style={styles.name}>{user?.username || 'Reader'}</Text>
@@ -98,7 +104,7 @@ const ProfileScreen = () => {
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <MaterialCommunityIcons name='book-open-page-variant' size={32} color={colors.primary} />
-            <Text style={styles.statLabel}>UPLOADED</Text>
+            <Text style={styles.statLabel}>UPLOADS</Text>
             <Text style={styles.statValue}>{stats.uploadedBooks}</Text>
           </View>
           <View style={styles.statCard}>

@@ -26,6 +26,10 @@ import uploadToCloudinary, {
 import bookKnowledgeModel from "../models/knowledge.model.js";
 import userBookStateModel from "../models/userBookState.model.js";
 import mongoose, { Types } from "mongoose";
+import path from 'path';
+import os from 'os';
+import fs from 'fs';
+import { PDFParse } from "pdf-parse";
 
 export const createBook = async (req, res, next) => {
   try {
@@ -275,17 +279,32 @@ export const deleteBook = async (req, res, next) => {
  */
 export const getBooks = async (req, res, next) => {
   try {
+    if (!req.user) {
+        return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
+    console.log("getBooks called, user:", req.user._id)
+    console.log("instead, request contains id")
+    
+    const totalInDB = await bookModel.countDocuments({})
+    console.log("Total books in DB (no filter):", totalInDB)
+    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
-    const userId = req.user?._id;
+    const userId = req.user._id;
     const visibilityQuery = {
       $or: [
         { visibility: 'public' },
+        { visibility: { $exists: false } }, // books saved before visibility was added
+        { visibility: null },
         ...(userId ? [{ user: userId }] : []),
       ],
     };
+
+    console.log("Visibility query:", JSON.stringify(visibilityQuery))
+    const matchingCount = await bookModel.countDocuments(visibilityQuery)
+    console.log("Books matching visibility query:", matchingCount)
 
     const books = await bookModel
       .find(visibilityQuery)
@@ -315,35 +334,47 @@ export const getBooks = async (req, res, next) => {
  */
 export const getSingleBook = async (req, res, next) => {
   try {
+    console.log("🔍 [1] getSingleBook triggered for ID:", req.params.id);
     const { id } = req.params;
-    const userId = req.user?._id;
+    const userId = req.user._id;
+
+    console.log("👤 [2] User ID extracted:", userId);
 
     if (!userId) {
+      console.log("❌ [Error] Unauthorized access attempt.");
       return next({ statusCode: 401, message: "Unauthorized" });
     }
 
-    // Get book metadata
+    console.log("📚 [3] Fetching book metadata...");
     const book = await bookModel.findById(id)
       .populate("user", "username profileImage")
       .lean();
+
+    console.log("✅ [4] Book fetched successfully? :", !!book);
 
     if (!book) {
       return next({ statusCode: 404, message: "Book not found" });
     }
 
-    // Get AI knowledge if exists
+    console.log("🧠 [5] Fetching AI knowledge...");
     const knowledge = await bookKnowledgeModel.findOne({ bookId: id }).lean();
+    console.log("✅ [6] AI Knowledge found? :", !!knowledge);
 
-    // Get user's reading state if exists
+    console.log("📖 [7] Fetching reading state...");
     const state = await userBookStateModel.findOne({ userId, bookId: id }).lean();
+    console.log("✅ [8] Reading state found? :", !!state);
 
-    // Calculate total pages if content exists
+    console.log("🧮 [9] Calculating total pages...");
     const totalPages = knowledge?.chapters?.reduce(
-      (sum, ch) => sum + (ch.pages?.length || 0),
+      (sum, ch) => sum + (ch?.pages?.length || 0), // Added safety ? to pages just in case
       0
     ) || 0;
+    console.log("✅ [10] Total pages calculated:", totalPages);
 
-    res.status(200).json({
+    console.log("🏗️ [11] Assembling response payload...");
+    
+    // I moved the payload to a variable first so we can log if it successfully builds
+    const responsePayload = {
       success: true,
       book: {
         // Basic metadata
@@ -375,11 +406,15 @@ export const getSingleBook = async (req, res, next) => {
           summary: knowledge.overview?.summary,
           majorThemes: knowledge.overview?.majorThemes,
           tone: knowledge.overview?.tone,
-          characters: knowledge.characters?.map(c => ({
-            name: c.name,
-            description: c.description,
-            role: c.relationships
-          }))
+          // Added a safe map in case the database array has a null element
+          characters: knowledge.characters?.map(c => {
+            if (!c) return null; 
+            return {
+              name: c.name,
+              description: c.description,
+              role: c.relationships
+            }
+          }).filter(Boolean) // This removes any nulls from the final array
         } : null,
 
         // User's reading progress (if exists)
@@ -394,12 +429,21 @@ export const getSingleBook = async (req, res, next) => {
 
         // Uploader info
         uploader: {
-          username: book.user.username,
-          profileImage: book.user.profileImage
+          username: book.user?.username || "Unknown User",
+          profileImage: book.user?.profileImage || null
         }
       }
-    });
+    };
+
+    console.log("🚀 [12] Payload assembled without crashing! Sending response...");
+    res.status(200).json(responsePayload);
+
   } catch (error) {
+    // THIS IS THE MOST IMPORTANT PART
+    console.error("🔥 [CRITICAL BACKEND ERROR]:", error.message);
+    console.error("🥞 Stack Trace:");
+    console.error(error.stack); 
+    
     next(error);
   }
 };
@@ -777,58 +821,67 @@ export const askBookQuestion = async (req, res, next) => {
 export const getBooksForReading = async (req, res, next) => {
   try {
     const userId = req.user._id;
+    console.log("Fetching reading books for user:", userId);
     const page = parseInt(req.query.page) || 1;
     const limit = 15;
     const skip = (page - 1) * limit;
 
-    // Get books that have content
-    const booksWithContent = await bookModel
-      .find({
-        hasContent: true,
-        $or: [{ visibility: 'public' }, { user: userId }],
-      })
-      .select("_id title author genres image publishedYear visibility")
-      .sort({ createdAt: -1 })
+    // Step 1: get all reading states for this user, most recently read first
+    const userStates = await userBookStateModel
+      .find({ userId })
+      .sort({ lastReadAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const totalBooks = await bookModel.countDocuments({
-      hasContent: true,
-      $or: [{ visibility: 'public' }, { user: userId }],
-    });
+    if (!userStates.length) {
+      console.log("Nothing is there for this user's state")
+      return res.json({
+        success: true,
+        page,
+        totalPages: 0,
+        totalBooks: 0,
+        books: []
+      });
+    }
 
-    const bookIds = booksWithContent.map(b => b._id);
+    const bookIds = userStates.map(s => s.bookId);
 
-    // Get user's reading states
-    const userStates = await userBookStateModel.find({
-      userId,
-      bookId: { $in: bookIds }
-    }).lean();
+    // Step 2: fetch those books (no hasContent filter)
+    const booksWithContent = await bookModel
+      .find({ _id: { $in: bookIds } })
+      .select("_id title author genres image publishedYear visibility averageRating")
+      .lean();
+
+    const bookMap = {};
+    booksWithContent.forEach(b => { bookMap[b._id.toString()] = b; });
 
     const stateMap = {};
-    userStates.forEach(state => {
-      stateMap[state.bookId.toString()] = state;
-    });
+    userStates.forEach(s => { stateMap[s.bookId.toString()] = s; });
 
-    // Format response
-    const books = booksWithContent.map(book => {
-      const state = stateMap[book._id.toString()];
+    // Step 3: build response in the same order as reading states (most recent first)
+    const books = bookIds
+      .map(id => {
+        const book = bookMap[id.toString()];
+        const state = stateMap[id.toString()];
+        if (!book) return null;
+        return {
+          bookId: book._id,
+          title: book.title,
+          author: book.author,
+          genres: book.genres,
+          publishedYear: book.publishedYear,
+          coverImage: book.image,
+          progressPercentage: state?.progressPercentage || 0,
+          lastReadAt: state?.lastReadAt || null,
+          currentChapter: state?.currentChapter || 1,
+          averageRating: book.averageRating || 0,
+          visibility: book.visibility || 'public',
+        };
+      })
+      .filter(Boolean);
 
-      return {
-        bookId: book._id,
-        title: book.title,
-        author: book.author,
-        genres: book.genres,
-        publishedYear: book.publishedYear,
-        coverImage: book.image,
-        progressPercentage: state?.progressPercentage || 0,
-        lastReadAt: state?.lastReadAt || null,
-        currentChapter: state?.currentChapter || 1,
-        averageRating: book.averageRating || 0,
-        visibility: book.visibility || 'public',
-      };
-    });
+    const totalBooks = await userBookStateModel.countDocuments({ userId });
 
     res.json({
       success: true,
@@ -1264,6 +1317,110 @@ export const describeImage = async (req, res, next) => {
   } catch (error) {
     console.error("Gemini describeImage error:", error);
     next(error);
+  }
+};
+
+// controller
+export const extractBookMetadata = async (req, res, next) => {
+  try {
+    if (!req.file) return next({ statusCode: 400, message: "No file uploaded" });
+
+    const { PDFParse } = await import('pdf-parse');
+
+    // 1. Get embedded metadata (title, author, pages)
+    const infoParser = new PDFParse({ data: req.file.buffer });
+    const infoResult = await infoParser.getInfo();
+    await infoParser.destroy();
+
+    // 2. Get full text separately
+    const textParser = new PDFParse({ data: req.file.buffer });
+    const textResult = await textParser.getText();
+    await textParser.destroy();
+
+    let metadata = {
+      title: infoResult.info?.Title || null,
+      author: infoResult.info?.Author || null,
+      isbn: null,
+      publishedYear: infoResult.info?.CreationDate
+        ? new Date(infoResult.info.CreationDate).getFullYear()
+        : null,
+      language: infoResult.info?.Language || null,
+      genres: [],
+      description: null,
+      totalPages: infoResult.total || 0,
+      totalWords: textResult.text
+        ? textResult.text.split(/\s+/).filter(Boolean).length
+        : 0,
+    };
+
+    // 3. Use Gemini to fill gaps from first 3000 chars of text
+    const rawText = textResult.text || '';
+    if (rawText.length > 500 && (!metadata.title || !metadata.author)) {
+      try {
+        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+        console.log("Usising gemini to extract")
+
+        const prompt = `
+          Extract book metadata from this text sample. Return ONLY raw JSON, no markdown, no backticks.
+
+          {
+            "title": "book title or null",
+            "author": "author full name or null",
+            "isbn": "ISBN number if found or generate one",
+            "publishedYear": number or null,
+            "language": "language name or null",
+            "genres": ["genre1", "genre2"],
+            "description": "1-2 sentence description from actual story content, not preface or author note"
+          }
+
+          Text sample:
+          ${rawText.substring(0, 3000)}
+        `;
+
+        const result = await model.generateContent(prompt);
+        const raw = result.response.text().trim().replace(/```json|```/g, '').trim();
+        const aiMeta = JSON.parse(raw);
+
+        // Only fill what pdf-parse missed
+        metadata.title = metadata.title || aiMeta.title;
+        metadata.author = metadata.author || aiMeta.author;
+        metadata.isbn = aiMeta.isbn || null;
+        metadata.publishedYear = metadata.publishedYear || aiMeta.publishedYear;
+        metadata.language = metadata.language || aiMeta.language;
+        metadata.genres = aiMeta.genres || [];
+        metadata.description = aiMeta.description || null;
+        console.log("Gemini metadata extraction successful")
+      } catch (aiErr) {
+        console.warn("⚠️ Gemini metadata extraction failed:", aiErr.message);
+        // Non-fatal — return whatever pdf-parse got
+      }
+    }
+
+    // 4. Resolve cover image
+    let coverImage = null;
+    if (metadata.isbn) {
+      coverImage = `https://covers.openlibrary.org/b/isbn/${metadata.isbn}-L.jpg`;
+    } else if (metadata.title) {
+      try {
+        const query = encodeURIComponent(`${metadata.title} ${metadata.author || ''}`);
+        const olRes = await fetch(`https://openlibrary.org/search.json?title=${query}&limit=3`);
+        if (olRes.ok) {
+          const olData = await olRes.json();
+          const first = olData?.docs?.find(d => d.cover_i);
+          if (first) coverImage = `https://covers.openlibrary.org/b/id/${first.cover_i}-L.jpg`;
+        }
+      } catch {}
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { ...metadata, coverImage }
+    });
+
+  } catch (error) {
+    console.error("Metadata extraction error:", error);
+    next({ statusCode: 500, message: "Failed to extract metadata from file" });
   }
 };
 

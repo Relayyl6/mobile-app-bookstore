@@ -137,7 +137,7 @@ class RecommendationService {
   async getPopularBooks(excludeBookIds = [], limit = 10) {
     return bookModel
       .find({ _id: { $nin: excludeBookIds } })
-      .select("_id title author genres image price averageRating totalRatings totalPurchases totalViews hasContent publishedYear totalPages createdAt")
+      .select("_id title author genres image description price averageRating totalRatings totalPurchases totalViews hasContent publishedYear totalPages createdAt")
       .sort({ totalPurchases: -1, averageRating: -1, totalViews: -1 })
       .limit(limit)
       .populate("user", "username profileImage");
@@ -147,7 +147,7 @@ class RecommendationService {
   async getNewReleases(excludeBookIds = [], limit = 10) {
     const books = await bookModel
       .find({ _id: { $nin: excludeBookIds } })
-      .select("_id title author genres image price averageRating totalRatings totalPurchases totalViews hasContent publishedYear createdAt")
+      .select("_id title author genres image description price averageRating totalRatings totalPurchases totalViews hasContent publishedYear createdAt")
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate("user", "username profileImage")
@@ -316,18 +316,21 @@ class RecommendationService {
 
   formatBookForRecommendation(book) {
     return {
-      id:            book._id,
+      id:            book._id,  // keep for compatibility
+      _id:           book._id,  // add this so frontend getId() works with all paths
+      bookId:        book._id,  
       title:         book.title,
       author:        book.author,
       genres:        book.genres,
       image:         book.image,
+      description:   book.description || '',   // ← add this
       price:         book.price,
       averageRating: book.averageRating  || 0,
       totalRatings:  book.totalRatings   || 0,
       hasContent:    book.hasContent     || false,
       publishedYear: book.publishedYear,
       totalPages:    book.totalPages     || 0,
-    };
+    }
   }
 
   addOrUpdateScore(scoredBooks, book, score) {

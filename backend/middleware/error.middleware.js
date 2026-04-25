@@ -15,7 +15,7 @@ const errorMiddleware = (err, req, res, next) => {
         // Mongoose bad ObjectId
         if (err.name === "CastError") {
             statusCode = 404;
-            message = "Resource not found";
+            message = `Resource not found : ${err.message}`;
         }
 
         if (typeof err.message === "object") {
@@ -56,7 +56,7 @@ const errorMiddleware = (err, req, res, next) => {
         // Type errors
         else if (err instanceof TypeError) {
             statusCode = 500;
-            message = "Internal server error (TypeError)";
+            message = `Internal server error (TypeError): ${err.message}`;
         }
 
         // Axios or fetch request errors

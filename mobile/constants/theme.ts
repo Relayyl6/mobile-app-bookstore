@@ -129,15 +129,15 @@ export const lightThemes = {
 
 // Purple Modern Theme
   purpleTheme: {
-    primary: '#8B5CF6',          // Violet
+    primary: '#4f8ef7',          // Violet
     textPrimary: '#FFFFFF',
-    textSecondary: '#A78BFA',
+    textSecondary: '#8888aa',
     textDark: '#1F2937',
-    placeholderText: '#9CA3AF',
-    background: '#1E1B4B',       // Dark Purple
-    cardBackground: '#312E81',   // Deep Purple
-    inputBackground: '#3730A3',
-    border: '#4C1D95',
+    placeholderText: '#8888aa',
+    background: '#0d0d1a',       // Dark Purple
+    cardBackground: '#13131f',   // Deep Purple
+    inputBackground: '#13131f',
+    border: '#2a2a42',
     white: '#FFFFFF',
     black: '#000000',
   } as ColorScheme,

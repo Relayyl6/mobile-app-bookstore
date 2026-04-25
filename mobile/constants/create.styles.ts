@@ -10,6 +10,7 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
   scrollViewStyle: {
     flex: 1,
     backgroundColor: COLORS.background,
+    marginBottom: 90
   },
   card: {
     backgroundColor: COLORS.cardBackground,

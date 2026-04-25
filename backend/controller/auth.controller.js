@@ -95,6 +95,7 @@ export const register = async (req, res, next) => {
 
         await user.save()
 
+        console.log("Signing token with userId:", user._id.toString(), user._id.toString().length);
         const token = generateToken(user._id)
 
         res.cookie("token", token, {

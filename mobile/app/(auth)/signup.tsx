@@ -14,6 +14,7 @@ const SignUp = () => {
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   // const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { setUserId } = useAppContext()
 
   const router = useRouter()
   // useEffect(() => setInterval() => )
@@ -41,9 +42,11 @@ const SignUp = () => {
     const result = await register(newUserName, email, password);
 
     console.log(result)
-    if (!result.success) {
+    if (!result.success ) {
       Alert.alert("Error", result.error)
     }
+
+    setUserId(result.userId)
 
     router.replace('/(tabs)')
   }

@@ -530,6 +530,8 @@ RULES:
 - publishedYear must be a number if determinable, otherwise null.
 - Return ONLY the raw JSON object. No markdown. No backticks. No extra text.
 
+
+
 CONDENSED BOOK SAMPLE (${chaptersWithContent.length} chapters):
 ============================================================
 ${condensed}

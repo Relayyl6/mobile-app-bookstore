@@ -32,7 +32,7 @@ const profileStyles = (COLORS: ColorScheme) => StyleSheet.create({
   profileImage: {
     width: 80,
     height: 80,
-    borderRadius: 40,
+    borderRadius: 32,
     marginRight: 16,
   },
   profileInfo: {

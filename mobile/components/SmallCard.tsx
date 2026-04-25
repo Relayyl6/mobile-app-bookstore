@@ -9,13 +9,13 @@ const SmallCard = ({
     author,
     toptext,
     pageCount, 
-    rating
+    rating,
 }: {
     title: string,
     author: string,
     toptext: string,
     pageCount: number,
-    rating: number
+    rating: number,
 }) => {
     const { colors } = useAppContext()
     const styles = libraryStyles(colors)

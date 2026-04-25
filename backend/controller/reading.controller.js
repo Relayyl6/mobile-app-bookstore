@@ -32,6 +32,7 @@ export const getChapterContent = async (req, res, next) => {
   try {
     const { bookId, chapterNumber } = req.params;
     const userId = req.user._id;
+    console.log(`User ${userId} is requesting content for book ${bookId}, chapter ${chapterNumber}`);
 
     // Get book knowledge
     const knowledge = await bookKnowledgeModel.findOne({ bookId }).lean();

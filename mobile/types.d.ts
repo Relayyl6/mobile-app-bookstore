@@ -31,6 +31,11 @@ declare interface ApiResponse<T = any> {
   userProgress?: any
 }
 
+declare interface SingleBookResponse {
+  success: boolean,
+  book: SingleBook
+}
+
 declare interface SingleBook {
   // Basic metadata 
   _id: string 
@@ -101,6 +106,20 @@ declare interface ReadingLibraryResponse {
   totalPages: number
   totalBooks: number
   books: ReadingBook[]
+}
+
+interface ReadingBook {
+  bookId: string
+  title: string
+  author?: string
+  genres?: string[],
+  publishYear: unknown
+  coverImage: string
+  progressPercentage: number
+  lastReadAt: string
+  currentChapter: number
+  averageRating: number
+  visibility: 'private' | 'public',
 }
 
 declare interface BookForReading {
