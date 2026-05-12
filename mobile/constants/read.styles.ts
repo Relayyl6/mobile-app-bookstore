@@ -198,13 +198,13 @@ const readStyles = (colors: ColorScheme) =>
     modalText: {
       fontSize: 14,
       lineHeight: 22,
-      color: colors.textPrimary,
+      color: colors.primary,
     },
     bulletItem: {
       fontSize: 14,
       marginLeft: 10,
       lineHeight: 22,
-      color: colors.textPrimary,
+      color: colors.primary,
     },
     insightCard: {
       marginTop: 8,

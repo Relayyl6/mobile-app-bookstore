@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Book Circle",
-    "slug": "book-circle",
+    "name": "Reaver",
+    "slug": "reaver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/image.png",
-    "scheme": "bookcircle",
+    "scheme": "reaver",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,29 +13,33 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#03142f",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.yemuel.reaver"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/image.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/image.png",
+          "image": "./assets/images/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#03142f",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#03142f"
           }
         }
       ],
@@ -50,6 +54,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "baff4c54-f1f9-4e95-b93f-a6fec29fcd00"
+      }
     }
   }
 }

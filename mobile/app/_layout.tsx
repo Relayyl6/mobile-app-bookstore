@@ -1,43 +1,42 @@
-import { AppContextProvider } from "@/context/useAppContext";
+import { AppContextProvider, useAppContext } from "@/context/useAppContext";
 import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Safescreen from "@/components/Safescreen";
 import { StatusBar } from "expo-status-bar";
 import { useAuthStore } from "@/store/authStore";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 
-
-export default function RootLayout() {
+// ── inner layout — sits INSIDE AppContextProvider so useAppContext is valid ──
+function AppLayout() {
   const router = useRouter();
   const segments = useSegments();
-  const { checkAuth, user, token } = useAuthStore()
+  const { checkAuth, user, token } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
+  const { colors } = useAppContext(); // ✅ safe here — wrapped by provider above
+  const [splashAnimationFinished, setSplashAnimationFinished] = useState(false);
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    checkAuth();
+  }, []);
 
-  // // handle navigation based on auth state
   useEffect(() => {
     if (!isReady) return;
-    
     const inAuthScreen = segments[0] === "(auth)";
     const inOnboarding = segments[0] === "onboarding";
-    const isSignedIn = user && token
+    const isSignedIn = user && token;
 
     if (!isSignedIn && !inAuthScreen) {
-      router.replace("/(auth)")
+      router.replace("/(auth)");
     } else if (isSignedIn && !user?.onboardingCompleted && !inOnboarding) {
-      router.replace("/onboarding")
+      router.replace("/onboarding");
     } else if (isSignedIn && inAuthScreen) {
-      router.replace("/(tabs)")
+      router.replace("/(tabs)");
     }
-  }, [isReady, user, token, segments, router])
-  
+  }, [isReady, user, token, segments, router]);
+
   const [fontLoaded, error] = useFonts({
-    // JetBrains Mono
     "JetBrainsMono-Thin": require("../assets/fonts/ttf/JetBrainsMono-Thin.ttf"),
     "JetBrainsMono-ThinItalic": require("../assets/fonts/ttf/JetBrainsMono-ThinItalic.ttf"),
     "JetBrainsMono-ExtraLight": require("../assets/fonts/ttf/JetBrainsMono-ExtraLight.ttf"),
@@ -54,7 +53,6 @@ export default function RootLayout() {
     "JetBrainsMono-BoldItalic": require("../assets/fonts/ttf/JetBrainsMono-BoldItalic.ttf"),
     "JetBrainsMono-ExtraBold": require("../assets/fonts/ttf/JetBrainsMono-ExtraBold.ttf"),
     "JetBrainsMono-ExtraBoldItalic": require("../assets/fonts/ttf/JetBrainsMono-ExtraBoldItalic.ttf"),
-    // JetBrains Mono NL (No Ligatures)
     "JetBrainsMonoNL-Thin": require("../assets/fonts/ttf/JetBrainsMonoNL-Thin.ttf"),
     "JetBrainsMonoNL-ThinItalic": require("../assets/fonts/ttf/JetBrainsMonoNL-ThinItalic.ttf"),
     "JetBrainsMonoNL-ExtraLight": require("../assets/fonts/ttf/JetBrainsMonoNL-ExtraLight.ttf"),
@@ -71,9 +69,9 @@ export default function RootLayout() {
     "JetBrainsMonoNL-BoldItalic": require("../assets/fonts/ttf/JetBrainsMonoNL-BoldItalic.ttf"),
     "JetBrainsMonoNL-ExtraBold": require("../assets/fonts/ttf/JetBrainsMonoNL-ExtraBold.ttf"),
     "JetBrainsMonoNL-ExtraBoldItalic": require("../assets/fonts/ttf/JetBrainsMonoNL-ExtraBoldItalic.ttf"),
-  })
+  });
 
-  useEffect(() => {   
+  useEffect(() => {
     if (error) throw error;
     if (fontLoaded) {
       SplashScreen.hideAsync();
@@ -81,27 +79,36 @@ export default function RootLayout() {
     }
   }, [fontLoaded, error]);
 
-  if (!fontLoaded) {
-    return null;
-  }
-
   if (!fontLoaded && !error) return null;
 
+  if (!splashAnimationFinished) {
+    return (
+      <AnimatedSplashScreen 
+        onComplete={() => setSplashAnimationFinished(true)} 
+      />
+    );
+  }
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
+      <Safescreen>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(reading)" />
+          <Stack.Screen name="onboarding" />
+        </Stack>
+      </Safescreen>
+      <StatusBar style="dark" />
+    </GestureHandlerRootView>
+  );
+}
+
+// ── outer shell — just provides the context, nothing else ──
+export default function RootLayout() {
   return (
     <AppContextProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-      <Safescreen>
-        <Stack screenOptions={{ headerShown: false }}>
-          {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(reading)" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" />
-      </Stack>
-      </Safescreen> 
-
-      <StatusBar style="dark"/>
-      </GestureHandlerRootView>
+      <AppLayout />
     </AppContextProvider>
-  )
+  );
 }

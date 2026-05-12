@@ -23,6 +23,7 @@ import DateTimePicker from '@react-native-community/datetimepicker'
 import { api } from '@/components/ApiHandler'
 import ISBNModal from '@/components/IsbnModal'
 import SuccessModal from '@/components/SuccessModal'
+import { Image } from 'expo-image'
 
 const Create = () => {
   const router = useRouter()
@@ -32,10 +33,10 @@ const Create = () => {
   const [title, setTitle] = useState('')
   const [subTitle, setSubTitle] = useState('')
   const [author, setAuthor] = useState('')
-  const [caption, setCaption] = useState('')
+  const [caption, setCaption] = useState('');
   const [description, setDescription] = useState('')
   const [genres, setGenres] = useState<string[]>([])
-  const [price, setPrice] = useState('')
+  const [price, setPrice] = useState('');
   const [visibility, setVisibility] = useState<'public' | 'private'>('public')
   const [rating, setRating] = useState(3)
   const [isbn, setIsbn] = useState('')
@@ -83,12 +84,14 @@ const Create = () => {
         // ✨ Auto-extract metadata as soon as file is picked
         setIsExtractingMetadata(true);
         try {
+          console.log("starting extraction")
           const metaRes = await api.extractBookMetadata(picked);
           console.log("Extraction successful")
           if (metaRes.success && metaRes.data) {
             const m = metaRes.data.data;
             // Only pre-fill fields the user hasn't already typed in
             if (m.title && !title) setTitle(m.title);
+            if (m.subtitle && !subTitle) setSubTitle(m.subtitle);
             if (m.author && !author) setAuthor(m.author);
             if (m.isbn && !isbn) setIsbn(m.isbn);
             if (m.publishedYear && !publishedYear) setPublishedYear(String(m.publishedYear));
@@ -221,6 +224,37 @@ const Create = () => {
             </View>
           </View>
 
+
+          {mode === 'Upload' && (
+            <View style={{ marginBottom: 16, gap: 5, flexDirection: 'row', flex: 1 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>File</Text>
+                <TouchableOpacity style={styles.imagePicker} onPress={pickFile}>
+                  <View style={styles.placeholderContainer}>
+                    <Ionicons name='file-tray-stacked-outline' size={40} color={colors.textSecondary} />
+                    <Text style={styles.placeholderText}>{fileName || 'Upload PDF / EPUB'}</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+              {resolvedCoverImage && (
+                <View style={{ width: 130 }}>
+                  <Text style={[ styles.label, { textAlign: 'center' } ]}>Preview</Text>
+                  <Image source={{ uri: resolvedCoverImage }} style={styles.imagePicker} />
+                </View>
+              )}
+            </View>
+            
+          )}
+
+          {isExtractingMetadata && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+                Reading book details...
+              </Text>
+            </View>
+          )}
+
           <View style={styles.form}>
             <View style={styles.formGroup}>
               <Text style={styles.label}>Title</Text>
@@ -296,18 +330,6 @@ const Create = () => {
               {renderRatingPicker()}
             </View>
 
-            {mode === 'Upload' && (
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>File</Text>
-                <TouchableOpacity style={styles.imagePicker} onPress={pickFile}>
-                  <View style={styles.placeholderContainer}>
-                    <Ionicons name='file-tray-stacked-outline' size={40} color={colors.textSecondary} />
-                    <Text style={styles.placeholderText}>{fileName || 'Upload PDF / EPUB'}</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            )}
-
             <View style={styles.formGroup}>
               <Text style={styles.label}>Caption</Text>
               <TextInput value={caption} onChangeText={setCaption} style={styles.textArea} multiline placeholder='Write your review or thoughts about this book ...' placeholderTextColor={colors.placeholderText} />
@@ -375,17 +397,6 @@ const Create = () => {
             </View>
           </View>
         </View>
-
-
-
-        {isExtractingMetadata && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <ActivityIndicator size="small" color={colors.primary} />
-            <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
-              Reading book details...
-            </Text>
-          </View>
-        )}
 
         <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={isLoading}>
           {isLoading ? (

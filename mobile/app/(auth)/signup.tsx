@@ -60,8 +60,8 @@ const SignUp = () => {
         <View style={styles.card}>
           {/* // header */}
           <View style={styles.header}>
-            <Text style={styles.header}>Vein Library</Text>
-            <Text style={styles.subtitle}>Share your favorite reads</Text>
+            <Text style={styles.header}>Reaver</Text>
+            <Text style={styles.subtitle}>Read. Connect. Discover.</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -146,9 +146,9 @@ const SignUp = () => {
           {/* // signup button */}
           <TouchableOpacity onPress={handleSignUp} style={styles.button} disabled={isLoading}>
             {isLoading ? (
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={{ fontSize: 6 }}>Loading </Text>
-                <ActivityIndicator color={colors.primary }/>
+              <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                <Text style={styles.buttonText}>Loading </Text>
+                <ActivityIndicator color={colors.white}/>
               </View>
             ): (
               <Text style={styles.buttonText}>Sign Up</Text>
@@ -158,7 +158,19 @@ const SignUp = () => {
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an Account?</Text>     
               <TouchableOpacity onPress={() => router.back()}>
-                {!isLoading ? <Text style={styles.link}>Log In</Text> : <View><Text>Loading </Text><ActivityIndicator color={colors.primary } size='small'/></View>}
+                {!isLoading ? (
+                    <Text style={styles.link}>Log In</Text>
+                  ) : (
+                    <View style={{ display: 'flex', flexDirection: 'row' }}>
+                      <Text style={styles.link}>
+                        Loading&nbsp;
+                      </Text>
+                      <ActivityIndicator
+                        color={colors.primary }
+                        size='small'/>
+                    </View>
+                  )
+                }
               </TouchableOpacity>
             </View>
         </View>

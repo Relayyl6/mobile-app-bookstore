@@ -328,9 +328,6 @@ declare interface AttachmentPopupProps {
   buttonPosition?: { x: number; y: number }
 }
 
-
-
-
 // Returned by formatBookForRecommendation — used by getRecommendations
 declare interface RecommendedBook {
   id: string              // note: id not _id

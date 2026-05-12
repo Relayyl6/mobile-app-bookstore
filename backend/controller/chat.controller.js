@@ -171,10 +171,13 @@ export const chatWithBook = async (req, res, next) => {
           path: "characters.embedding",
           queryVector: queryEmbedding,
           numCandidates: 20,
-          limit: 3
+          limit: 3,
+          filter: {
+            bookId: new mongoose.Types.ObjectId(bookId)
+          }
         }
       },
-      { $match: { bookId: new mongoose.Types.ObjectId(bookId) } },
+      { $match: { bookId: new mongoose.Types.ObjectId(bookId) } }, 
       { $unwind: "$characters" },
       {
         $project: {

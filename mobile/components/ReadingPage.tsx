@@ -23,6 +23,9 @@
   import { getFont, splitIntoParagraphs } from '@/utils/utils';
 import { ReaderSettings, THEMES } from '@/utils/font';
 import ThemesSettingsModal from './ThemeSettingsModal';
+import { GUEST_BOOK_CONTENT } from './data';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadGuestBookProgress, saveGuestBookProgress } from '@/utils/load';
 
   interface ReadingPageProps {
     onBack: () => void;
@@ -77,6 +80,8 @@ import ThemesSettingsModal from './ThemeSettingsModal';
 
     const [showSettings, setShowSettings] = useState(false);
 
+    const [offline, setOffline] = useState(false)
+
     const textStyle = useMemo<TextStyle>(() => {
       const fontSize = readerSettings?.fontSize || 16;
       const font = readerSettings?.font || 'JetBrainsMono';
@@ -113,6 +118,57 @@ import ThemesSettingsModal from './ThemeSettingsModal';
     const fetchChapter = useCallback(async (chapter: number, targetPage: number | 'last' = 1) => {
       try {
         setLoading(true);
+
+        // handler for lobal books 
+
+        if (bookId.startsWith('guest-')) {
+          setOffline(true)
+          const localBook = GUEST_BOOK_CONTENT[bookId];
+          const chapterData = localBook?.chapters.find(
+            c => c.chapterNumber === chapter
+          );
+
+          if (!chapterData) throw new Error("Chapter not found");
+
+          if (!chapterData.pages || chapterData.pages.length === 0) {
+            setPages([{ pageNumber: 1, text: "No content available." }]);
+          } else {
+            setPages(chapterData.pages || []);
+          }
+
+          setChapterTitle(chapterData.title || `Chapter ${chapter}`);
+          setSummary(chapterData.summary || '');
+          setThemes(chapterData.themes || []);
+          setTone(chapterData.tone || '');
+          setCharacters(chapterData.characters || []);
+          setChapterInsights(chapterData.insights || []);
+
+          const totalPages = chapterData.pages.length || 1;
+          
+          // Load saved position for this book
+          let startingPage = targetPage === 'last' ? totalPages : targetPage;
+          
+          // If this is the initial load (chapter 1, page 1), check for saved progress
+          if (chapter === 1 && targetPage === 1) {
+            const savedPosition = await loadGuestBookProgress(bookId);
+            if (savedPosition && savedPosition.chapterNumber === chapter) {
+              startingPage = savedPosition.pageNumber;
+            }
+          }
+          
+          setCurrentPageNumber(startingPage);
+          estimateReadingTime(chapterData.pages[startingPage - 1]?.text || '');
+
+          const savedMaxChapter = await AsyncStorage.getItem(`guest_max_chapter_${bookId}`);
+          if (savedMaxChapter) {
+            setMaxUnlockedChapter(parseInt(savedMaxChapter, 10));
+          } else {
+            setMaxUnlockedChapter(1);
+          }
+
+          return;
+        }
+
         // bookId is a dependency here
         const res = await api.getChapterContent(bookId as string, chapter);
         if (!res.success) throw new Error(res.error);
@@ -222,6 +278,34 @@ import ThemesSettingsModal from './ThemeSettingsModal';
       }
     }, [currentPageNumber]);
 
+    // Track max unlocked chapter for guest books
+    useEffect(() => {
+      if (bookId.startsWith('guest-') && !loading && pages.length > 0) {
+        // If user has read beyond current max unlocked chapter, unlock it
+        if (chapterNumber > maxUnlockedChapter) {
+          setMaxUnlockedChapter(chapterNumber);
+          // Save to AsyncStorage
+          AsyncStorage.setItem(
+            `guest_max_chapter_${bookId}`, 
+            chapterNumber.toString()
+          ).catch(console.log);
+        }
+      }
+    }, [chapterNumber, bookId, loading, pages.length, maxUnlockedChapter]);
+
+    // Load max unlocked chapter when opening guest book
+    useEffect(() => {
+      if (bookId.startsWith('guest-')) {
+        AsyncStorage.getItem(`guest_max_chapter_${bookId}`).then(saved => {
+          if (saved) {
+            setMaxUnlockedChapter(parseInt(saved, 10));
+          } else {
+            setMaxUnlockedChapter(1); // Start with chapter 1 unlocked
+          }
+        }).catch(console.log);
+      }
+    }, [bookId]);
+
     const closeAllModals = () => setActiveModal('none');
 
     const openTools = () => setActiveModal('tools');
@@ -263,16 +347,54 @@ import ThemesSettingsModal from './ThemeSettingsModal';
     };
 
     const openTableOfContents = async () => {
-      setActiveModal('toc');
-      try {
-        const res = await api.getTableOfContents(bookId as string);
-        if (res.success) {
-          setTocData(res.data?.tableOfContents || []);
-        }
-      } catch (err) {
-        console.log('Failed to fetch TOC', err);
-      }
-    };
+  setActiveModal('toc');
+  
+  // For guest books - generate TOC from local data
+  if (bookId.startsWith('guest-')) {
+    const localBook = GUEST_BOOK_CONTENT[bookId];
+    if (localBook) {
+      // Create TOC from chapters
+      const localToc = localBook.chapters.map((chapter, idx) => {
+        // Check if chapter is unlocked (you can implement your own logic)
+        // For now, we'll unlock chapters progressively as user reads
+        const isUnlocked = idx + 1 <= maxUnlockedChapter;
+        
+        return {
+          chapterNumber: chapter.chapterNumber,
+          title: chapter.title,
+          isUnlocked: isUnlocked,
+          pageCount: chapter.pages?.length || 0,
+        };
+      });
+      setTocData(localToc);
+    }
+    return;
+  }
+  
+  // For online books
+  if (offline) {
+    // Try to get cached TOC
+    const cachedToc = await AsyncStorage.getItem(`${bookId}_toc`);
+    if (cachedToc) {
+      setTocData(JSON.parse(cachedToc));
+    } else {
+      // Optionally, you could store TOC when the book was last online
+      console.log('No cached TOC available');
+    }
+    return;
+  }
+  
+  try {
+    const res = await api.getTableOfContents(bookId as string);
+    if (res.success) {
+      setTocData(res.data?.tableOfContents || []);
+      // Cache for potential offline use
+      await AsyncStorage.setItem(`${bookId}_toc`, JSON.stringify(res.data?.tableOfContents || []));
+    }
+  } catch (err) {
+    console.log('Failed to fetch TOC', err);
+  }
+};
 
     const handleAddNote = async () => {
       if (!newNoteText.trim()) return;
@@ -298,6 +420,7 @@ import ThemesSettingsModal from './ThemeSettingsModal';
         const res = await api.deleteNote(bookId as string, noteId);
         if (res.success) {
           setNotes(res.data?.notes || []);
+          console.log("something")
         }
       } catch (err) {
         console.log('Failed to delete note', err);
@@ -360,26 +483,58 @@ import ThemesSettingsModal from './ThemeSettingsModal';
     }, [bookId, chapterNumber]);
 
     useEffect(() => {
-      if (bookId) fetchChapter(chapterNumber);
-    }, [bookId]);
+      const initializeReading = async () => {
+        if (bookId.startsWith('guest-')) {
+          const savedPosition = await loadGuestBookProgress(bookId);
+          if (savedPosition) {
+            setChapterNumber(savedPosition.chapterNumber);
+            setCurrentPageNumber(savedPosition.pageNumber);
+            fetchChapter(savedPosition.chapterNumber, savedPosition.pageNumber);
+          } else {
+            fetchChapter(1);
+          }
+        } else {
+          fetchChapter(initialChapter);
+        }
+      };
+      
+      initializeReading();
+    }, [bookId, chapterNumber]);
 
+    // Progress update - different handling for guest vs online books
     useEffect(() => {
       const updateProgress = async () => {
-        try {
-          await api.updateReadingProgress(bookId as string, {
-            currentChapter: chapterNumber,
-            currentPage: currentPageNumber,
-            progressPercentage: pages.length > 0 ? Math.round((currentPageNumber / pages.length) * 100) : 0,
-          });
-        } catch {
-          console.log('Progress update failed');
+        if (!loading && pages.length > 0) {
+          const totalPages = pages.length;
+          const progressPercentage = Math.round((currentPageNumber / totalPages) * 100);
+          
+          // For guest books (offline content)
+          if (bookId.startsWith('guest-')) {
+            await saveGuestBookProgress(
+              bookId, 
+              chapterNumber, 
+              currentPageNumber, 
+              totalPages
+            );
+            return;
+          }
+          
+          // For online books (only if online - they won't be available offline anyway)
+          try {
+            await api.updateReadingProgress(bookId as string, {
+              currentChapter: chapterNumber,
+              currentPage: currentPageNumber,
+              progressPercentage: progressPercentage,
+            });
+          } catch (error) {
+            console.log('Progress update failed (user likely offline or book not available):', error);
+            // Don't queue - online books aren't available offline anyway
+          }
         }
       };
 
-      if (!loading && pages.length > 0) {
-        updateProgress();
-      }
-    }, [chapterNumber, currentPageNumber, loading, pages.length]);
+      updateProgress();
+    }, [chapterNumber, currentPageNumber, loading, pages.length, bookId]);
 
     if (loading) {
       return (
@@ -463,7 +618,7 @@ import ThemesSettingsModal from './ThemeSettingsModal';
           <TouchableOpacity
             style={[styles.navArrow, chapterNumber === 1 && currentPageNumber === 1 && { opacity: 0.5 }]}
             onPress={handlePrevious}
-            disabled={chapterNumber === 1 && currentPageNumber === 1}
+            disabled={chapterNumber === 1 && currentPageNumber === 1 && offline}
           >
             <Text style={styles.navArrowText}>‹</Text>
           </TouchableOpacity>
@@ -484,11 +639,13 @@ import ThemesSettingsModal from './ThemeSettingsModal';
                 params: { bookId },
               })
             }
+            disabled={offline}
+            activeOpacity={0.7}
           >
             <Text style={styles.aiAssistantIcon}>✨</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.navArrow} onPress={handleNext}>
+          <TouchableOpacity style={styles.navArrow} disabled={offline} onPress={handleNext}>
             <Text style={styles.navArrowText}>›</Text>
           </TouchableOpacity>
         </View>
@@ -501,8 +658,16 @@ import ThemesSettingsModal from './ThemeSettingsModal';
         />
 
         <Modal visible={activeModal !== 'none'} animationType="slide" transparent onRequestClose={closeAllModals}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
+          <TouchableOpacity 
+            style={styles.modalOverlay} 
+            activeOpacity={1} 
+            onPress={closeAllModals}
+          >
+            <TouchableOpacity 
+              style={styles.modalContent} 
+              activeOpacity={1} 
+              onPress={() => {}} 
+            >
               <View style={styles.modalHandle} />
 
               {activeModal === 'tools' && (
@@ -657,13 +822,11 @@ import ThemesSettingsModal from './ThemeSettingsModal';
                         )}
                       </View>
                     )}
-
-
                   </ScrollView>
                 </>
               )}
-            </View>
-          </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
       </View>
       </GestureDetector>

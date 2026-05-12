@@ -96,7 +96,7 @@ const AttachmentPopup = ({
                 bottom: 0, // Fixed position above the input bar
                 left: 16,
                 right: 16,
-                marginBottom: 150,
+                marginBottom: 80,
                 transform: [
                   { scale: scaleAnim },
                   {

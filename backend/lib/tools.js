@@ -304,7 +304,15 @@ export const analyzePdfWithGemini = async (model, fileUrl) => {
               "role": "Protagonist/Antagonist/Supporting",
               "description": "Short description of their role in this chapter"
             }
-          ]
+          ],
+          "insights": [
+            "Key turning points, plot revelations, or major character decisions that drive the story forward",
+            "Symbolic elements, foreshadowing, or thematic connections to the overall narrative",
+            "Other insights into the book"
+          ],
+          "narrativeSignificance": "Why this chapter matters to the overall story",
+          "startMarker": "A unique text snippet from the start of the chapter",
+          "endMarker": "A unique text snippet from the end of the chapter"
         }
       ]
     }
@@ -447,7 +455,7 @@ export async function analyzeExtractedTextWithGemini(model, fullText, chaptersWi
   // ─────────────────────────────────────────────────────────────────
   // KEY INSIGHT:
   //   pdf-parse + splitIntoChapters() has ALREADY divided the book into
-  //   chapters with real content. We trust that structure completely.
+  //   chapters with real content. I trust that structure completely.
   //
   //   Gemini's ONLY job here is literary analysis:
   //     - Book metadata (title, author, etc.)
@@ -514,6 +522,11 @@ JSON structure:
           "role": "Protagonist/Antagonist/Supporting/Mentioned",
           "description": "What this character does or experiences in THIS chapter"
         }
+      ],
+      "insights": [
+        "Key turning points, plot revelations, or major character decisions that drive the story forward",
+        "Symbolic elements, foreshadowing, or thematic connections to the overall narrative",
+        "Other insights into the book"
       ],
       "narrativeSignificance": "Why this chapter matters to the overall story",
       "startMarker": "A unique text snippet from the start of the chapter",

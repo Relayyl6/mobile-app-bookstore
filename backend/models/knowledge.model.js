@@ -35,6 +35,8 @@ const ChapterSchema = new Schema(
       },
     ],
 
+    insights: [String], // AI-generated interesting observations
+
     narrativeSignificance: { type: String }, // e.g. "central to plot", "minor subplot"
 
     startMarker: { type: String }, // text snippet at chapter start for quick retrieval

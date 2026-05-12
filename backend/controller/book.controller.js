@@ -610,6 +610,7 @@ export const uploadBookContent = async (req, res, next) => {
         wordCount: ch.wordCount || ch.content?.split(/\s+/).length || 0,
         summary: ch.summary || "",
         themes: ch.themes || [],
+        insights: ch.insights || [],
         tone: ch.tone || "",
         setting: ch.setting || "",
         characters: (ch.characters || []).map(c => ({
@@ -640,6 +641,7 @@ export const uploadBookContent = async (req, res, next) => {
           role: c.role || "",
           description: c.description || ""
         })),
+        insights: ch.insights || [],
         narrativeSignificance: ch.narrativeSignificance || "",
         startMarker: ch.startMarker || "",
         endMarker: ch.endMarker || "",
@@ -1339,6 +1341,7 @@ export const extractBookMetadata = async (req, res, next) => {
 
     let metadata = {
       title: infoResult.info?.Title || null,
+      subtitle: infoResult.info?.Subject || null,
       author: infoResult.info?.Author || null,
       isbn: null,
       publishedYear: infoResult.info?.CreationDate
@@ -1366,6 +1369,7 @@ export const extractBookMetadata = async (req, res, next) => {
 
           {
             "title": "book title or null",
+            "subtitle": "suitable book subtitle or null",
             "author": "author full name or null",
             "isbn": "ISBN number if found or generate one",
             "publishedYear": number or null,
@@ -1384,6 +1388,7 @@ export const extractBookMetadata = async (req, res, next) => {
 
         // Only fill what pdf-parse missed
         metadata.title = metadata.title || aiMeta.title;
+        metadata.subtitle = metadata.subtitle || aiMeta.subtitle;
         metadata.author = metadata.author || aiMeta.author;
         metadata.isbn = aiMeta.isbn || null;
         metadata.publishedYear = metadata.publishedYear || aiMeta.publishedYear;

@@ -23,8 +23,8 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Home' }} />
       <Tabs.Screen name="books" options={{ title: 'History' }} />
-      <Tabs.Screen name="create" options={{ title: 'Profile' }} />
-      <Tabs.Screen name="chat" options={{ title: "Chat" }} />
+      <Tabs.Screen name="create" options={{ title: 'Profile', tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="chat" options={{ title: "Chat", tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );
@@ -52,6 +52,15 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const { colors } = useAppContext();
   const styles = tabStyles(colors)
   const activeColor = colors.textSecondary; 
+
+  // Get the active route name
+  const activeRouteName = state.routes[state.index]?.name;
+
+  // Define which routes should hide the tab bar
+  const HIDDEN_ON = ['chat'];
+
+  // Return null — completely removes the custom tab bar
+  if (HIDDEN_ON.includes(activeRouteName)) return null;
 
   return (
     <View style={[styles.container, { bottom: insets.bottom + 6, backgroundColor: colors.primary }]}>

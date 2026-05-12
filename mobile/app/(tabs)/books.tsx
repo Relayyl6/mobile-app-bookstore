@@ -155,7 +155,7 @@ const LibraryScreen = () => {
             author={(book as any).author || 'Unknown Author'}
             rating={(book as any).averageRating || 0}
             genre={(book as any).genres?.[0] || 'Fiction'}
-            image={(book as any).coverImage}
+            image={(book as any).coverImage || (book as any).image}
           />
         ) : (
           <SmallCard
@@ -254,7 +254,9 @@ const LibraryScreen = () => {
                 {loadingSections.recommended ? (
                   <LibrarySectionSkeleton title="Recommended for You" />
                 ) : (
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedGrid}>{recommendedBooks.map((book) => renderBookCard(book, 'big'))}</ScrollView>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedGrid}>{
+                    recommendedBooks.map((book) => renderBookCard(book, 'big'))}
+                  </ScrollView>
                 )}
               </View>
             )}
@@ -268,7 +270,9 @@ const LibraryScreen = () => {
                 {loadingSections.popular ? (
                   <LibrarySectionSkeleton title="Popular Books" />
                 ) : (
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedGrid}>{popularBooks.map((book) => renderBookCard(book, 'big'))}</ScrollView>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.recommendedGrid}>
+                    {popularBooks.map((book) => renderBookCard(book, 'big'))}
+                  </ScrollView>
                 )}
               </View>
             )}

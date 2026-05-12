@@ -4,19 +4,16 @@ import React, { useEffect, useState } from 'react'
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
-  StatusBar,
-  Image,
-  ActivityIndicator,
   Alert,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { api } from '@/components/ApiHandler'
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router'
 import BookDetails from '@/components/BookDetails'
-import Skeleton, { BookDetailsSkeleton } from '@/components/SkeletonLoaders'
-import { GUEST_BOOKS } from '@/components/data'
+import { BookDetailsSkeleton } from '@/components/SkeletonLoaders'
+import { GUEST_BOOKS, GUEST_BOOKS_DETAILS } from '@/components/data'
+import { loadGuestBookProgress } from '@/utils/load'
 // import { GUEST_BOOKS } from '../(tabs)'
 
 // Wrapper component that fetches data from API
@@ -33,10 +30,25 @@ const Details = () => {
   
   const [book, setBook] = useState<SingleBook | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [ currentProgress, setCurrentProgress ] = useState(0)
   
   useEffect(() => {
     loadBookDetails()
   }, [bookId])
+
+  useEffect(() => {
+    const loadBookProgress = async () => {
+      if (bookId?.startsWith('guest-')) {
+        const progress = await loadGuestBookProgress(bookId);
+        if (progress) {
+          // Update the displayed reading progress
+          setCurrentProgress(progress.progressPercentage);
+        }
+      }
+    };
+    
+    loadBookProgress();
+  }, [bookId]);
 
  const loadBookDetails = async () => {
     console.log("🔍 [1] loadBookDetails triggered with bookId:", bookId);
@@ -49,9 +61,11 @@ const Details = () => {
     // 3. Catch the Guest Books before they hit the backend
     if (bookId.startsWith('guest-')) {
         console.log("🏠 [2] Loading guest book locally, skipping backend.");
-        const localBook = GUEST_BOOKS.find(b => b._id === bookId || b.bookId === bookId);
+        const localBook = GUEST_BOOKS_DETAILS.find(b => b._id === bookId);
         console.log("📍 Local book found:", localBook ? "Yes" : "No");
         if (localBook) setBook(localBook);
+        // console.log(localBook)
+        setIsLoading(false);
         return; 
     }
 
@@ -186,7 +200,7 @@ const Details = () => {
         }
         pages={book.totalPages || 0}
         rating={book.totalRatings || 0}
-        currentProgress={book.readingProgress?.progressPercentage || 0}
+        currentProgress={currentProgress || book.readingProgress?.progressPercentage || 0}
         lastRead={book.readingProgress?.lastReadAt || 'Never'}
         genres={book.genres ? book.genres : ['Fiction']}
         plotSummary={

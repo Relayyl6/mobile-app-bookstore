@@ -4,7 +4,6 @@ const profileFillStyle = (colors: ColorScheme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    marginBottom: 20
   },
   header: {
     flexDirection: 'row',
@@ -26,6 +25,7 @@ const profileFillStyle = (colors: ColorScheme) => StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    marginBottom: 20
   },
   scrollContent: {
     paddingBottom: 20,

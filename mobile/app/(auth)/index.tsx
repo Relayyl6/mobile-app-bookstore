@@ -28,8 +28,9 @@ const SignIn = () => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, paddingBottom: 30 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 80}
     >
       <View style={styles.container}>
         <View style={styles.topIllustration}>

@@ -2,18 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightThemes, darkThemes } from '@/constants/theme';
 import icons from '@/constants/data';
-import { DEFAULT_READER_SETTINGS, ReaderSettings } from '@/components/ThemeSettingsModal';
+import { DEFAULT_READER_SETTINGS } from '@/components/ThemeSettingsModal';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
-  const [currentTheme, setCurrentThemeState] = useState<ThemeType>('forest');
+  const [currentTheme, setCurrentThemeState] = useState<ThemeType>('purpleTheme');
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null)
   const [bookId, setBookId] = useState<string | null>(null)
-  const [show, setShow] = useState(false)
-  const [readerSettings, setReaderSettings] = useState<ReaderSettings>(DEFAULT_READER_SETTINGS);
+  const [show, setShow] = useState(false);
   
 
   // Load theme preferences from storage

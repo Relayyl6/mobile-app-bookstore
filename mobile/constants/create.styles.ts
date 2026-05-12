@@ -6,11 +6,11 @@ const createStyles = (COLORS: ColorScheme) => StyleSheet.create({
     // flexGrow: 1,
     backgroundColor: COLORS.background,
     padding: 8,
+    paddingBottom: 106
   },
   scrollViewStyle: {
     flex: 1,
     backgroundColor: COLORS.background,
-    marginBottom: 90
   },
   card: {
     backgroundColor: COLORS.cardBackground,

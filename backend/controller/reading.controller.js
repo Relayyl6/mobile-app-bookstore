@@ -469,7 +469,7 @@ export const deleteNote = async (req, res, next) => {
     const state = await userBookStateModel.findOneAndUpdate(
       { userId, bookId },
       { 
-        $pull: { userNotes: { _id: noteId } }
+        $pull: { userNotes: { _id: new mongoose.Types.ObjectId(noteId) } }
       },
       { new: true }
     );
